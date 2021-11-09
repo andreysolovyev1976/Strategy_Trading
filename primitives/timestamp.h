@@ -26,7 +26,9 @@ namespace algo {
 
   	//todo: EXCHANGE IT WITH C++20 FEATURE
   	struct Timestamp {
-//  		Timestamp(const types::String& value);
+  		// add operator < and operator ==
+
+  		Timestamp() = default;
   		Timestamp(types::String value);
 		types::String value;
   	};

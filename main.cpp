@@ -12,9 +12,19 @@ using namespace algo;
 using namespace std;
 using namespace boost;
 
+#include <memory>
+#include "indicator.h"
+
+
+template <typename T>
+class A {
+	T value;
+};
 
 int main() {
 	//todo: finalize operators for Value
+	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
+
 
 //	std::cout << "Work in progress...\n";
 

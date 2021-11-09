@@ -23,7 +23,7 @@ TEST(Indicator, Value_Modifier) {
 
 	std::stringstream str;
 	str << indicator;
-	ASSERT_EQ(str.str(), "label: test indicator: 0.30") << indicator.getOutputValue();
+	ASSERT_EQ(str.str(), "label: test indicator: 0.30") << indicator.getOutputValues();
 }
 
 TEST(Indicator, Value_NoModifier) {

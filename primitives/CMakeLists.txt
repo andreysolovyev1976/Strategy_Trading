@@ -8,6 +8,7 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
+        maps.cpp
         timestamp.cpp
         value.cpp
 

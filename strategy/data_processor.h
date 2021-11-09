@@ -4,22 +4,25 @@
 
 #pragma once
 
-#include "value.h"
-#include "trade.h"
+#include "types_declarations.h"
+#include "quote.h"
 
 #ifndef STRATEGY_TRADING_DATA_PROCESSOR_H
 #define STRATEGY_TRADING_DATA_PROCESSOR_H
 
 namespace algo {
 
-  struct Data {
-
+  struct MarketData {
+  	//todo: make it OHLC available, as well as batches available
+  	Ticker ticker;
+  	Quote quote;
   };
 
   struct DataProcessor {
   	template <typename Input>
-  	static types::Value toValue (Input &&input);
+  	static MarketData getNewMarketData (Input &&input);
   };
+
 
 
 }//!namespace

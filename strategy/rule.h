@@ -4,9 +4,12 @@
 
 #pragma once
 
-#include "trade.h"
-#include "indicator.h"
+#include "data_processor.h"
 #include "signal.h"
+#include "position.h"
+#include "trade.h"
+
+#include <optional>
 
 #ifndef STRATEGY_TRADING_RULE_H
 #define STRATEGY_TRADING_RULE_H
@@ -16,51 +19,68 @@ namespace algo {
   namespace rule_base {
 
 	namespace rule_type {
-	  struct Buy {};
-	  struct Sell {};
-	  struct DoNothing {};
+	  struct Entry {};
+	  struct Exit {};
+	  struct Risk {};
+	  struct Order {};
+	  struct Rebalance {};
 	}//!namespace
-
-	template <typename R>
-	using IsRule = std::enable_if_t<
-			std::disjunction_v<
-					std::is_same<R, rule_type::Buy>,
-					std::is_same<R, rule_type::Sell>,
-					std::is_same<R, rule_type::DoNothing>
-			>, bool>;
-
-	template <typename R1, typename R2, IsRule<R1> = true, IsRule<R2> = true>
-	bool constexpr IsSame (R1 lhs, R2 rhs) {
-		return std::is_same_v<std::decay_t<decltype(lhs)>, std::decay_t<decltype(rhs)>>;
-	}
-
-	template <typename R1, typename R2, IsRule<R1> = true, IsRule<R2> = true>
-	bool constexpr IsNotSame (R1 lhs, R2 rhs) {
-		return not IsSame(lhs, rhs);
-	}
 
 	using RuleTypeBase =
 	std::variant<
 			std::monostate,
-			rule_type::Buy,
-			rule_type::Sell,
-			rule_type::DoNothing
+			rule_type::Entry,
+			rule_type::Exit,
+			rule_type::Risk,
+			rule_type::Order,
+			rule_type::Rebalance
 	>;
 
 	struct RuleType final : public types::ObjectType<rule_base::RuleTypeBase> {};
-
   }//!namespace
 
 
-  //ruletype
-  //one of "risk","order","rebalance","exit","entry", see add.rule
-
   class Rule {
   public:
+  	Rule() = default;
+	  Rule(
+	  		types::String label,
+	  		rule_base::RuleType type,
+	  		types::String signal_label,
+	  		int signal_value,
+	  		std::unique_ptr<Signals> signals,
+	  		PositionSide position_side,
+	  		trade_base::OrderQuantity order_quantity,
+	  		trade_base::OrderType order_type )
+			  : label_(std::move(label))
+			  , type_(std::move(type))
+			  , signal_label_(std::move(signal_label))
+			  , signal_value_(signal_value)
+			  , signals_(std::move(signals))
+			  , position_side_(std::move(position_side))
+			  , order_quantity_(std::move(order_quantity))
+			  , order_type_(std::move(order_type))
+			  { }
 
+	std::optional<Trade> ruleSignal (MarketData market_data) {
+	  	const auto &market_data_ = market_data;
+	  	signals_->updateSignals(market_data_);
+	  	if (ProcessSignal()) return Trade;
+	  }
 
   private:
-	  rule_base::RuleType type_;
+  	types::String label_;
+	rule_base::RuleType type_;
+	types::String signal_label_;
+	int signal_value_;
+	std::unique_ptr<Signals> signals_;
+	PositionSide position_side_;
+	trade_base::OrderQuantity order_quantity_;
+	trade_base::OrderType order_type_;
+
+	bool ProcessSignal () {
+		return true;
+	}
   };
 
 

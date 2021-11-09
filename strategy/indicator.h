@@ -5,130 +5,72 @@
 #pragma once
 
 #include "types_declarations.h"
-#include "relations.h"
+#include "data_processor.h"
 #include "quote.h"
 #include <boost/circular_buffer.hpp>
 
-#include <type_traits>
+#include <map>
 #include <memory>
 #include <ostream>
 
 #ifndef STRATEGY_TRADING_INDICATOR_H
 #define STRATEGY_TRADING_INDICATOR_H
 
-class value;
 namespace algo {
 
-  namespace indicator_base {
+  using Container = boost::circular_buffer<Quote>;
+  //todo: requires to get it callable for lambda
+  //seems like is_callable is going to work just fine
+  //or it can be done as std::function
+  using ModifierFunc = Container (*) (Container);
 
-//	template <typename IndicatorType>
-//	struct IsIndicatorType {
-//		constexpr static bool value =
-//				std::disjunction_v<
-//				std::is_same<types::Value, IndicatorType>,
-//				std::is_same<std::vector<types::Value>, IndicatorType>,
-//				std::is_same<algo::Quote, IndicatorType>,
-//				std::is_same<std::vector<algo::Quote>, IndicatorType>
-//		>;
-//	};
-//
-//	template<typename T>
-//	constexpr bool IsIndicatorType_v(T) {
-//		return IsIndicatorType<std::decay_t<T>>::value;
-//	}
-
-	template <typename IndicatorType>
-	using IsIndicator = std::enable_if_t<
-			std::disjunction_v<
-					std::is_same<types::Value, IndicatorType>,
-					std::is_same<std::vector<types::Value>, IndicatorType>,
-					std::is_same<algo::Quote, IndicatorType>,
-					std::is_same<std::vector<algo::Quote>, IndicatorType>
-			>,
-			bool>;
-
-	template<typename Modifier, typename IndicatorType, IsIndicator<IndicatorType> = true>
-	using IsCallable = std::enable_if_t<
-			std::disjunction_v<
-					std::is_invocable_r<IndicatorType, Modifier, IndicatorType>,
-					std::is_same<Modifier, nullptr_t>,
-					std::is_same<Modifier, std::unique_ptr<std::is_invocable_r<IndicatorType, Modifier, IndicatorType>>>
-			>, bool>;
-
-  }//!namespace
-
-
-  template <typename IndicatorType, typename ModifierFunc = nullptr_t>
   class Indicator final {
   public:
 	  Indicator() = default;
-	  Indicator (const Indicator &other) = delete;
+//	  Indicator (const Indicator &other) = delete;
 
-	  template <indicator_base::IsCallable<ModifierFunc, IndicatorType> = true>
-	  Indicator(const types::String& label, IndicatorType input_value, ModifierFunc modifier = nullptr)
-			  :label_(label)
-			  , input_value_(std::move(input_value))
-			  , modifier(modifier)
-	  {
-		  ProcessIndicator();
-		  data.resize(30);
-	  }
+	  Indicator(const Ticker &ticker, types::String indicator_label, Container input_value, ModifierFunc modifier = nullptr);
+	  Indicator(const Ticker &ticker, types::String indicator_label, ModifierFunc modifier = nullptr);
 
-	  template<typename NewIndicatorType, indicator_base::IsIndicator<NewIndicatorType> = true>
-	  	void updateInputValue (NewIndicatorType new_value) {
-	  		if constexpr (sameType(input_value_, new_value)){
-			  input_value_ = std::move(new_value);
-			  ProcessIndicator();
-		  }
-	  		else if constexpr (typeAndItsVector(new_value, input_value_)) {
-	  			input_value_.emplace_back(std::move(new_value));
-			  ProcessIndicator();
-		  }
-	  }
-	  const IndicatorType& getOutputValue() const {return output_value_;}
-	  const IndicatorType& getInputValue() const {return input_value_;}
+	  void updateIndicator (const MarketData &market_data);
+	  const Container& getOutputValues() const;
+	  const Container& getInputValues() const;
+	  const types::String& getLabel () const;
+	  const Ticker& getTicker() const;
 
-	  const types::String& getLabel () const {return label_;}
+	  bool Empty () const;
+	  size_t Size() const;
 
   private:
+  	Ticker ticker_;
 	  types::String label_;
-	  IndicatorType input_value_, output_value_;
 	  ModifierFunc modifier;
-	  boost::circular_buffer<IndicatorType> data;
+	  Container input_value_, output_value_;
+	  size_t size_ = const_values::DEFAULT_INDICATOR_SIZE;
 
-	  void ProcessIndicator () {
-		  if constexpr (not std::is_same_v<std::decay_t<decltype(modifier)>, nullptr_t>){
-			  output_value_ = modifier(input_value_);
-		  }
-		  else {
-			  output_value_ = input_value_;
-		  }
-	  }
-
-	  template <typename A, typename B>
-	  constexpr bool sameType (A, B){
-	  	return std::is_same_v<std::decay_t<A>, std::decay_t<B>>;
-	  }
-	  template <typename A, typename Vec>
-	  constexpr bool typeAndItsVector (A, Vec){
-	  	return std::is_same_v<std::decay_t<A>, typename std::decay_t<Vec>::value_type>;
-	  }
+	  void ProcessIndicator ();
   };
 
-  template <typename IndicatorType, typename Modifier>
-  std::ostream& operator<<(std::ostream& os, const Indicator<IndicatorType, Modifier> &indicator) {
-	  using IndicatorValueType = std::decay_t<decltype(indicator.getOutputValue())>;
-	  if constexpr (std::is_same_v<IndicatorValueType, types::Value>){
-		  os << "label: " << indicator.getLabel() << " indicator: " << indicator.getOutputValue();
-	  }
-	  else if constexpr (std::is_same_v<IndicatorValueType, algo::Quote>){
-		  os << "label: " << indicator.getLabel() << " indicator: {" << indicator.getOutputValue() << "}";
-	  }
-	  else {
-		  os << "Indicator is vector, operator << needs to be updated;\n";
-	  }
-	  return os;
-  }
+  std::ostream& operator<<(std::ostream& os, const Indicator &indicator);
+
+
+  class Indicators {
+	  using Ind = std::shared_ptr<Indicator>;
+	  using IndicatorLabel = types::String;
+	  //todo: add thread safe map
+	  using ByLabel = types::SingleThreadedMap<IndicatorLabel, Ind>;
+	  using ByTicker = types::MultiMap<Ticker, Ind>;
+  public:
+  	const ByLabel& getIndicators () const;
+	  const Indicator& getIndicator (const types::String &label) const;
+	  const Indicator& updateIndicators (const MarketData &market_data);
+	  void addIndicator (Indicator indicator);
+	  [[nodiscard]] Ind shareIndicator (const types::String &label);
+
+  private:
+  	ByLabel by_label_;
+  	ByTicker by_ticker_;
+  };
 
 }//!namespace
 

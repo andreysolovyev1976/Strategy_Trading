@@ -4,11 +4,10 @@
 
 #pragma once
 
+#include "value.h"
+#include "maps.h"
 
 #include <string>
-#include <cstdint>
-#include <limits>
-#include <boost/multiprecision/cpp_int.hpp>
 
 
 #ifndef STRATEGY_TRADING_TYPES_DECLARATIONS_H
@@ -22,14 +21,20 @@ namespace types {
   using String = std::string;
 #endif
 
-  using BigInt = boost::multiprecision::int128_t;
-  static const BigInt BIGINT_MAX = std::numeric_limits<BigInt>::max();
-  static const BigInt BIGINT_MIN = std::numeric_limits<BigInt>::min();
-  using BigUInt = boost::multiprecision::uint128_t;
-  static const BigUInt BIGUINT_MAX = std::numeric_limits<BigUInt>::max();
-  static const BigUInt BIGUINT_MIN = std::numeric_limits<BigUInt>::min();
-  using ShortUInt = uint16_t;
 
+}//!namespace
+
+
+namespace const_values {
+
+	static const size_t DEFAULT_INDICATOR_SIZE = 30;
+
+}//!namespace
+
+
+namespace algo {
+
+  using Ticker = types::String;
 
 }//!namespace
 

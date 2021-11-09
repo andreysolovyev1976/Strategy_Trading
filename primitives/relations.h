@@ -75,6 +75,19 @@ namespace relations {
 	struct GE : BaseType {};
   }//!namespace
 
+  using RelationTypeBase =
+  		std::variant<
+  		std::monostate,
+  		relation_type::EQ,
+  		relation_type::NE,
+  		relation_type::LT,
+  		relation_type::LE,
+  		relation_type::GT,
+  		relation_type::GE
+  		>;
+
+  struct RelationType final : public types::ObjectType<RelationTypeBase> {};
+
   template<typename L, typename R, typename Rl>
   constexpr bool RelationImpl (L &&l, R &&r) {
 	  if constexpr	    (std::is_same_v<Rl, relation_type::EQ>) return EQ<L, R>(l, r);
@@ -100,6 +113,31 @@ namespace relations {
   	else if constexpr (std::is_same_v<Rl, relation_type::LE>) return relation_names[3]; //LE<L, R>(l, r);
   	else if constexpr (std::is_same_v<Rl, relation_type::GT>) return relation_names[4]; //GT<L, R>(l, r);
   	else if constexpr (std::is_same_v<Rl, relation_type::GE>) return relation_names[5]; //GE<L, R>(l, r);
+  	else throw std::runtime_error (EXCEPTION_MSG("Relations type is not selected; "));
+  }
+
+  //todo: constinit instead of constexpr when moving to C++ 20 machine
+  //  constinit
+  static
+  RelationType RelationFromString (const types::String str) {
+  	     if (str == relation_names[0]) return RelationType{relation_type::EQ{}};
+  	else if (str == relation_names[1]) return RelationType{relation_type::NE{}};
+  	else if (str == relation_names[2]) return RelationType{relation_type::LT{}};
+  	else if (str == relation_names[3]) return RelationType{relation_type::LE{}};
+  	else if (str == relation_names[4]) return RelationType{relation_type::GT{}};
+  	else if (str == relation_names[5]) return RelationType{relation_type::GE{}};
+  	else throw std::runtime_error (EXCEPTION_MSG("Relations type is not selected; "));
+  }
+
+
+  template<typename L, typename R>
+  static bool RelationImpl (L &&l, R &&r, RelationType type) {
+  	     if (type.TryAs<relation_type::EQ>()) return EQ<L, R>(l, r);
+  	else if (type.TryAs<relation_type::NE>()) return NE<L, R>(l, r);
+  	else if (type.TryAs<relation_type::LT>()) return LT<L, R>(l, r);
+  	else if (type.TryAs<relation_type::LE>()) return LE<L, R>(l, r);
+  	else if (type.TryAs<relation_type::GT>()) return GT<L, R>(l, r);
+  	else if (type.TryAs<relation_type::GE>()) return GE<L, R>(l, r);
   	else throw std::runtime_error (EXCEPTION_MSG("Relations type is not selected; "));
   }
 

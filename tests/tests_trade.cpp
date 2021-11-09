@@ -10,7 +10,7 @@ TEST(Trade, Primitives) {
 
 	using namespace algo::timestamp;
 	using namespace algo::trade_base;
-	using namespace algo::trade_base::trade_side_type;
+	using namespace algo::trade_base::trade_direction_type;
 	using namespace algo::trade_base::trade_type;
 	using namespace algo::trade_base::order_type;
 	using namespace std::literals;

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "types_declarations.h"
 #include "exceptions.h"
 
 #include <string>
@@ -21,6 +20,15 @@
 #define STRATEGY_TRADING_VALUE_H
 
 namespace types {
+
+  using BigInt = boost::multiprecision::int128_t;
+  static const BigInt BIGINT_MAX = std::numeric_limits<BigInt>::max();
+  static const BigInt BIGINT_MIN = std::numeric_limits<BigInt>::min();
+  using BigUInt = boost::multiprecision::uint128_t;
+  static const BigUInt BIGUINT_MAX = std::numeric_limits<BigUInt>::max();
+  static const BigUInt BIGUINT_MIN = std::numeric_limits<BigUInt>::min();
+  using ShortUInt = uint16_t;
+
   template <typename Number>
   using IsInteger = std::enable_if_t<std::is_convertible_v<std::decay_t<Number>, BigInt>,bool>;
   template <typename Number>

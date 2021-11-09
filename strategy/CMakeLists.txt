@@ -14,6 +14,7 @@ target_sources(${PROJECT_NAME} PRIVATE
         data_processor.cpp
         indicator.cpp
         portfolio.cpp
+        position.cpp
         rule.cpp
         signal.cpp
         strategy.cpp

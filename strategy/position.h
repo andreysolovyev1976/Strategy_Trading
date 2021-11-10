@@ -16,12 +16,14 @@ namespace algo {
   namespace position_base{
 
 	namespace position_side {
+	  struct Neutral {};
 	  struct Long {};
 	  struct Short {};
-	}
+	}//!namespace
 
 	using PositionSideBase = std::variant<
 			std::monostate,
+			position_side::Neutral,
 			position_side::Long,
 			position_side::Short
 	>;
@@ -29,7 +31,15 @@ namespace algo {
 
   struct PositionSide final : public types::ObjectType<position_base::PositionSideBase> {};
 
-  struct Position {
+
+  [[maybe_unused]]
+  static types::String PositionSideToString (const PositionSide &type );
+
+  [[maybe_unused]]
+  static PositionSide StringToPositionSide (const types::String& type);
+
+
+  struct Position final {
 	  Ticker ticker;
 	  PositionSide side;
 	  types::Value quantity;

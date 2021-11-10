@@ -19,8 +19,15 @@ namespace algo {
   };
 
   struct DataProcessor {
-  	template <typename Input>
-  	static MarketData getNewMarketData (Input &&input);
+
+  	template <typename Number>
+  	static MarketData getNewMarketData (types::String ticker, Number number) {
+  		MarketData market_data;
+  		market_data.ticker = std::move(ticker);
+		market_data.quote.timestamp = timestamp::Timestamp();
+		market_data.quote.value = types::Value(number);
+		return market_data;
+  	}
   };
 
 

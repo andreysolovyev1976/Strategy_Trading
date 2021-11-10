@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.19)
 set (PROJECT_NAME "strategy_trading")
 
 project(${PROJECT_NAME}

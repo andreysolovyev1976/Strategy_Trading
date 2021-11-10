@@ -118,6 +118,7 @@ namespace relations {
 
   //todo: constinit instead of constexpr when moving to C++ 20 machine
   //  constinit
+  [[maybe_unused]]
   static
   RelationType RelationFromString (const types::String str) {
   	     if (str == relation_names[0]) return RelationType{relation_type::EQ{}};

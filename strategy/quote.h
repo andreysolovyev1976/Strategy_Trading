@@ -33,6 +33,7 @@ namespace algo {
 
   }//!namespace
 
+  //todo: divide it by Timestamp and Data
   struct Quote final : public types::ObjectType<quote_base::QuoteTypeBase> {
 	  //todo: divide in classes for Type and Object
 	  // make it templated for Value and int (plain vanilla int for Signal)

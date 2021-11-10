@@ -6,7 +6,7 @@
 
 namespace algo {
 
-  using namespace trade_base;
+  using namespace quote_base;
 
   Quote::Quote(timestamp::Timestamp timestamp, types::Value value)
   :timestamp(std::move(timestamp)), value(std::move(value)) { }

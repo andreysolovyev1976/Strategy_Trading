@@ -5,8 +5,8 @@
 #pragma once
 
 #include "exceptions.h"
+#include "strings.h"
 
-#include <string>
 #include <cstdint>
 #include <cmath>
 #include <iosfwd>
@@ -38,8 +38,16 @@ namespace types {
   template <typename Number>
   using IsFloating = std::enable_if_t<std::is_floating_point_v<std::decay_t<Number>>, bool>;
 
+  template <typename Number>
+  using IsNumber = std::enable_if_t<
+          std::disjunction_v<
+				  std::is_convertible<std::decay_t<Number>, BigInt>,
+				  std::is_floating_point<std::decay_t<Number>
+                  >
+          >, bool>;
+
   template <typename Str>
-  using StringConvertible = std::enable_if_t<std::is_convertible_v<std::decay_t<Str>, String>, bool>;
+  using StringConvertible = std::enable_if_t<std::is_convertible_v<std::decay_t<Str>, types::String>, bool>;
 
   class Value {
   public:
@@ -51,10 +59,9 @@ namespace types {
 	  explicit Value (BigInt &&i, BigInt &&d);
 	  explicit Value (const BigInt &i, const BigInt &d);
 
-	  template <typename Number, typename ShortUInt,
-			  IsFloating<Number> = true>
+	  template <typename Number, IsFloating<Number> = true>
 //			  IsFloating<Number> = true, IsShortUnsignedInteger<ShortUInt> = true>
-	  explicit Value (Number d, ShortUInt precision = 2, bool to_round = false)
+	  explicit Value (Number d, int precision = 2, bool to_round = false) //todo: this ctor doens't work
 			  : precision_ (precision)
 			  , is_integer (false)
 			  , is_rounded (to_round)

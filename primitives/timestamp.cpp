@@ -27,29 +27,33 @@ namespace algo {
 		return types::String(buff);
 	}
 
-	timestamp::Timestamp::Timestamp(types::String value)
-			:value(std::move(value)) { }
+	timestamp::Timestamp::Timestamp()
+			: value(makeDateTimeString(std::time(nullptr), true))
+	{}
+
 
 //  timestamp::Timestamp::Timestamp(const types::String& value)
 //		  :value(value) { }
 
 	bool operator==(const Timestamp& lhs, const Timestamp& rhs){
-		return lhs.value==rhs.value;
+		auto res = std::strcmp(lhs.value.c_str(), rhs.value.c_str());
+		return res == 0;
 	}
 	bool operator!=(const Timestamp& lhs, const Timestamp& rhs){
-		return !(rhs==lhs);
+		return not (rhs==lhs);
 	}
-	bool operator <(const Timestamp& lhs, const Timestamp& rhs){
-		return lhs.value<rhs.value;
+	bool operator < (const Timestamp& lhs, const Timestamp& rhs){
+		auto res = std::strcmp(lhs.value.c_str(), rhs.value.c_str());
+		return res < 0;
 	}
 	bool operator >(const Timestamp& lhs, const Timestamp& rhs){
-		return rhs<lhs;
+		return not (rhs < lhs);
 	}
 	bool operator<=(const Timestamp& lhs, const Timestamp& rhs){
-		return !(rhs<lhs);
+		return not (rhs > lhs);
 	}
 	bool operator>=(const Timestamp& lhs, const Timestamp& rhs) {
-		return !(lhs<rhs);
+		return not (lhs<rhs);
 	}
 
 	std::ostream& operator<<(std::ostream& os, const Timestamp& timestamp){

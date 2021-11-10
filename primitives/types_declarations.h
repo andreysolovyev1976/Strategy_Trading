@@ -7,22 +7,9 @@
 #include "value.h"
 #include "maps.h"
 
-#include <string>
-
 
 #ifndef STRATEGY_TRADING_TYPES_DECLARATIONS_H
 #define STRATEGY_TRADING_TYPES_DECLARATIONS_H
-
-namespace types {
-
-#ifdef _WIN32
-  using String = std::wstring;
-#else
-  using String = std::string;
-#endif
-
-
-}//!namespace
 
 
 namespace const_values {

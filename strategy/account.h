@@ -7,6 +7,7 @@
 #include "types_declarations.h"
 #include "object_type.h"
 
+
 #ifndef STRATEGY_TRADING_ACCOUNT_H
 #define STRATEGY_TRADING_ACCOUNT_H
 

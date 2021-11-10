@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.19)
 project(${PROJECT_NAME})
 
 
@@ -15,8 +15,9 @@ target_sources(${PROJECT_NAME} PRIVATE
         indicator.cpp
         portfolio.cpp
         position.cpp
+        quote.cpp
         rule.cpp
-        signal.cpp
+        signals.cpp
         strategy.cpp
         trade.cpp
         trading_contract.cpp

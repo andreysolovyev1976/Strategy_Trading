@@ -5,7 +5,7 @@
 #pragma once
 
 #include "data_processor.h"
-#include "signal.h"
+#include "signals.h"
 #include "position.h"
 #include "trade.h"
 
@@ -37,50 +37,56 @@ namespace algo {
 	>;
 
 	struct RuleType final : public types::ObjectType<rule_base::RuleTypeBase> {};
+
+	[[maybe_unused]]
+	static types::String RuleTypeToString (const RuleType &type );
+
+	[[maybe_unused]]
+	static RuleType StringToRuleType (const types::String& type);
+
   }//!namespace
 
 
   class Rule {
   public:
-  	Rule() = default;
+	  Rule() = default;
+	  //todo: implement ctor as a variadic template
+	  //todo: either to share related signals through special shared_ptr with no deleter
+	  // or to share entire Signals using simple ptr
+	  // same dilemma for Indicators
 	  Rule(
-	  		types::String label,
-	  		rule_base::RuleType type,
-	  		types::String signal_label,
-	  		int signal_value,
-	  		std::unique_ptr<Signals> signals,
-	  		PositionSide position_side,
-	  		trade_base::OrderQuantity order_quantity,
-	  		trade_base::OrderType order_type )
-			  : label_(std::move(label))
-			  , type_(std::move(type))
-			  , signal_label_(std::move(signal_label))
-			  , signal_value_(signal_value)
-			  , signals_(std::move(signals))
-			  , position_side_(std::move(position_side))
-			  , order_quantity_(std::move(order_quantity))
-			  , order_type_(std::move(order_type))
-			  { }
+			  const Ticker &ticker,
+			  types::String rule_label,
+			  types::String rule_type,
+			  types::String signal_label,
+			  int signal_value,
+			  Signal *signal,
+			  types::String position_side,
+			  trade_base::OrderQuantity order_quantity,
+			  types::String trade_type,
+			  types::String order_type,
+			  Signals* signals);
 
-	std::optional<Trade> ruleSignal (MarketData market_data) {
-	  	const auto &market_data_ = market_data;
-	  	signals_->updateSignals(market_data_);
-	  	if (ProcessSignal()) return Trade;
-	  }
+	  std::optional<Trade> ruleSignal (const MarketData &market_data);
 
   private:
-  	types::String label_;
-	rule_base::RuleType type_;
-	types::String signal_label_;
-	int signal_value_;
-	std::unique_ptr<Signals> signals_;
-	PositionSide position_side_;
-	trade_base::OrderQuantity order_quantity_;
-	trade_base::OrderType order_type_;
+	  ///rule
+	  Ticker ticker_;
+	  types::String label_;
+	  rule_base::RuleType rule_type_;
+	  ///signal
+	  types::String signal_label_;
+	  int signal_value_;
+	  Signal* signal_;
+	  ///result of applying the rule over signal
+	  PositionSide required_position_side_;
+	  trade_base::OrderQuantity order_quantity_;
+	  trade_base::TradeType trade_type_;
+	  trade_base::OrderType order_type_;
+	  [[maybe_unused]] Signals* signals_;
 
-	bool ProcessSignal () {
-		return true;
-	}
+
+	  std::optional<Trade> ProcessSignal ();
   };
 
 

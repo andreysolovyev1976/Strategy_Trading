@@ -6,9 +6,9 @@
 
 namespace algo {
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, Container input_value, ModifierFunc modifier)
+  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, Container input_value, const ModifierFunc &modifier)
 		  : ticker_(ticker)
-		  , label_(indicator_label)
+		  , label_(std::move(indicator_label))
 		  , modifier(modifier)
 		  , input_value_(std::move(input_value))
   {
@@ -16,21 +16,37 @@ namespace algo {
 	  this->ProcessIndicator();
   }
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, ModifierFunc modifier)
+  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, const ModifierFunc &modifier)
 		  : ticker_(ticker)
-		  , label_(indicator_label)
+		  , label_(std::move(indicator_label))
 		  , modifier(modifier)
   {
-	  input_value_.resize(size_);
 	  this->ProcessIndicator();
   }
 
-  void Indicator::updateIndicator (const MarketData &market_data) {
-	  if (market_data.quote.timestamp > input_value_.back().timestamp){
-		  input_value_.push_back(std::move(market_data.quote));
-	  }
+  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, Container input_value)
+		  : ticker_(ticker)
+		  , label_(std::move(indicator_label))
+		  , input_value_(std::move(input_value))
+  {
+	  size_ = input_value_.size();
 	  this->ProcessIndicator();
   }
+
+  Indicator::Indicator(const Ticker &ticker, types::String indicator_label)
+		  : ticker_(ticker)
+		  , label_(std::move(indicator_label))
+  {
+	  this->ProcessIndicator();
+  }
+
+
+  //todo: make a batch available, coming in a form of a vector
+  void Indicator::updateIndicator (const MarketData &market_data) {
+	  input_value_[market_data.quote.timestamp] = market_data.quote;
+	  this->ProcessIndicator();
+  }
+
   const Container& Indicator::getOutputValues() const {return output_value_;}
   const Container& Indicator::getInputValues() const {return input_value_;}
   const types::String& Indicator::getLabel () const {return label_;}
@@ -41,37 +57,50 @@ namespace algo {
 	  else return input_value_.empty() && output_value_.empty();
   }
 
-  size_t Indicator::Size() const {
-	  return size_;
-  }
+  size_t Indicator::Size() const {return size_;}
 
 
   void Indicator::ProcessIndicator () {
-	  if (modifier) output_value_ = modifier(input_value_);
-	  else output_value_ = std::move(input_value_);
+	  if (input_value_.empty()) return;
+	  auto first_to_use = input_value_.begin();
+	  if (not output_value_.empty()) {
+		  auto last_updated = prev(output_value_.end());
+		  //todo: check if next is ok here
+		  if (auto found = input_value_.find(last_updated->first); found != input_value_.end()) {
+			  first_to_use = found;
+		  }
+	  }
+	  if (modifier) {
+		  for (auto it = first_to_use, ite = input_value_.end(); it != ite; ++it) {
+			  output_value_[it->first] = modifier(it->second);
+		  }
+	  }
+	  else {
+		  for (auto it = first_to_use, ite = input_value_.end(); it != ite; ++it) {
+			  output_value_[it->first] = it->second;
+		  }
+	  }
   }
+
 
   std::ostream& operator<<(std::ostream& os, const Indicator &indicator) {
 	  os << "label: " << indicator.getLabel() << '\n';
 	  const auto &indicator_values = indicator.getOutputValues();
-	  for (const auto &value : indicator_values) {
-		  os << value << '\n';
+	  for (const auto &[tstamp, quote] : indicator_values) {
+		  os << tstamp << ": " << quote << '\n';
 	  }
 	  return os;
   }
 
-
-  const Indicators::ByLabel& Indicators::getIndicators () const {
-	  return by_label_;
-  }
+  const Indicators::ByLabel& Indicators::getIndicators () const {return by_label_;}
 
   const Indicator& Indicators::getIndicator (const types::String &label) const {
-	  if (auto found = by_label_.find(label); found != by_label_.end())
+	  if (auto found = by_label_.find(label); found == by_label_.end())
 		  throw std::invalid_argument(EXCEPTION_MSG("Unknown indicator label; "));
 	  else return *found->second;
   }
 
-  const Indicator& Indicators::updateIndicators (const MarketData &market_data) {
+  void Indicators::updateIndicators (const MarketData &market_data) {
 	  if (const auto [first, last] = by_ticker_.equal_range(market_data.ticker); first != by_ticker_.end()) {
 		  for (auto it = first, ite = last; it != ite; ++it) {
 			  it->second->updateIndicator(market_data);
@@ -80,12 +109,18 @@ namespace algo {
   }
 
   void Indicators::addIndicator (Indicator indicator) {
-	  by_label_[indicator.getLabel()] = std::make_shared<Indicator>(std::move(indicator));
+	  auto label = indicator.getLabel();
+	  auto new_indicator = std::make_unique<Indicator>(std::move(indicator));
+	  by_label_.insert({new_indicator->getLabel(), std::move(new_indicator)});
+	  IndPtr placed_indicator = shareIndicator(label);
+	  by_ticker_.insert({placed_indicator->getTicker(), placed_indicator});
   }
-  Indicators::Ind Indicators::shareIndicator (const types::String &label) {
-	  if (auto found = by_label_.find(label); found != by_label_.end())
+
+  Indicators::IndPtr Indicators::shareIndicator (const types::String &label) {
+	  if (auto found = by_label_.find(label); found == by_label_.end())
 		  throw std::invalid_argument(EXCEPTION_MSG("Unknown indicator label; "));
-	  else return std::shared_ptr<Indicator>(&*found->second, [](auto *){/* empty deleter */});
+	  else return &*found->second;
   }
+
 
 }//!namespace

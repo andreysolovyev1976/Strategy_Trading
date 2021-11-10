@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.19)
 set (PROJECT_NAME_TEST ${PROJECT_NAME}_tests)
 project(${PROJECT_NAME_TEST}
         VERSION 0.1

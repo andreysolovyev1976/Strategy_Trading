@@ -67,8 +67,8 @@ namespace algo {
 	  //todo: implement visitor
 	  const auto type_ = signal_->getSignalType();
 	  if (type_.TryAs<signal_base::signal_type::Comparison>()) {
-		  if (not value.empty() &&
-				  std::prev(value.end())->second == signal_value_){
+		  if (not value->Empty() &&
+				  std::prev(value->End())->second == signal_value_){
 			  Trade trade (ticker_,
 					  order_quantity_,
 					  required_position_side_,

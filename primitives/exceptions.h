@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "strings.h"
 #include <stdexcept>
 
 #ifndef CPP_TEZOS_CLIENT_EXCEPTIONS_H

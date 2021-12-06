@@ -8,8 +8,8 @@ namespace algo {
 
   using namespace quote_base;
 
-  Quote::Quote(timestamp::Timestamp timestamp, types::Value value)
-  :timestamp(std::move(timestamp)), value(std::move(value)) { }
+  Quote::Quote(types::Value value) :value(std::move(value))
+  {}
 
   bool operator==(const Quote& lhs, const Quote& rhs){
   	if (lhs.timestamp != rhs.timestamp) return false;

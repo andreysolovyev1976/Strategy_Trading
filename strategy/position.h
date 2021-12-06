@@ -31,13 +31,11 @@ namespace algo {
 
   struct PositionSide final : public types::ObjectType<position_base::PositionSideBase> {};
 
+  [[maybe_unused]]
+  static types::String PositionSideToString (const PositionSide &type);
 
   [[maybe_unused]]
-  static types::String PositionSideToString (const PositionSide &type );
-
-  [[maybe_unused]]
-  static PositionSide StringToPositionSide (const types::String& type);
-
+  PositionSide StringToPositionSide (const types::String& type);
 
   struct Position final {
 	  Ticker ticker;

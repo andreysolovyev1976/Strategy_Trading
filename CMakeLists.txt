@@ -24,10 +24,14 @@ ENDIF()
 
 
 # BOOST STARTS HERE-------------------
-find_package (Boost 1.73 REQUIRED filesystem)
+find_package (Boost REQUIRED filesystem)
 if(Boost_FOUND)
     message(STATUS "MAIN: FOUND Boost, including and linking...")
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_MULTITHREAD ON)
     include_directories(${BOOST_ROOT})
+    link_directories(${BOOST_ROOT}/libs) # add this before add_executable()
+
 else()
     message(STATUS "MAIN: NOT FOUND Boost")
 endif()
@@ -54,20 +58,64 @@ else()
 endif()
 # FMT FRAMEWORK ENDS HERE-------------------
 
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(primitives)
 include_directories(strategy)
+include_directories(json)
+include_directories(third_part/date_time/include)
+include_directories(third_part/cds)
 
-add_executable(${PROJECT_NAME}
-        main.cpp
-        )
-add_subdirectory(primitives)
-add_subdirectory(strategy)
+#either PROD or EXPERIMENTS
+SET(BUILD_BRANCH "PROD")
 
-target_link_libraries(${PROJECT_NAME}
-        fmt::fmt
-        ${Boost_LIBRARIES}
-        )
+if(${BUILD_BRANCH} STREQUAL PROD)
 
-enable_testing()
-add_subdirectory(tests)
+    message(STATUS "Build Branch - selected PROD")
+
+    add_executable(${PROJECT_NAME}
+            main.cpp
+            )
+    add_subdirectory(primitives)
+    add_subdirectory(strategy)
+    add_subdirectory(json)
+
+    target_link_libraries(${PROJECT_NAME}
+            /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
+            /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
+            fmt::fmt
+            ${Boost_LIBRARIES}
+            )
+
+    enable_testing()
+    add_subdirectory(tests)
+
+elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
+
+    message(STATUS "Build Branch - selected EXPERIMENTS")
+
+    find_package (CURL REQUIRED)
+    include_directories(${CURL_INCLUDE_DIRS})
+    message(STATUS "CURL INCLUDE DIRS ${CURL_INCLUDE_DIRS}")
+
+
+    include_directories(/Users/elenasolovyeva/Documents/Cpp/Projects/curl_client/lib)
+    include_directories (third_part/signalR/include)
+
+    add_executable(${PROJECT_NAME}_tryouts tryouts.cpp)
+    add_subdirectory(third_part/signalR)
+    add_subdirectory(json)
+    #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
+    target_link_libraries(${PROJECT_NAME}_tryouts
+            /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
+            /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
+            ${CURL_LIBRARY}
+            ${Boost_LIBRARIES}
+
+            /Users/elenasolovyeva/Documents/Cpp/Projects/curl_client/cmake-build-debug/lib/libcurl_client.a
+
+            )
+
+else()
+    message(STATUS "Error of selecting a Build Branch - see CMakeLists.txt for the details")
+endif()

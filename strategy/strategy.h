@@ -32,12 +32,12 @@ namespace algo {
 			  , account_(account)
 	  {}
 
-	  void addIndicator(Ticker ticker, types::String indicator_label, Container input_value, ModifierFunc modifier) {
-		  Indicator indicator (ticker, indicator_label, input_value, modifier);
+	  void addIndicator(Ticker ticker, types::String indicator_label, MarketDataContainer input_value, ModifierFunc modifier) {
+		  Indicator indicator (ticker, indicator_label, std::move(input_value), modifier);
 		  indicators_.addIndicator(std::move(indicator));
 	  }
-	  void addIndicator(Ticker ticker, types::String indicator_label, Container input_value) {
-		  Indicator indicator (ticker, indicator_label, input_value);
+	  void addIndicator(Ticker ticker, types::String indicator_label, MarketDataContainer input_value) {
+		  Indicator indicator (ticker, indicator_label, std::move(input_value));
 		  indicators_.addIndicator(std::move(indicator));
 	  }
 	  void addIndicator(Ticker ticker, types::String indicator_label, ModifierFunc modifier) {
@@ -89,17 +89,22 @@ namespace algo {
 	  types::String getRules() const;
 	  bool isInitialized() const {return not rules_.empty();}
 
-	  std::optional<Trade> ruleSignal (const MarketData &market_data) {
+	  std::optional<Trade> ruleSignal (const MarketDataBatch &market_data_batch) {
 		  std::vector<Trade> trades;
 
-		  for (auto &rule : rules_){
-			  auto trade = rule.ruleSignal(market_data);
-			  if (trade.has_value()) {
-				  trades.push_back(std::move(trade.value()));
+		  //todo: !!!!! organize it by tickers, therefor reducing from O(N*M) to O(logN * logM)
+		  for (const auto &market_data : market_data_batch) {
+			  for (auto& rule : rules_) {
+				  auto trade = rule.ruleSignal(market_data);
+				  if (trade.has_value()) {
+					  trades.push_back(std::move(trade.value()));
+				  }
 			  }
 		  }
-		  //todo: plugin implementation, priority of trades is required
-		  if (not trades.empty()) return *begin(trades);
+		  //todo: plugin implementation, priority of trades is required - select tickers!!!
+		  if (not trades.empty()){
+		  	return *begin(trades);
+		  }
 		  else return std::nullopt;
 	  }
 

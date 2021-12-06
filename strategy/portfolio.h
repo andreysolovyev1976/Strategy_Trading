@@ -21,8 +21,8 @@ namespace algo {
 
   	const Position& getPosition();
 
-  	types::SingleThreadedMap<Ticker, TradingContract> contracts;
-  	types::SingleThreadedMap<Ticker, Strategy> strategies;
+  	types::SingleThreadedLimitedSizeMap<Ticker, TradingContract> contracts;
+  	types::SingleThreadedLimitedSizeMap<Ticker, Strategy> strategies;
   };
 
 }//!namespace

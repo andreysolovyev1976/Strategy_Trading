@@ -1,17 +1,16 @@
 //
-// Created by Andrey Solovyev on 04/11/2021.
+// Created by Andrey Solovyev on 01/12/2021.
 //
 
-#include <gtest/gtest.h>
-#include "trade.h"
-#include <iostream>
 
-TEST(Trade, Primitives) {
+#include <gtest/gtest.h>
+#include <iostream>
+#include "timestamp.h"
+#include "maps.h"
+
+TEST(ValueContainer, Primitives) {
 
 	using namespace algo::timestamp;
-	using namespace algo::trade_base;
-	using namespace algo::trade_base::trade_type;
-	using namespace algo::trade_base::order_type;
 	using namespace std::literals;
 
 	/*

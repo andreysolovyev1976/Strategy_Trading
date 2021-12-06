@@ -83,14 +83,14 @@ namespace algo {
 	[[maybe_unused]]
 	static SignalValue StringToSignalValue (const types::String& type);
 
-	using SignalData = types::SingleThreadedMap<timestamp::Timestamp, int>;
+	using SignalData = types::SingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>;
 
   }//!namespace
 
 
   class Signal final {
   public:
-	  Signal() = default;
+	  Signal();
 
 	  Signal(
 			  const Ticker &ticker,
@@ -132,9 +132,10 @@ namespace algo {
 	  using SigOwner = std::unique_ptr<Signal>;
 	  using SigPtr = Signal*;
 	  //todo: add thread safe map
-	  using ByLabel = types::SingleThreadedMap<std::string_view, SigOwner>;
-	  using ByTicker = types::MultiMap<std::string_view, SigPtr>;
+	  using ByLabel = types::SingleThreadedLimitedSizeMap<std::string_view, SigOwner>;
+	  using ByTicker = types::SingleThreadedMultiMap<std::string_view, SigPtr>;
   public:
+	  Signals();
 	  [[nodiscard]] const ByLabel& getSignals () const;
 	  [[nodiscard]] const Signal& getSignal (const types::String &label) const;
 	  void updateSignals (const MarketData &market_data);

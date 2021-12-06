@@ -48,6 +48,9 @@ namespace algo {
 
   }//!namespace
 
+  Signal::Signal()
+  : signal_ (types::makeSingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>())
+  {}
 
   Signal::Signal(
 		  const Ticker &ticker,
@@ -63,6 +66,7 @@ namespace algo {
 		  , relation_(relations::RelationFromString(std::move(relation)))
 		  , indicator_labels_(std::move(indicator_labels))
 		  , indicators_(indicators)
+		  , signal_ (types::makeSingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>())
   {}
 
   const signal_base::SignalData& Signal::getSignalData () {
@@ -84,22 +88,22 @@ namespace algo {
 	  const auto &ind1 = indicators_->getIndicator(indicator_labels_[0]).getOutputValues();
 	  const auto &ind2 = indicators_->getIndicator(indicator_labels_[1]).getOutputValues();
 
-	  for (const auto &[tstamp1, quote1] : ind1) {
-		  if (auto found_at_second = ind2.find(tstamp1); found_at_second != ind2.end()) {
+	  for (const auto &[tstamp1, quote1] : (*ind1)) {
+		  if (auto found_at_second = ind2->Find(tstamp1); found_at_second != ind2->End()) {
 			  const auto &[tstamp2, quote2] = *found_at_second;
 			  bool rel = relations::RelationImpl(quote1, quote2, relation_);
 
-			  if (auto found_at_signal = signal_.find(tstamp1); found_at_signal == signal_.end()){
-				  if (found_at_signal != signal_.begin()) {
+			  if (auto found_at_signal = signal_->Find(tstamp1); found_at_signal == signal_->end()){
+				  if (found_at_signal != signal_->begin()) {
 					  auto &prev_singal_value = prev(found_at_signal)->second;
 					  //todo: IMPORTANT!!! this doesn't work
-					  if (not rel && prev_singal_value != -1) signal_[tstamp1] = -1;
-					  else if (rel && prev_singal_value != 1) signal_[tstamp1] = 1;
-					  else signal_[tstamp1] = 0;
+					  if (not rel && prev_singal_value != -1) (*signal_).Insert({tstamp1, -1});
+					  else if (rel && prev_singal_value != 1) (*signal_).Insert({tstamp1, 1});
+					  else (*signal_).Insert({tstamp1, 0});
 				  }
 				  else {
-					  if (not rel) signal_[tstamp1] = -1;
-					  else signal_[tstamp1] = 1;
+					  if (not rel) (*signal_).Insert({tstamp1, -1});
+					  else (*signal_).Insert({tstamp1, 1});
 				  }
 			  } else {
 				  //todo: this must be addressed
@@ -109,22 +113,28 @@ namespace algo {
 		  }
 		  else {
 			  //todo: update indicators when there is no data
-			  signal_[tstamp1] = INT32_MIN;
+			  (*signal_).Insert({tstamp1, INT32_MIN});
 		  }
 	  }
   }
 
+  Signals::Signals()
+		  : by_label_(types::makeSingleThreadedLimitedSizeMap<std::string_view, SigOwner>())
+		  , by_ticker_(types::makeSingleThreadedMultiMap<std::string_view, SigPtr>())
+  {}
+
+
   const Signals::ByLabel& Signals::getSignals () const {return by_label_;}
 
   const Signal& Signals::getSignal (const types::String &label) const {
-	  if (auto found = by_label_.find(label); found == by_label_.end()){
+	  if (auto found = by_label_->Find(label); found == by_label_->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Unknown signal label; "));
 	  }
 	  else return *found->second;
   }
 
   void Signals::updateSignals (const MarketData &market_data) {
-	  if (const auto [first, last] = by_ticker_.equal_range(market_data.ticker); first != by_ticker_.end()) {
+	  if (const auto [first, last] = by_ticker_->equal_range(market_data.ticker); first != by_ticker_->end()) {
 		  for (auto it = first, ite = last; it != ite; ++it) {
 			  it->second->updateSignal(market_data);
 		  }
@@ -134,34 +144,34 @@ namespace algo {
   void Signals::addSignal (Signal signal) {
 	  const auto label = signal.getLabel();
 
-	  if (auto found = by_label_.find(label); found != by_label_.end()){
+	  if (auto found = by_label_->Find(label); found != by_label_->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal already exists; "));
 	  }
 	  auto new_signal = std::make_unique<Signal>(std::move(signal));
-	  by_label_.insert({new_signal->getLabel(), std::move(new_signal)});
+	  by_label_->Insert({new_signal->getLabel(), std::move(new_signal)});
 
 	  SigPtr shared = shareSignal(label);
-	  by_ticker_.insert({shared->getTicker(), shared});
+	  by_ticker_->insert({shared->getTicker(), shared});
   }
 
   void Signals::removeSignal (const types::String &label) {
-	  auto found = by_label_.find(label);
-	  if (found == by_label_.end()){
+	  auto found = by_label_->Find(label);
+	  if (found == by_label_->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal is not found; "));
 	  }
 
 	  //todo: very much dangerous - test this specific increment
-	  if (const auto [first, last] = by_ticker_.equal_range(found->second->getTicker()); first != by_ticker_.end()) {
+	  if (const auto [first, last] = by_ticker_->equal_range(found->second->getTicker()); first != by_ticker_->end()) {
 		  for (auto it = first, ite = last; it != ite;) {
-			  if (it->second->getLabel() == label) by_ticker_.erase(it);
+			  if (it->second->getLabel() == label) by_ticker_->erase(it);
 			  else ++it;
 		  }
 	  }
-	  by_label_.erase(label);
+	  by_label_->Erase(label);
   }
 
   Signals::SigPtr Signals::shareSignal (const types::String &label) {
-	  if (auto found = by_label_.find(label); found == by_label_.end())
+	  if (auto found = by_label_->Find(label); found == by_label_->end())
 		  throw std::invalid_argument(EXCEPTION_MSG("Unknown signal label; "));
 	  else return &*found->second;
   }

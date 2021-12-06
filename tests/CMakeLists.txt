@@ -27,13 +27,16 @@ endif (APPLE)
 
 add_executable(${PROJECT_NAME_TEST}
         tests_all.cpp
+        tests_coinbase_api.cpp
         tests_data_processor.cpp
         tests_signal.cpp
         tests_trade.cpp
         tests_rule.cpp
         tests_portfolio.cpp
         tests_value.cpp
-        tests_indicator.cpp)
+        tests_value_container.cpp
+        tests_indicator.cpp
+        )
 add_subdirectory(../primitives ${CMAKE_CURRENT_BINARY_DIR}_primitives)
 add_subdirectory(../strategy ${CMAKE_CURRENT_BINARY_DIR}_strategy)
 

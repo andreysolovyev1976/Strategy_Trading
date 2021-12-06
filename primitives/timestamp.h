@@ -6,7 +6,10 @@
 
 #include "types_declarations.h"
 #include <ctime>
+#include <chrono>
+#include <cstdint>
 #include <iosfwd>
+#include "date/date.h"
 
 #ifndef STRATEGY_TRADING_TIMESTAMP_H
 #define STRATEGY_TRADING_TIMESTAMP_H
@@ -14,36 +17,68 @@
 namespace algo {
   namespace timestamp {
 
-  	types::String makeDateTimeString(time_t t, bool isUTC);
+	using Clock = std::chrono::system_clock;
+	using Ms = std::chrono::milliseconds;
+	using Sec = std::chrono::seconds;
 
-  	inline types::String makeLocalDateTimeString(time_t t) {
-  		return makeDateTimeString(t, false);
-  	}
+	template<class Duration>
+	using TimePoint = std::chrono::time_point<Clock, Duration>;
 
-  	inline types::String makeUTCDateTimeString(time_t t) {
-  		return makeDateTimeString(t, true);
-  	}
+	template<class Duration>
+	struct Timestamp {
+		Timestamp() : time_point(std::chrono::floor<Duration>(Clock::now()))
+		{}
 
-  	//todo: EXCHANGE IT WITH C++20 FEATURE
-  	struct Timestamp {
-  		// add operator < and operator ==
+		TimePoint<Duration> time_point;
+		types::String toString () const {
+			types::String output;
+			output.reserve(24);
+			output += date::format("%F", time_point);
+			output += ' ';
+			output += date::format("%T", time_point);
+			return output;
+		}
+	};
 
-  		Timestamp();
-		types::String value;
-  	};
+	template <typename Duration>
+	struct TimestampHasher {
+		size_t operator () (const Timestamp<Duration>& t) const {
+			return t.time_point.time_since_epoch().count();
+		}
+	};
 
-  	bool operator <(const Timestamp& lhs, const Timestamp& rhs);
-  	bool operator >(const Timestamp& lhs, const Timestamp& rhs);
-  	bool operator<=(const Timestamp& lhs, const Timestamp& rhs);
-  	bool operator>=(const Timestamp& lhs, const Timestamp& rhs);
-  	bool operator==(const Timestamp& lhs, const Timestamp& rhs);
-  	bool operator!=(const Timestamp& lhs, const Timestamp& rhs);
-  	std::ostream& operator<<(std::ostream& os, const Timestamp& timestamp);
+	template<class Duration>
+	bool operator==(const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs) {
+		return lhs.time_point == rhs.time_point;
+	}
+	template<class Duration>
+	bool operator!=(const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs){
+		return not (rhs==lhs);
+	}
+	template<class Duration>
+	bool operator < (const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs){
+		return lhs.time_point < rhs.time_point;
+	}
+	template<class Duration>
+	bool operator >(const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs){
+		return not (rhs < lhs);
+	}
+	template<class Duration>
+	bool operator<=(const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs){
+		return not (rhs > lhs);
+	}
+	template<class Duration>
+	bool operator>=(const Timestamp<Duration>& lhs, const Timestamp<Duration>& rhs) {
+		return not (lhs<rhs);
+	}
+
+	template<class Duration>
+	std::ostream& operator<<(std::ostream& os, const Timestamp<Duration>& timestamp){
+		os << timestamp.toString();
+		return os;
+	}
 
   }//!namespace
 }//!namespace
-
-
-
 
 #endif //STRATEGY_TRADING_TIMESTAMP_H

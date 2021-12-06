@@ -16,19 +16,25 @@ using namespace std::chrono_literals;
 using namespace boost;
 
 algo::Quote modifier (const algo::Quote& quote){
-	Quote modified;
-	modified.timestamp = quote.timestamp;
+	Quote modified = quote;
 	modified.value = quote.value - types::Value(10);
 	return modified;
 }
 
 int main() {
-	//todo: finalize operators for Value
+
+	//todo: Check The Rules - add tickers
+	//todo: check Indicator and Signal updates
+	//todo: Add ThreadSafe maps
+	//todo: Add Map size limit
+
+
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
 
 //	std::cout << "Work in progress...\n";
 
 	const std::array<string, 4> tickers {"A1"s, "B2"s, "C3"s, "D4"s};
+	DataProcessor data_processor;
 
 	Strategy strategy ("A1"s, "simple_demo", nullptr);
 
@@ -45,7 +51,7 @@ int main() {
 			"basic_comparison", //label
 			"Comparison",		//type of a Signal
 			"GT",				//relation between the indicators
-			{"base_contract", "other_contract"} //indicators to compare
+			{"base_contract", "modified_contract"} //indicators to compare
 	);
 
 	///actions, based on relations
@@ -54,7 +60,7 @@ int main() {
 			"Entry",						//type of a Rule
 			"basic_comparison",				//signal label
 			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			"Neutral", 						//Position to enter txn //todo: convert from a String
+			"Neutral", 						//Position to enter txn
 			types::Value(1),
 			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
 			"Market"						//how to behave in the market Market/Limited/FillOrKill
@@ -62,20 +68,28 @@ int main() {
 
 	for (int i = 0; i != 10; ++i) {
 
-		auto new_ticker = tickers[prm(0, 3)];
-		auto new_raw_figure = prm(12.5, 22.5);
-
-		auto new_market_data = DataProcessor::getNewMarketData(new_ticker, new_raw_figure);
-		cout << new_market_data.quote.timestamp << ": " << new_market_data.ticker << " " << setw(11) << setprecision(10)
-			 << new_raw_figure << "; ";
-		auto trade = strategy.ruleSignal(new_market_data);
-
-		if (trade.has_value()) {
-			cout << trade.value().getTicker() << " quantity to trade: " << trade.value().getQuantity() << '\n';
+		for (int j = 0; j < 4; ++j) {
+			auto new_ticker = tickers[prm(0, 3)];
+			auto new_raw_figure = prm(12.5, 22.5);
+			data_processor.addNewMarketData(new_ticker, new_raw_figure);
 		}
-		else {
-			cout << "no signal for a trade\n";
+
+		auto new_market_data = data_processor.getNewMarketData();
+		for (const auto &market_data : new_market_data) {
+			cout
+			<< market_data.quote.timestamp << ": "
+			<< market_data.ticker << " " << market_data.quote.value << "; ";
+			auto trade = strategy.ruleSignal(new_market_data);
+
+			if (trade.has_value()) {
+				cout << trade.value().getTicker() << " quantity to trade: " << trade.value().getQuantity() << '\n';
+			}
+			else {
+				cout << "no signal for a trade\n";
+			}
 		}
+		std::this_thread::sleep_for(1ms);
+		cout << "==========\n";
 	}
 	return 0;
 }

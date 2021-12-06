@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "signal.h"
+#include "signals.h"
 #include <iostream>
 
 TEST(Signal, Primitives) {

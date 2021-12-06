@@ -5,9 +5,10 @@
 #pragma once
 
 #include "types_declarations.h"
+#include "maps.h"
 #include "data_processor.h"
 #include "quote.h"
-#include <boost/circular_buffer.hpp>
+
 
 #include <memory>
 #include <string_view>
@@ -19,24 +20,25 @@
 
 namespace algo {
 
-  //todo: make it pointer to timestamp, no copy
-  using Container = types::SingleThreadedMap<timestamp::Timestamp, Quote>;
+  //todo: make it pointer to timestamp, no copy - check Indicator file
+  using K = timestamp::Timestamp<timestamp::Ms>;
+  using V = Quote;
+  using MarketDataContainer = types::SingleThreadedLimitedSizeMap<K, V>;
   using ModifierFunc = std::function<Quote(const Quote&)>;
 
   class Indicator final {
   public:
 	  Indicator() = default;
 
-	  Indicator(const Ticker &ticker, types::String indicator_label, Container input_value, const ModifierFunc &modifier);
+	  Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value, const ModifierFunc &modifier);
 	  Indicator(const Ticker &ticker, types::String indicator_label, const ModifierFunc &modifier);
-	  Indicator(const Ticker &ticker, types::String indicator_label, Container input_value);
+	  Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value);
 	  Indicator(const Ticker &ticker, types::String indicator_label);
 
-	  //todo: make a batch available, coming in a form of a vector
 	  void updateIndicator (const MarketData &market_data);
 
-	  [[nodiscard]] const Container& getOutputValues() const;
-	  [[nodiscard]] const Container& getInputValues() const;
+	  [[nodiscard]] const MarketDataContainer& getOutputValues() const;
+	  [[nodiscard]] const MarketDataContainer& getInputValues() const;
 	  [[nodiscard]] const types::String& getLabel () const;
 	  const Ticker& getTicker() const;
 
@@ -47,7 +49,7 @@ namespace algo {
 	  Ticker ticker_;
 	  types::String label_;
 	  ModifierFunc modifier;
-	  Container input_value_, output_value_;
+	  MarketDataContainer input_value_, output_value_;
 	  size_t size_ = const_values::DEFAULT_INDICATOR_SIZE;
 
 	  void ProcessIndicator ();
@@ -60,9 +62,10 @@ namespace algo {
   class Indicators {
 	  using IndOwner = std::unique_ptr<Indicator>;
 	  using IndPtr = Indicator*;
-	  using ByLabel = types::SingleThreadedMap<std::string_view, IndOwner>;
-	  using ByTicker = types::MultiMap<Ticker, IndPtr>;
+	  using ByLabel = types::SingleThreadedLimitedSizeMap<std::string_view, IndOwner>;
+	  using ByTicker = types::SingleThreadedMultiMap<Ticker, IndPtr>;
   public:
+  	Indicators();
 	  [[nodiscard]] const ByLabel& getIndicators () const;
 
 	  [[nodiscard]] const Indicator& getIndicator (const types::String &label) const;

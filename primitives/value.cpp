@@ -4,52 +4,84 @@
 
 #include "value.h"
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 namespace types {
-  Value::Value (BigInt &&i, BigInt &&d)
-		  : integer(i)
-		  , decimal(d)
-		  , is_initialized (true)
-		  , is_integer (false)
-		  , is_rounded (false)
-  {}
-  Value::Value (const BigInt &i, const BigInt &d)
-		  : integer(i)
-		  , decimal(d)
-		  , is_initialized (true)
-		  , is_integer (false)
-		  , is_rounded (false)
-  {}
+
+#define JSON_NODE_EXCEPTION_THROW \
+  std::stringstream ostr; \
+  Json::Document document (node); \
+  Json::Print(document, ostr); \
+  throw std::invalid_argument(EXCEPTION_MSG("Unable to process Json Node: " \
+		  + ostr.str() \
+		  + "\n"));
+
+#define JSON_NODE_EXCEPTION_THROW_TEMP \
+  throw std::invalid_argument(EXCEPTION_MSG("Unable to process Json Node: "));
+
+
+  Value::Value (const String& s, int p) :number(s), precision(p) {}
+
+  Value::Value (const Json::Node& node, int p) : precision (p) {
+	  if (node.IsDict()) {
+		  const auto& pair = node.AsDict();
+		  if (pair.size() != 1) {
+			  JSON_NODE_EXCEPTION_THROW_TEMP
+		  }
+		  const auto& input_json_number = pair.begin()->second;
+		  if (input_json_number.IsInt()) {
+			  number.assign(input_json_number.AsInt());
+			  precision = 0;
+		  }
+		  else if (input_json_number.IsPureDouble()) {
+			  number.assign(input_json_number.AsDouble());
+		  }
+		  else if (input_json_number.IsString()) {
+			  number.assign(input_json_number.AsString());
+		  }
+		  else {
+			  JSON_NODE_EXCEPTION_THROW_TEMP
+		  }
+	  }
+	  else if (node.IsInt()) {
+		  number.assign(node.AsInt());
+		  precision = 0;
+	  }
+	  else if (node.IsPureDouble()) {
+		  number.assign(node.AsDouble());
+	  }
+	  else if (node.IsString()) {
+		  number.assign(node.AsString());
+	  }
+	  else {
+		  JSON_NODE_EXCEPTION_THROW_TEMP
+	  }
+
+  }
 
   String Value::ToString () const {
 	  String output;
 	  output.reserve(24);
-	  if (Int() < 0) output += '-';
+	  if (not IsPositive()) output += '-';
 #ifdef _WIN32
 	  throw std::invalid_argument(EXCEPTION_MSG("Should Fix conversion to WSTRING"));
-  	output += boost::lexical_cast<std::wstring>(integer.str());
+	  output += boost::lexical_cast<std::wstring>(number_.str());
 #else
-	  output += integer.str();
+	  output += number.str();
 #endif
-	  if (IsDouble()) {
-		  output += '.';
-#ifdef _WIN32
-		  throw std::invalid_argument(EXCEPTION_MSG("Should Fix conversion to WSTRING"));
-  		output += boost::lexical_cast<std::wstring>(decimal.str());
-#else
-		  output += decimal.str();
-#endif
-	  }
 	  return output;
   }
 
+  constexpr bool Value::IsPositive() const {
+	  return number >= 0.0;
+  }
+
   bool operator == (const Value& lhs, const Value& rhs) {
-	  return lhs.Int() == rhs.Int() &&
-			  lhs.Decimal() == rhs.Decimal();
+	  return lhs.number == rhs.number;
   }
   bool operator < (const Value& lhs, const Value& rhs) {
-	  if (lhs.Int() == rhs.Int()) return lhs.Decimal() < rhs.Decimal();
-	  else return lhs.Int() < rhs.Int();
+	  return lhs.number < rhs.number;
   }
   bool operator != (const Value& lhs, const Value& rhs) {
 	  return not (lhs == rhs);
@@ -65,117 +97,52 @@ namespace types {
   }
 
   Value operator + (const Value &lhs, const Value &rhs) {
-	  if (
-			  ((lhs.IsPositive() && rhs.IsPositive()) && (lhs.Int() > BIGINT_MAX - rhs.Int() -2)) ||
-					  ((not lhs.IsPositive() && not rhs.IsPositive()) && (lhs.Int() < BIGINT_MIN - rhs.Int() + 2))
-			  )
-		  throw OverflowError(EXCEPTION_MSG("Overflow while adding " + lhs.ToString() + " " + rhs.ToString() + "; " ));
-
-	  ///int case
-	  BigInt i = lhs.Int() + rhs.Int();
-	  if (lhs.IsInteger() && rhs.IsInteger()) return Value(i);
-
-	  ///decimals
-	  BigInt d(0);
-	  if (
-			  ((lhs.IsPositive() && rhs.IsPositive()) && (lhs.Decimal() > BIGINT_MAX - rhs.Decimal())) ||
-					  ((not lhs.IsPositive() && not rhs.IsPositive()) && (lhs.Decimal() < BIGINT_MIN - rhs.Decimal()))
-			  )
-	  {
-		  d.assign(lhs.Decimal()/10 + rhs.Decimal()/10);
-	  }
-	  else {
-		  d.assign(lhs.Decimal() + rhs.Decimal());
-	  }
-
-	  return Value(std::move(i), std::move(d));
+	  Float new_number_ = lhs.number + rhs.number;
+	  auto precision_ = std::max(lhs.precision, rhs.precision);
+	  return Value(new_number_, precision_);
   }
   Value operator - (const Value &lhs, const Value &rhs) {
-	  if (
-			  ((lhs.IsPositive() && not rhs.IsPositive()) && (lhs.Int() > BIGINT_MAX - rhs.Int() - 2)) ||
-					  ((not lhs.IsPositive() && rhs.IsPositive()) && (lhs.Int() < BIGINT_MIN - rhs.Int() + 2))
-			  )
-		  throw OverflowError(EXCEPTION_MSG("Overflow while subtracting " + lhs.ToString() + " " + rhs.ToString() + "; " ));
-
-	  ///int case
-	  BigInt i = lhs.Int() - rhs.Int();
-	  if (lhs.IsInteger() && rhs.IsInteger()) return Value(i);
-
-	  ///decimals
-	  BigInt d(0);
-	  if (
-			  ((lhs.IsPositive() && not rhs.IsPositive()) && (lhs.Decimal() > BIGINT_MAX - rhs.Decimal())) ||
-					  ((not lhs.IsPositive() && rhs.IsPositive()) && (lhs.Decimal() < BIGINT_MIN - rhs.Decimal()))
-			  )
-	  {
-		  d.assign(lhs.Decimal()/10 - rhs.Decimal()/10);
-	  }
-	  else {
-		  d.assign(lhs.Decimal() + rhs.Decimal());
-	  }
-
-	  return Value(std::move(i), std::move(d));
+	  Float new_number_ = lhs.number - rhs.number;
+	  auto precision_ = std::max(lhs.precision, rhs.precision);
+	  return Value(new_number_, precision_);
   }
   Value operator * (const Value &lhs, const Value &rhs) {
-	  // (a + b) * (c + d) = a*c + a*d + b*c + b*d
-
-	  //  	if ( abs(lhs.Int()) > BIGINT_MAX / abs(rhs.Int()) ) //Int parts overflow
-	  //  		throw OverflowError(EXCEPTION_MSG("Overflow while multiplying " + lhs.ToString() + " " + rhs.ToString() + "; " ));
-	  //  	BigInt a_c = lhs.Int() * rhs.Int();
-	  //
-	  //  	BigInt a_d = (lhs.Int() / BigInt(std::pow(10, rhs.Precision())) )  * rhs.Decimal(); //rhs.Decimal() can't have more than rhs.Precision() difits
-	  //  	BigInt b_c = (rhs.Int() / BigInt(std::pow(10, lhs.Precision())) )  * lhs.Decimal(); //rhs.Decimal() can't have more than rhs.Precision() difits
-	  //
-	  //  	int final_precision = lhs.Precision() * rhs.Precision();
-	  //
-	  //  	BigInt b_d1 = lhs.Decimal() / BigInt(std::pow(10, rhs.Precision()))
-	  //
-	  //  	BigInt b_d =  * rhs.Decimal() / BigInt(std::pow(10, lhs.Precision()))
-	  //  	///int case
-	  //  	if (lhs.IsInteger() && rhs.IsInteger()) return Value(lhs.Int() * rhs.Int());
-	  //
-	  //  	///decimals
-	  //
-	  //  	BigInt result =
-	  //  			lhs.Int() * rhs.Int() +
-	  //  			 +
-	  //  			 +
-	  //  			lhs.Decimal() * BigInt(std::pow(10, rhs.Precision())) *
-	  //  			;
-
-	  return Value (lhs.Int(), rhs.Decimal());
+	  Float new_number_ = lhs.number * rhs.number;
+	  auto precision_ = std::max(lhs.precision, rhs.precision);
+	  return Value(new_number_, precision_);
   }
 
-  std::ostream &operator << (std::ostream &os, const Value& r) {
-	  if (not r.IsPositive()) os << '-';
-	  os << r.Int();
-	  if (r.IsDouble()) {
-		  os << '.';
-		  os << r.Decimal();
-	  }
-	  return os;
-  }
-
-  /*
   Value operator / (const Value &lhs, const Value &rhs) {
-
+	  Float new_number_ = lhs.number / rhs.number;
+	  auto precision_ = std::max(lhs.precision, rhs.precision);
+	  return Value(new_number_, precision_);
   }
 
   Value &operator += (Value &lhs, const Value &rhs) {
-
+	  lhs.number += rhs.number;
+	  return lhs;
   }
   Value &operator -= (Value &lhs, const Value &rhs) {
-
+	  lhs.number -= rhs.number;
+	  return lhs;
   }
   Value &operator *= (Value &lhs, const Value &rhs) {
-
+	  lhs.number *= rhs.number;
+	  return lhs;
   }
   Value &operator /= (Value &lhs, const Value &rhs) {
+	  lhs.number /= rhs.number;
+	  return lhs;
+  }
 
+  std::ostream &operator << (std::ostream &os, const Value& r) {
+	  os << std::setprecision(r.precision) << std::fixed << r.number;
+	  return os;
   }
 
   std::istream &operator >> (std::istream &is, Value& r) {
-
+	  r = Value(0); //todo: check this operator
+	  return is;
   }
-  */
+
 }//!namespace

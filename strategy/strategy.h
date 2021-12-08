@@ -12,6 +12,8 @@
 #include "account.h"
 
 #include <map>
+#include <set>
+#include <utility>
 
 #ifndef STRATEGY_TRADING_STRATEGY_H
 #define STRATEGY_TRADING_STRATEGY_H
@@ -26,26 +28,30 @@ namespace algo {
   class Strategy {
   public:
 	  Strategy () = default;
-	  Strategy (Ticker ticker, types::String label, Account* account)
+	  Strategy (Ticker ticker, types::String label, Account* account = nullptr)
 			  : ticker_(std::move(ticker))
 			  , label_ (std::move(label))
 			  , account_(account)
 	  {}
 
-	  void addIndicator(Ticker ticker, types::String indicator_label, MarketDataContainer input_value, ModifierFunc modifier) {
-		  Indicator indicator (ticker, indicator_label, std::move(input_value), modifier);
+	  void addIndicator(const Ticker & ticker, types::String indicator_label, MarketDataContainer input_value, ModifierFunc modifier) {
+		  indicators_tickers_.emplace(ticker);
+		  Indicator indicator (ticker, std::move(indicator_label), std::move(input_value), modifier);
 		  indicators_.addIndicator(std::move(indicator));
 	  }
-	  void addIndicator(Ticker ticker, types::String indicator_label, MarketDataContainer input_value) {
-		  Indicator indicator (ticker, indicator_label, std::move(input_value));
+	  void addIndicator(const Ticker & ticker, types::String indicator_label, MarketDataContainer input_value) {
+		  indicators_tickers_.emplace(ticker);
+		  Indicator indicator (ticker, std::move(indicator_label), std::move(input_value));
 		  indicators_.addIndicator(std::move(indicator));
 	  }
-	  void addIndicator(Ticker ticker, types::String indicator_label, ModifierFunc modifier) {
-		  Indicator indicator (ticker, indicator_label, modifier);
+	  void addIndicator(const Ticker & ticker, types::String indicator_label, ModifierFunc modifier) {
+		  indicators_tickers_.emplace(ticker);
+		  Indicator indicator (ticker, std::move(indicator_label), modifier);
 		  indicators_.addIndicator(std::move(indicator));
 	  }
-	  void addIndicator(Ticker ticker, types::String indicator_label) {
-		  Indicator indicator (ticker, indicator_label);
+	  void addIndicator(const Ticker & ticker, types::String indicator_label) {
+		  indicators_tickers_.emplace(ticker);
+		  Indicator indicator (ticker, std::move(indicator_label));
 		  indicators_.addIndicator(std::move(indicator));
 	  }
 	  void addSignal(
@@ -54,14 +60,20 @@ namespace algo {
 			  types::String relation,
 			  std::vector<types::String> indicator_labels
 	  ) {
-		  Signal signal (ticker_, signal_label, signal_type, relation, indicator_labels, &indicators_);
+		  Signal signal (
+		  		ticker_,
+		  		std::move(signal_label),
+		  		std::move(signal_type),
+		  		std::move(relation),
+		  		std::move(indicator_labels),
+		  		&indicators_);
 		  signals_.addSignal(std::move(signal));
 	  }
 
 	  void addRule (
 			  types::String rule_label,
 			  types::String rule_type,
-			  types::String signal_label,
+			  const types::String& signal_label,
 			  int signal_value,
 			  types::String position_side,
 			  trade_base::OrderQuantity order_quantity,
@@ -70,32 +82,42 @@ namespace algo {
 	  {
 		  Rule rule (
 				  ticker_,
-				  rule_label,
-				  rule_type,
+				  std::move(rule_label),
+				  std::move(rule_type),
 				  signal_label, //todo: do I need this in ctor? Comes with ptr_signal
 				  signal_value, //todo: do I need this in ctor? Comes with ptr_signal
-				  signals_.shareSignal(signal_label),
-				  position_side,
-				  order_quantity,
-				  trade_type,
-				  order_type,
+				  signals_.shareObject(signal_label),
+				  std::move(position_side),
+				  std::move(order_quantity),
+				  std::move(trade_type),
+				  std::move(order_type),
 				  &signals_);
 
-		  rules_.emplace_back(std::move(rule));
+		  rules_.addRule(std::move(rule));
 	  }
 
 	  types::String getIndicators() const;
 	  types::String getSignals() const;
 	  types::String getRules() const;
-	  bool isInitialized() const {return not rules_.empty();}
+	  bool isInitialized() const {return not rules_.getByLabel()->Empty();}
+
+	  void getMarketData(){
+		  //todo: make it multithreading
+		  //todo: it may be different types of Data and Duration for the some strategies
+		  for (const auto &ticker : indicators_tickers_){
+		  	auto market_data = DataProcessor_::getNewMarketData(ticker);
+			indicators_.updateIndicators(market_data);
+		  }
+	  }
+
 
 	  std::optional<Trade> ruleSignal (const MarketDataBatch &market_data_batch) {
 		  std::vector<Trade> trades;
 
 		  //todo: !!!!! organize it by tickers, therefor reducing from O(N*M) to O(logN * logM)
 		  for (const auto &market_data : market_data_batch) {
-			  for (auto& rule : rules_) {
-				  auto trade = rule.ruleSignal(market_data);
+			  for (auto& rule : *rules_.getByLabel()) {
+				  auto trade = rule.second->ruleSignal(market_data);
 				  if (trade.has_value()) {
 					  trades.push_back(std::move(trade.value()));
 				  }
@@ -103,19 +125,36 @@ namespace algo {
 		  }
 		  //todo: plugin implementation, priority of trades is required - select tickers!!!
 		  if (not trades.empty()){
-		  	return *begin(trades);
+			  return *begin(trades);
+		  }
+		  else return std::nullopt;
+	  }
+
+	  std::optional<Trade> ruleSignal () {
+		  std::vector<Trade> trades;
+
+		  for (auto& rule : *rules_.getByLabel()) {
+			  auto trade = rule.second->ruleSignal();
+			  if (trade.has_value()) {
+				  trades.push_back(std::move(trade.value()));
+			  }
+		  }
+
+		  //todo: plugin implementation, priority of trades is required - select tickers!!!
+		  if (not trades.empty()){
+			  return *begin(trades);
 		  }
 		  else return std::nullopt;
 	  }
 
   private:
-
 	  Ticker ticker_;
 	  types::String label_;
 	  Account* account_;
-	  std::vector<Rule> rules_;
 	  Indicators indicators_;
+	  std::set<Ticker> indicators_tickers_;
 	  Signals signals_;
+	  Rules rules_;
   };
 
 }//!namespace

@@ -15,11 +15,12 @@
 #define STRATEGY_TRADING_TIMESTAMP_H
 
 namespace algo {
-  namespace timestamp {
+  namespace time_ {
 
 	using Clock = std::chrono::system_clock;
-	using Ms = std::chrono::milliseconds;
-	using Sec = std::chrono::seconds;
+	using Milliseconds = std::chrono::milliseconds;
+	using Microseconds = std::chrono::milliseconds;
+	using Seconds = std::chrono::seconds;
 
 	template<class Duration>
 	using TimePoint = std::chrono::time_point<Clock, Duration>;
@@ -77,6 +78,15 @@ namespace algo {
 		os << timestamp.toString();
 		return os;
 	}
+
+	template<class Duration>
+	Timestamp<Duration> fromString(types::String input, const types::String& input_fmt){
+		Timestamp<Duration> timestamp;
+		std::stringstream ss(std::move(input));
+		date::from_stream(ss, input_fmt.c_str(), timestamp.time_point);
+		return timestamp;
+	}
+
 
   }//!namespace
 }//!namespace

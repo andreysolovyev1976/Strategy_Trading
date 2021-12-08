@@ -60,6 +60,32 @@ namespace types {
 
   }
 
+  Value::Value (const Value &other)
+		  : number (other.number)
+		  , precision (other.precision)
+		  , is_integer (other.is_integer)
+  {}
+  Value::Value (Value &&other)
+		  : number (std::move(other.number))
+		  , precision (other.precision)
+		  , is_integer (other.is_integer)
+  {}
+
+  Value& Value::operator = (Value &&other) {
+	  this->number = std::move(other.number);
+	  this->precision = other.precision;
+	  this->is_integer = other.is_integer;
+	  return *this;
+  }
+
+  Value& Value::operator = (const Value &other) {
+	  this->number = other.number;
+	  this->precision = other.precision;
+	  this->is_integer = other.is_integer;
+	  return *this;
+  }
+
+
   String Value::ToString () const {
 	  String output;
 	  output.reserve(24);

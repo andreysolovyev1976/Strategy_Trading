@@ -46,13 +46,6 @@ namespace algo {
 	  this->ProcessIndicator();
   }
 
-
-  //todo: make a batch available, coming in a form of a vector
-  void Indicator::updateIndicator (const MarketData &market_data) {
-	  input_value_->Insert({market_data.quote.timestamp, market_data.quote});
-	  this->ProcessIndicator();
-  }
-
   const MarketDataContainer& Indicator::getOutputValues() const {return output_value_;}
   const MarketDataContainer& Indicator::getInputValues() const {return input_value_;}
   const types::String& Indicator::getLabel () const {return label_;}
@@ -98,40 +91,12 @@ namespace algo {
 	  return os;
   }
 
-  Indicators::Indicators()
-  : by_label_(types::makeSingleThreadedLimitedSizeMap<std::string_view, IndOwner>())
-  , by_ticker_(types::makeSingleThreadedMultiMap<Ticker, IndPtr>())
-  {}
-
-  const Indicators::ByLabel& Indicators::getIndicators () const {return by_label_;}
-
-  const Indicator& Indicators::getIndicator (const types::String &label) const {
-	  if (auto found = by_label_->Find(label); found == by_label_->End())
-		  throw std::invalid_argument(EXCEPTION_MSG("Unknown indicator label; "));
-	  else return *found->second;
-  }
-
-  void Indicators::updateIndicators (const MarketData &market_data) {
-	  if (const auto [first, last] = by_ticker_->equal_range(market_data.ticker); first != by_ticker_->end()) {
-		  for (auto it = first, ite = last; it != ite; ++it) {
-			  it->second->updateIndicator(market_data);
-		  }
-	  }
-  }
-
   void Indicators::addIndicator (Indicator indicator) {
 	  auto label = indicator.getLabel();
 	  auto new_indicator = std::make_unique<Indicator>(std::move(indicator));
 	  by_label_->Insert({new_indicator->getLabel(), std::move(new_indicator)});
-	  IndPtr placed_indicator = shareIndicator(label);
+	  auto placed_indicator = shareObject(label);
 	  by_ticker_->insert({placed_indicator->getTicker(), placed_indicator});
   }
-
-  Indicators::IndPtr Indicators::shareIndicator (const types::String &label) {
-	  if (auto found = by_label_->Find(label); found == by_label_->End())
-		  throw std::invalid_argument(EXCEPTION_MSG("Unknown indicator label; "));
-	  else return &*found->second;
-  }
-
 
 }//!namespace

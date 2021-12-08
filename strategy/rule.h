@@ -8,6 +8,7 @@
 #include "signals.h"
 #include "position.h"
 #include "trade.h"
+#include "base_objects_container.h"
 
 #include <optional>
 
@@ -47,7 +48,7 @@ namespace algo {
   }//!namespace
 
 
-  class Rule {
+  class Rule final {
   public:
 	  Rule() = default;
 	  //todo: implement ctor as a variadic template
@@ -68,7 +69,10 @@ namespace algo {
 			  Signals* signals);
 
 	  std::optional<Trade> ruleSignal (const MarketData &market_data);
+	  std::optional<Trade> ruleSignal ();
 
+	  const types::String& getLabel() const;
+	  const Ticker& getTicker() const;
   private:
 	  ///rule
 	  Ticker ticker_;
@@ -87,6 +91,14 @@ namespace algo {
 
 
 	  std::optional<Trade> ProcessSignal ();
+  };
+
+
+  class Rules final : public Objects<Rule> {
+  public:
+  	using Objects<Rule>::Objects;
+	  void addRule (Rule rule);
+
   };
 
 

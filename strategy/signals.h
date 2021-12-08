@@ -8,6 +8,7 @@
 #include "data_processor.h"
 #include "indicator.h"
 #include "relations.h"
+#include "base_objects_container.h"
 
 #include <memory>
 #include <string_view>
@@ -83,7 +84,7 @@ namespace algo {
 	[[maybe_unused]]
 	static SignalValue StringToSignalValue (const types::String& type);
 
-	using SignalData = types::SingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>;
+	using SignalData = types::SingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>;
 
   }//!namespace
 
@@ -128,28 +129,14 @@ namespace algo {
   };
 
 
-  class Signals {
-	  using SigOwner = std::unique_ptr<Signal>;
-	  using SigPtr = Signal*;
-	  //todo: add thread safe map
-	  using ByLabel = types::SingleThreadedLimitedSizeMap<std::string_view, SigOwner>;
-	  using ByTicker = types::SingleThreadedMultiMap<std::string_view, SigPtr>;
+  class Signals final : public Objects <Signal>{
   public:
-	  Signals();
-	  [[nodiscard]] const ByLabel& getSignals () const;
-	  [[nodiscard]] const Signal& getSignal (const types::String &label) const;
+  	using Objects<Signal>::Objects;
+
 	  void updateSignals (const MarketData &market_data);
 	  void addSignal (Signal signal);
-
 	  void removeSignal (const types::String &label);
 
-	  [[nodiscard]] SigPtr shareSignal (const types::String &label);
-
-  private:
-	  ///owner of the data
-	  ByLabel by_label_;
-	  ///shallow copies
-	  ByTicker by_ticker_;
   };
 
 

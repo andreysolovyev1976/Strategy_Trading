@@ -59,6 +59,10 @@ namespace algo {
 	  return ProcessSignal();
   }
 
+  std::optional<Trade> Rule::ruleSignal () {
+	  return ProcessSignal();
+  }
+
 
   std::optional<Trade> Rule::ProcessSignal () {
 
@@ -87,5 +91,27 @@ namespace algo {
 
 	  return Trade();
   }
+
+  const types::String& Rule::getLabel() const {
+  	return label_;
+  }
+
+  const Ticker& Rule::getTicker() const {
+  	return ticker_;
+  }
+
+  void Rules::addRule (Rule rule) {
+	  const auto label = rule.getLabel();
+
+	  if (auto found = by_label_->Find(label); found != by_label_->end()){
+		  throw std::invalid_argument(EXCEPTION_MSG("Rule already exists; "));
+	  }
+	  auto new_rule = std::make_unique<Rule>(std::move(rule));
+	  by_label_->Insert({new_rule->getLabel(), std::move(new_rule)});
+
+	  auto shared = shareObject(label);
+	  by_ticker_->insert({shared->getTicker(), shared});
+  }
+
 
 }//!namespace

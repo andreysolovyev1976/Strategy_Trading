@@ -5,7 +5,7 @@
 #include "timestamp.h"
 
 namespace algo {
-  namespace timestamp {
+  namespace time_ {
 
 
   }//!namespace

@@ -59,10 +59,22 @@ endif()
 # FMT FRAMEWORK ENDS HERE-------------------
 
 
+# CURL STARTS HERE-------------------
+find_package (CURL REQUIRED)
+if(CURL_FOUND)
+    include_directories(${CURL_INCLUDE_DIRS})
+    message(STATUS "MAIN: FOUND CURL, including and linking...")
+else()
+    message(STATUS "MAIN: NOT FOUND CURL")
+endif()
+# CURL FRAMEWORK ENDS HERE-------------------
+
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(primitives)
 include_directories(strategy)
 include_directories(json)
+include_directories(network)
 include_directories(third_part/date_time/include)
 include_directories(third_part/cds)
 
@@ -79,43 +91,40 @@ if(${BUILD_BRANCH} STREQUAL PROD)
     add_subdirectory(primitives)
     add_subdirectory(strategy)
     add_subdirectory(json)
+    add_subdirectory(network)
 
     target_link_libraries(${PROJECT_NAME}
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
             /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
             fmt::fmt
             ${Boost_LIBRARIES}
+            ${CURL_LIBRARY}
             )
 
     enable_testing()
     add_subdirectory(tests)
 
+    message(STATUS "STATUS ======== OK ========")
+
 elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
 
     message(STATUS "Build Branch - selected EXPERIMENTS")
 
-    find_package (CURL REQUIRED)
-    include_directories(${CURL_INCLUDE_DIRS})
-    message(STATUS "CURL INCLUDE DIRS ${CURL_INCLUDE_DIRS}")
-
-
-    include_directories(/Users/elenasolovyeva/Documents/Cpp/Projects/curl_client/lib)
     include_directories (third_part/signalR/include)
 
     add_executable(${PROJECT_NAME}_tryouts tryouts.cpp)
     add_subdirectory(third_part/signalR)
     add_subdirectory(json)
+    add_subdirectory(network)
     #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
     target_link_libraries(${PROJECT_NAME}_tryouts
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
             /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
             ${CURL_LIBRARY}
             ${Boost_LIBRARIES}
-
-            /Users/elenasolovyeva/Documents/Cpp/Projects/curl_client/cmake-build-debug/lib/libcurl_client.a
-
             )
-
+    message(STATUS "STATUS ======== OK ========")
 else()
+    message(STATUS "STATUS ======= FAIL =======")
     message(STATUS "Error of selecting a Build Branch - see CMakeLists.txt for the details")
 endif()

@@ -3,39 +3,39 @@
 //
 
 #include "quote.h"
+#include "curl_client/utils.h"
 
 namespace algo {
+  namespace quote_base {
 
-  using namespace quote_base;
-
-  Quote::Quote(types::Value value) :value(std::move(value))
-  {}
-
-  bool operator==(const Quote& lhs, const Quote& rhs){
-  	if (lhs.timestamp != rhs.timestamp) return false;
-  	return lhs.value == rhs.value;
-  }
-  bool operator!=(const Quote& lhs, const Quote& rhs){
-  	return not (rhs==lhs);
-  }
-  bool operator< (const Quote& lhs, const Quote& rhs) {
-  	if (lhs.timestamp < rhs.timestamp) return true;
-  	return lhs.value<rhs.value;
-  }
-  bool operator> (const Quote& lhs, const Quote& rhs) {
-  	return rhs < lhs;
-  }
-  bool operator<=(const Quote& lhs, const Quote& rhs) {
-  	return not (rhs < lhs);
-  }
-  bool operator>=(const Quote& lhs, const Quote& rhs){
-  	return not (lhs<rhs);
-  }
-  std::ostream& operator<<(std::ostream& os, const Quote& quote) {
-  	os << "timestamp: " << quote.timestamp << ", quote: " << quote.value;
-  	return os;
-  }
-
+	std::ostream& operator << (std::ostream& os, const QuoteTypeBase &data) {
+		std::visit(utils::overloaded{
+				[]([[maybe_unused]] std::monostate arg) {/* do nothing  */ },
+				[&os](types::Value arg) {
+				  	os << arg;
+					},
+				[&os](const SingleQuote &arg) {
+				  os << arg.value;
+				},
+				[&os](const BidAsk &arg) {
+				  os
+						  << "bid: " << arg.bid
+						  << "; ask: " << arg.ask
+						  << "; middle: " << arg.middle
+						  << "; price: " << arg.price;
+				},
+				[&os](const OHLCV &arg) {
+				  os
+						  << "open: " << arg.open
+						  << "; high: " << arg.high
+						  << "; low: " << arg.low
+						  << "; close: " << arg.close
+						  << "; volume: " << arg.volume;
+				},
+		}, data);
+		return os;
+	}
+  }//!namespace
 }//!namespace
 
 

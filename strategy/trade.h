@@ -118,18 +118,18 @@ namespace algo {
 
 	  const Ticker& getTicker() const {return ticker_;}
 	  const trade_base::OrderQuantity& getQuantity() const {return quantity_;}
-	  const Quote& getExecutedPrice() const;
+//	  const Quote& getExecutedPrice() const;
 	  const PositionSide& getSide() const;
 	  const trade_base::TradeType& getTradeType() const;
 	  const trade_base::OrderType& getOrderType() const;
 
-	  void setPrice (Quote price) {price_ = std::move(price);}
+//	  void setPrice (Quote price) {price_ = std::move(price);}
 
   private:
 	  bool is_implemented_ = false;
 	  Ticker ticker_;
 	  types::Value quantity_;
-	  Quote price_;
+//	  Quote price_;
 	  PositionSide side_;
 	  trade_base::TradeType trade_type_;
 	  trade_base::OrderType order_type_;

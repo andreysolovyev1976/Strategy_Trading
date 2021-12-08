@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "exceptions.h"
 #include "strings.h"
 #include "json.h"
@@ -15,6 +17,8 @@
 #define STRATEGY_TRADING_VALUE_H
 
 namespace types {
+
+  using Int = int32_t;
 
   using BigInt = boost::multiprecision::int128_t;
   static const BigInt BIGINT_MAX = std::numeric_limits<BigInt>::max();
@@ -48,7 +52,7 @@ namespace types {
 		  , bool>;
 
 
-  struct Value {
+  struct Value final {
 	  Value() = default;
 	  template <typename Number, IsFloating<Number> = true>
 	  Value (Number d, int p = 2);
@@ -58,6 +62,12 @@ namespace types {
 	  Value (const String &s, int p = 2);
 	  Value (const Json::Node& node, int p = 2);
 
+	  //todo: somehow compiler required assignment operator - check again, violiting here Rule of Five
+	  Value (const Value &other);
+	  Value (Value &&other);
+	  Value &operator = (const Value &other);
+	  Value &operator = (Value &&other);
+	  //~Value();
 
 	  String ToString () const;
 

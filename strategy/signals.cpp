@@ -49,7 +49,7 @@ namespace algo {
   }//!namespace
 
   Signal::Signal()
-  : signal_ (types::makeSingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>())
+  : signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>())
   {}
 
   Signal::Signal(
@@ -66,15 +66,15 @@ namespace algo {
 		  , relation_(relations::RelationFromString(std::move(relation)))
 		  , indicator_labels_(std::move(indicator_labels))
 		  , indicators_(indicators)
-		  , signal_ (types::makeSingleThreadedLimitedSizeMap<timestamp::Timestamp<timestamp::Ms>, int>())
+		  , signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>())
   {}
 
   const signal_base::SignalData& Signal::getSignalData () {
 	  ProcessSignal();
 	  return signal_;
   }
-  void Signal::updateSignal(const MarketData &market_data) {
-	  indicators_->updateIndicators(market_data);
+  void Signal::updateSignal([[maybe_unused]] const MarketData &market_data) {
+//	  indicators_->updateIndicators(market_data);
   }
 
   const types::String& Signal::getLabel() const {return label_;}
@@ -85,8 +85,9 @@ namespace algo {
 	  //todo: make sure only new timestamps are updated
 
 	  assert(indicator_labels_.size() == 2);
-	  const auto &ind1 = indicators_->getIndicator(indicator_labels_[0]).getOutputValues();
-	  const auto &ind2 = indicators_->getIndicator(indicator_labels_[1]).getOutputValues();
+
+	  const auto &ind1 = indicators_->getObject(indicator_labels_[0]).getOutputValues();
+	  const auto &ind2 = indicators_->getObject(indicator_labels_[1]).getOutputValues();
 
 	  for (const auto &[tstamp1, quote1] : (*ind1)) {
 		  if (auto found_at_second = ind2->Find(tstamp1); found_at_second != ind2->End()) {
@@ -118,20 +119,6 @@ namespace algo {
 	  }
   }
 
-  Signals::Signals()
-		  : by_label_(types::makeSingleThreadedLimitedSizeMap<std::string_view, SigOwner>())
-		  , by_ticker_(types::makeSingleThreadedMultiMap<std::string_view, SigPtr>())
-  {}
-
-
-  const Signals::ByLabel& Signals::getSignals () const {return by_label_;}
-
-  const Signal& Signals::getSignal (const types::String &label) const {
-	  if (auto found = by_label_->Find(label); found == by_label_->end()){
-		  throw std::invalid_argument(EXCEPTION_MSG("Unknown signal label; "));
-	  }
-	  else return *found->second;
-  }
 
   void Signals::updateSignals (const MarketData &market_data) {
 	  if (const auto [first, last] = by_ticker_->equal_range(market_data.ticker); first != by_ticker_->end()) {
@@ -150,7 +137,7 @@ namespace algo {
 	  auto new_signal = std::make_unique<Signal>(std::move(signal));
 	  by_label_->Insert({new_signal->getLabel(), std::move(new_signal)});
 
-	  SigPtr shared = shareSignal(label);
+	  auto shared = shareObject(label);
 	  by_ticker_->insert({shared->getTicker(), shared});
   }
 
@@ -168,12 +155,6 @@ namespace algo {
 		  }
 	  }
 	  by_label_->Erase(label);
-  }
-
-  Signals::SigPtr Signals::shareSignal (const types::String &label) {
-	  if (auto found = by_label_->Find(label); found == by_label_->end())
-		  throw std::invalid_argument(EXCEPTION_MSG("Unknown signal label; "));
-	  else return &*found->second;
   }
 
 }//!namespace

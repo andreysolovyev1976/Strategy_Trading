@@ -10,7 +10,7 @@
 
 TEST(ValueContainer, Primitives) {
 
-	using namespace algo::timestamp;
+	using namespace algo::time_;
 	using namespace std::literals;
 
 	/*

@@ -8,7 +8,7 @@
 
 TEST(Trade, Primitives) {
 
-	using namespace algo::timestamp;
+	using namespace algo::time_;
 	using namespace algo::trade_base;
 	using namespace algo::trade_base::trade_type;
 	using namespace algo::trade_base::order_type;

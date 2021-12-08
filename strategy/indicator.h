@@ -8,7 +8,7 @@
 #include "maps.h"
 #include "data_processor.h"
 #include "quote.h"
-
+#include "base_objects_container.h"
 
 #include <memory>
 #include <string_view>
@@ -21,10 +21,10 @@
 namespace algo {
 
   //todo: make it pointer to timestamp, no copy - check Indicator file
-  using K = timestamp::Timestamp<timestamp::Ms>;
-  using V = Quote;
+  using K = time_::Timestamp<time_::Milliseconds>;
+  using V = Quote<types::Value, time_::Milliseconds>;
   using MarketDataContainer = types::SingleThreadedLimitedSizeMap<K, V>;
-  using ModifierFunc = std::function<Quote(const Quote&)>;
+  using ModifierFunc = std::function<V(const V&)>;
 
   class Indicator final {
   public:
@@ -35,7 +35,11 @@ namespace algo {
 	  Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value);
 	  Indicator(const Ticker &ticker, types::String indicator_label);
 
-	  void updateIndicator (const MarketData &market_data);
+	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
+	  void updateIndicator (const MarketData_<QuoteType, Duration> &market_data) {
+		  input_value_->Insert({market_data.quote.timestamp, market_data.quote});
+		  this->ProcessIndicator();
+	  }
 
 	  [[nodiscard]] const MarketDataContainer& getOutputValues() const;
 	  [[nodiscard]] const MarketDataContainer& getInputValues() const;
@@ -59,23 +63,20 @@ namespace algo {
   std::ostream& operator<<(std::ostream& os, const Indicator &indicator);
 
 
-  class Indicators {
-	  using IndOwner = std::unique_ptr<Indicator>;
-	  using IndPtr = Indicator*;
-	  using ByLabel = types::SingleThreadedLimitedSizeMap<std::string_view, IndOwner>;
-	  using ByTicker = types::SingleThreadedMultiMap<Ticker, IndPtr>;
+  class Indicators : public Objects<Indicator> {
   public:
-  	Indicators();
-	  [[nodiscard]] const ByLabel& getIndicators () const;
+  	using Objects<Indicator>::Objects;
 
-	  [[nodiscard]] const Indicator& getIndicator (const types::String &label) const;
-	  void updateIndicators (const MarketData &market_data);
+	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
+	  void updateIndicators (const MarketData_<QuoteType, Duration> &market_data) {
+		  if (const auto [first, last] = by_ticker_->equal_range(market_data.first); first != by_ticker_->end()) {
+			  for (auto it = first, ite = last; it != ite; ++it) {
+				  it->second->updateIndicator(market_data);
+			  }
+		  }
+	  }
+
 	  void addIndicator (Indicator indicator);
-	  IndPtr shareIndicator (const types::String &label);
-
-  private:
-	  ByLabel by_label_; //owner of the indicators
-	  ByTicker by_ticker_;
   };
 
 }//!namespace

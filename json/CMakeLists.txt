@@ -4,6 +4,7 @@ project(${PROJECT_NAME})
 set (SOURCES
         "json.cpp"
         "json_builder.cpp"
+        "json_handler.cpp"
         )
 
 if(${BUILD_BRANCH} STREQUAL PROD)

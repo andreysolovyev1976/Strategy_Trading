@@ -123,7 +123,7 @@ namespace algo {
   }
   template <typename QuoteType, typename Duration>
   std::ostream& operator<<(std::ostream& os, const Quote<QuoteType, Duration>& quote) {
-	  os << "timestamp: " << quote.timestamp << ", value: ";
+	  os << "timestamp: " << quote.timestamp << ", quote: ";
 	  quote_base::operator<<(os, quote.value_);
 	  return os;
   }

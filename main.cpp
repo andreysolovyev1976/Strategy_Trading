@@ -1,4 +1,6 @@
 #include "coinbase.h"
+#include "tzkt_io.h"
+#include "quipuswap.h"
 #include "strategy.h"
 #include "randomer.h"
 
@@ -15,7 +17,10 @@ using namespace std;
 using namespace std::literals;
 using namespace std::chrono_literals;
 using namespace boost;
-using namespace algo::coinbase;
+using namespace algo::data::coinbase;
+using namespace algo::tezos::tzkt_io;
+using namespace algo::tezos::quipuswap;
+using namespace time_;
 
 static auto const fastIO = []() {
   std::ios_base::sync_with_stdio(false);
@@ -39,6 +44,8 @@ int main() {
 	//todo: Add ThreadSafe maps
 	//todo: Add Map size limit
 	//todo: Add Value ctor from Json
+	//todo: Add logs
+	//todo: Unclear what happns with a Token price - need to check that
 
 
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
@@ -62,14 +69,14 @@ int main() {
 	auto t = processListOfCurrencies(std::move(r));
 	Print(t, std::cout, &CurrencyData::id, &CurrencyData::name);
 
-	auto single_currency = processSingleCurrency(getSingleCurrency("XTZ"));
-	cout << single_currency;
-
-	single_currency = processSingleCurrency(getSingleCurrency("ETH"));
-	cout << single_currency;
-
-	single_currency = processSingleCurrency(getSingleCurrency("BTC"));
-	cout << single_currency;
+//	auto single_currency = processSingleCurrency(getSingleCurrency("XTZ"));
+//	cout << single_currency;
+//
+//	single_currency = processSingleCurrency(getSingleCurrency("ETH"));
+//	cout << single_currency;
+//
+//	single_currency = processSingleCurrency(getSingleCurrency("BTC"));
+//	cout << single_currency;
 
 #endif
 
@@ -102,69 +109,8 @@ int main() {
 #endif
 //	std::cout << "Work in progress...\n";
 
-#if 0
-	const std::array<string, 4> tickers {"A1"s, "B2"s, "C3"s, "D4"s};
-	DataProcessor data_processor;
-
-	Strategy strategy ("A1"s, "simple_demo", nullptr);
-
-	///filtered and referenced data
-	strategy.addIndicator(
-			"A1",					//ticker
-			"base_contract"			//label
-	);
-	strategy.addIndicator("B2", "other_contract");
-	strategy.addIndicator("C3", "modified_contract", modifier);
-
-	///relations of new market data and filtered/referenced data
-	strategy.addSignal(
-			"basic_comparison", //label
-			"Comparison",		//type of a Signal
-			"GT",				//relation between the indicators
-			{"base_contract", "modified_contract"} //indicators to compare
-	);
-
-	///actions, based on relations
-	strategy.addRule(
-			"enter_when_greater",			//rule_label
-			"Entry",						//type of a Rule
-			"basic_comparison",				//signal label
-			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			"Neutral", 						//Position to enter txn
-			types::Value(1),
-			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
-			"Market"						//how to behave in the market Market/Limited/FillOrKill
-	);
-
-	for (int i = 0; i != 10; ++i) {
-
-		for (int j = 0; j < 4; ++j) {
-			auto new_ticker = tickers[prm(0, 3)];
-			auto new_raw_figure = prm(12.5, 22.5);
-			data_processor.addNewMarketData(new_ticker, new_raw_figure);
-		}
-
-		auto new_market_data = data_processor.getNewMarketData();
-		for (const auto &market_data : new_market_data) {
-			cout
-			<< market_data.quote.timestamp << ": "
-			<< market_data.ticker << " " << market_data.quote << "; ";
-			auto trade = strategy.ruleSignal(new_market_data);
-
-			if (trade.has_value()) {
-				cout << trade.value().getTicker() << " quantity to trade: " << trade.value().getQuantity() << '\n';
-			}
-			else {
-				cout << "no signal for a trade\n";
-			}
-		}
-		std::this_thread::sleep_for(1ms);
-		cout << "==========\n";
-	}
-#endif
 
 #if 0
-
 	for (int i = 0; i != 10; ++i) {
 		auto trade1 = processSingleTradeData(getSingleTradeData("ADA", "ETH"));
 		if (not trade1.empty) {
@@ -184,9 +130,37 @@ int main() {
 	}
 #endif
 
+
+#if 0
+
+//	getContractData(true, std::cout);
+
+	QueryFactory qf;
+
+	curl_client::Response response;
+	curl_client::Request request;
+
+	std::cout << "Storage:\n";
+	auto handle = qf.getStorageQuery("KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1");
+	response = request.
+							  pathSetNew(std::move(handle))->
+							  Implement(curl_client::Method::Get);
+	Print(response, std::cout, false);
+	std::cout << '\n';
+
+	TokenPair<Seconds> token;
+	token.pair_address = "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1";
+	token = estimateTezToToken(std::move(token));
+	std::cout << "tez pool: " << token.tez_pool << "; token_pool: " << token.token_pool << "; price: " << token.current_price << '\n';
+
+	token = estimateTokenToTez(std::move(token));
+	std::cout << "tez pool: " << token.tez_pool << "; token_pool: " << token.token_pool << "; price: " << token.current_price << '\n';
+
+#endif
+
 #if 1
 
-	Strategy strategy ("ETH-BTC"s, "simple_demo");
+	Strategy strategy ("simple_demo");
 
 	///filtered and referenced data
 	strategy.addIndicator(
@@ -200,13 +174,15 @@ int main() {
 	strategy.addSignal(
 			"basic_comparison", //label
 			"Comparison",		//type of a Signal
-			"GT",				//relation between the indicators
-			{"base_contract", "modified_contract"} //indicators to compare
+			"LT",				//relation between the indicators
+			{"base_contract", "other_contract"} //indicators to compare
 	);
 
+	//todo: check that this works - check relations
 	///actions, based on relations
 	strategy.addRule(
-			"enter_when_greater",			//rule_label
+			"ETH-BTC"s,						//ticker to generate trades for
+			"enter_when_less",				//rule_label
 			"Entry",						//type of a Rule
 			"basic_comparison",				//signal label
 			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
@@ -231,7 +207,6 @@ int main() {
 		cout << "==========\n";
 		if (counter++ > 10) break;
 	}
-
 #endif
 	return 0;
 }

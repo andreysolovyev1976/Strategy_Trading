@@ -94,9 +94,9 @@ namespace algo {
   void Indicators::addIndicator (Indicator indicator) {
 	  auto label = indicator.getLabel();
 	  auto new_indicator = std::make_unique<Indicator>(std::move(indicator));
-	  by_label_->Insert({new_indicator->getLabel(), std::move(new_indicator)});
+	  this->getByLabel()->Insert({new_indicator->getLabel(), std::move(new_indicator)});
 	  auto placed_indicator = shareObject(label);
-	  by_ticker_->insert({placed_indicator->getTicker(), placed_indicator});
+	  this->getByTicker()->insert({placed_indicator->getTicker(), placed_indicator});
   }
 
 }//!namespace

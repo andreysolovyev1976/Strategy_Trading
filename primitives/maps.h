@@ -75,6 +75,13 @@ namespace types {
 	  	data.erase(key);
 	  }
 
+	  void Erase (Iterator it) {
+		  data.erase(it);
+	  }
+	  void Erase (ReverseIterator it) {
+		  data.erase(it);
+	  }
+
 	  Iterator Begin () {
 		  return data.begin();
 	  }

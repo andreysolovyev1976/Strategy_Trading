@@ -54,10 +54,6 @@ namespace algo {
 		  , signals_(signals)
   { }
 
-  std::optional<Trade> Rule::ruleSignal (const MarketData &market_data) {
-	  signal_->updateSignal(market_data);
-	  return ProcessSignal();
-  }
 
   std::optional<Trade> Rule::ruleSignal () {
 	  return ProcessSignal();
@@ -103,14 +99,14 @@ namespace algo {
   void Rules::addRule (Rule rule) {
 	  const auto label = rule.getLabel();
 
-	  if (auto found = by_label_->Find(label); found != by_label_->end()){
+	  if (auto found = this->getByLabel()->Find(label); found != this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Rule already exists; "));
 	  }
 	  auto new_rule = std::make_unique<Rule>(std::move(rule));
-	  by_label_->Insert({new_rule->getLabel(), std::move(new_rule)});
+	  this->getByLabel()->Insert({new_rule->getLabel(), std::move(new_rule)});
 
 	  auto shared = shareObject(label);
-	  by_ticker_->insert({shared->getTicker(), shared});
+	  this->getByTicker()->insert({shared->getTicker(), shared});
   }
 
 

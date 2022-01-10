@@ -68,7 +68,6 @@ namespace algo {
 			  types::String order_type,
 			  Signals* signals);
 
-	  std::optional<Trade> ruleSignal (const MarketData &market_data);
 	  std::optional<Trade> ruleSignal ();
 
 	  const types::String& getLabel() const;

@@ -8,7 +8,10 @@
 
 #include "exceptions.h"
 #include "strings.h"
-#include "json.h"
+#include "const_values.h"
+#if 0
+#include "json.h" //circular reference
+#endif
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -19,6 +22,7 @@
 namespace types {
 
   using Int = int32_t;
+  using UInt = uint64_t;
 
   using BigInt = boost::multiprecision::int128_t;
   static const BigInt BIGINT_MAX = std::numeric_limits<BigInt>::max();
@@ -31,6 +35,12 @@ namespace types {
   using IsInteger = std::enable_if_t<std::is_convertible_v<std::decay_t<Number>, BigInt>,bool>;
   template <typename Number>
   using IsNotInteger = std::enable_if_t<not std::is_convertible_v<std::decay_t<Number>, BigInt>,bool>;
+
+  template <typename Number>
+  bool constexpr IsNegative(Number n) {
+  	return n < 0;
+  }
+
 
   using Float = boost::multiprecision::cpp_dec_float_50;
   const static size_t MAX_DIGITS = std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max_digits10;
@@ -55,13 +65,14 @@ namespace types {
   struct Value final {
 	  Value() = default;
 	  template <typename Number, IsFloating<Number> = true>
-	  Value (Number d, int p = 2);
+	  Value (Number d, size_t p = const_values::DECIMALS_COUNT_DEFAULT);
 	  template <typename Number, IsInteger<Number> = true>
 	  Value (Number i);
 
-	  Value (const String &s, int p = 2);
+	  Value (const String &s, int p = const_values::DECIMALS_COUNT_DEFAULT);
+#if 0
 	  Value (const Json::Node& node, int p = 2);
-
+#endif
 	  //todo: somehow compiler required assignment operator - check again, violiting here Rule of Five
 	  Value (const Value &other);
 	  Value (Value &&other);
@@ -74,15 +85,16 @@ namespace types {
 	  constexpr bool IsPositive() const;
 
 	  Float number;
-	  int precision;
+	  size_t precision;
 	  bool is_integer;
   private:
+#if 0
   	Float fromJsonInt (const Json::Node & node);
-
+#endif
   };
 
   template <typename Number, IsFloating<Number>>
-  Value::Value (Number d, int p)
+  Value::Value (Number d, size_t p)
 		  : number(d)
 		  , precision (p)
 		  , is_integer (false)

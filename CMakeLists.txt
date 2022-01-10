@@ -74,7 +74,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(primitives)
 include_directories(strategy)
 include_directories(json)
-include_directories(network)
+include_directories(curl_client)
+include_directories(data_feed/tezos)
+include_directories(data_feed/coinbase)
+include_directories(data_feed/quipuswap)
+include_directories(data_feed/tzkt)
 include_directories(third_part/date_time/include)
 include_directories(third_part/cds)
 
@@ -91,7 +95,8 @@ if(${BUILD_BRANCH} STREQUAL PROD)
     add_subdirectory(primitives)
     add_subdirectory(strategy)
     add_subdirectory(json)
-    add_subdirectory(network)
+    add_subdirectory(data_feed)
+    add_subdirectory(curl_client)
 
     target_link_libraries(${PROJECT_NAME}
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
@@ -115,7 +120,8 @@ elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
     add_executable(${PROJECT_NAME}_tryouts tryouts.cpp)
     add_subdirectory(third_part/signalR)
     add_subdirectory(json)
-    add_subdirectory(network)
+    add_subdirectory(data_feed)
+    add_subdirectory(curl_client)
     #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
     target_link_libraries(${PROJECT_NAME}_tryouts
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib

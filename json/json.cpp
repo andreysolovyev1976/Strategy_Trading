@@ -185,13 +185,13 @@ namespace Json {
             try {
                 if (is_int) {
                     try {
-                        return std::stoi(parsed_num);
+                        return BigInt (parsed_num);
                     }
                     catch (...) {
                         //  double
                     }
                 }
-                return std::stod(parsed_num);
+                return Float(parsed_num);
             }
             catch (...) {
                 throw ParsingError("Failed to convert "s + parsed_num + " to number"s);

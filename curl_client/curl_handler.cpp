@@ -3,7 +3,7 @@
 //
 
 #include "const_curl_codes.h"
-#include "const_values.h"
+#include "curl_const_values.h"
 
 #include "curl_handler.h"
 #include <stdexcept>

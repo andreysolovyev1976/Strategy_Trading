@@ -2,24 +2,24 @@
 // Created by Andrey Solovyev on 27/09/2021.
 //
 
-#include "const_values.h"
-#include "data_structures.h"
+#include "curl_const_values.h"
+#include "curl_data_structures.h"
 #include "utils.h"
 
 
 namespace curl_client {
 
-	  bool HttpHeader::isEmpty () const {
-	  	return name.empty() && value.empty();
-	  }
-	  std::string HttpHeader::operator () () const {
-		  std::string output;
-		  output.reserve(name.size() + value.size() + 1);
-		  output += name;
-		  output += ':';
-		  output += value;
-		  return output;
-	  }
+  bool HttpHeader::isEmpty () const {
+	  return name.empty() && value.empty();
+  }
+  std::string HttpHeader::operator () () const {
+	  std::string output;
+	  output.reserve(name.size() + value.size() + 1);
+	  output += name;
+	  output += ':';
+	  output += value;
+	  return output;
+  }
 
 
   std::ostream& operator<<(std::ostream& output, const HttpHeader& h) {
@@ -52,7 +52,7 @@ namespace curl_client {
 		  full_str += elem;
 		  full_str += delim;
 	  }
-//  	full_str.pop_back(); //remove last '/' - delim
+	  full_str.pop_back();
 	  is_update_required = false;
   }
 

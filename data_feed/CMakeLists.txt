@@ -9,11 +9,7 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        curl_client/const_values.h
-        curl_client/connection_data.cpp
-        curl_client/curl_handler.cpp
-        curl_client/data_structures.cpp
-        curl_client/request.cpp
-        curl_client/utils.cpp
-        coinbase.cpp
+        tzkt/tzkt_io.cpp
+        coinbase/coinbase.cpp
+        quipuswap/quipuswap.cpp
         )

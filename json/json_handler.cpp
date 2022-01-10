@@ -22,8 +22,8 @@ namespace Json {
 			  [&string_to_look_for, this](Array arg) {findStrInArray(arg, string_to_look_for);},
 			  [&string_to_look_for, this](Dict arg) {findStrInDictionary(arg, string_to_look_for);},
 			  []([[maybe_unused]] bool arg) {},
-			  []([[maybe_unused]] int arg) {},
-			  []([[maybe_unused]] double arg) {},
+			  []([[maybe_unused]] BigInt arg) {},
+			  []([[maybe_unused]] Float arg) {},
 			  [&string_to_look_for, this](const types::String &arg) {findStrInValue(arg, string_to_look_for);},
 	  }, node.GetValue());
   }

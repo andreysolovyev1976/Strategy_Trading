@@ -23,6 +23,7 @@ namespace types {
 
   Value::Value (const String& s, int p) :number(s), precision(p) {}
 
+#if 0
   Value::Value (const Json::Node& node, int p) : precision (p) {
 	  if (node.IsDict()) {
 		  const auto& pair = node.AsDict();
@@ -59,6 +60,7 @@ namespace types {
 	  }
 
   }
+#endif
 
   Value::Value (const Value &other)
 		  : number (other.number)

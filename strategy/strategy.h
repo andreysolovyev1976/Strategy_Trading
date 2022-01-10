@@ -28,9 +28,8 @@ namespace algo {
   class Strategy {
   public:
 	  Strategy () = default;
-	  Strategy (Ticker ticker, types::String label, Account* account = nullptr)
-			  : ticker_(std::move(ticker))
-			  , label_ (std::move(label))
+	  Strategy (types::String label, Account* account = nullptr)
+			  : label_ (std::move(label))
 			  , account_(account)
 	  {}
 
@@ -61,7 +60,6 @@ namespace algo {
 			  std::vector<types::String> indicator_labels
 	  ) {
 		  Signal signal (
-		  		ticker_,
 		  		std::move(signal_label),
 		  		std::move(signal_type),
 		  		std::move(relation),
@@ -71,6 +69,7 @@ namespace algo {
 	  }
 
 	  void addRule (
+	  		Ticker ticker,
 			  types::String rule_label,
 			  types::String rule_type,
 			  const types::String& signal_label,
@@ -81,7 +80,7 @@ namespace algo {
 			  types::String order_type )
 	  {
 		  Rule rule (
-				  ticker_,
+				  ticker,
 				  std::move(rule_label),
 				  std::move(rule_type),
 				  signal_label, //todo: do I need this in ctor? Comes with ptr_signal
@@ -106,29 +105,12 @@ namespace algo {
 		  //todo: it may be different types of Data and Duration for the some strategies
 		  for (const auto &ticker : indicators_tickers_){
 		  	auto market_data = DataProcessor_::getNewMarketData(ticker);
-			indicators_.updateIndicators(market_data);
+			  std::cout << "new data for ticker: " << market_data.first << "; " << market_data.second << '\n';
+			  indicators_.updateIndicators(market_data);
 		  }
+		  std::cout << "==========\n";
 	  }
 
-
-	  std::optional<Trade> ruleSignal (const MarketDataBatch &market_data_batch) {
-		  std::vector<Trade> trades;
-
-		  //todo: !!!!! organize it by tickers, therefor reducing from O(N*M) to O(logN * logM)
-		  for (const auto &market_data : market_data_batch) {
-			  for (auto& rule : *rules_.getByLabel()) {
-				  auto trade = rule.second->ruleSignal(market_data);
-				  if (trade.has_value()) {
-					  trades.push_back(std::move(trade.value()));
-				  }
-			  }
-		  }
-		  //todo: plugin implementation, priority of trades is required - select tickers!!!
-		  if (not trades.empty()){
-			  return *begin(trades);
-		  }
-		  else return std::nullopt;
-	  }
 
 	  std::optional<Trade> ruleSignal () {
 		  std::vector<Trade> trades;
@@ -148,7 +130,6 @@ namespace algo {
 	  }
 
   private:
-	  Ticker ticker_;
 	  types::String label_;
 	  Account* account_;
 	  Indicators indicators_;

@@ -53,15 +53,13 @@ namespace algo {
   {}
 
   Signal::Signal(
-		  const Ticker &ticker,
 		  types::String signal_label,
 		  types::String signal_type,
 		  types::String relation,
 		  std::vector<types::String> indicator_labels,
 		  Indicators* indicators
   )
-		  : ticker_(ticker)
-		  , label_(std::move(signal_label))
+		  : label_(std::move(signal_label))
 		  , type_ (signal_base::StringToSignalType(signal_type))
 		  , relation_(relations::RelationFromString(std::move(relation)))
 		  , indicator_labels_(std::move(indicator_labels))
@@ -73,12 +71,8 @@ namespace algo {
 	  ProcessSignal();
 	  return signal_;
   }
-  void Signal::updateSignal([[maybe_unused]] const MarketData &market_data) {
-//	  indicators_->updateIndicators(market_data);
-  }
 
   const types::String& Signal::getLabel() const {return label_;}
-  const Ticker& Signal::getTicker() const {return ticker_;}
   const signal_base::SignalType& Signal::getSignalType() const {return type_;}
 
   void Signal::ProcessSignal() {
@@ -120,41 +114,25 @@ namespace algo {
   }
 
 
-  void Signals::updateSignals (const MarketData &market_data) {
-	  if (const auto [first, last] = by_ticker_->equal_range(market_data.ticker); first != by_ticker_->end()) {
-		  for (auto it = first, ite = last; it != ite; ++it) {
-			  it->second->updateSignal(market_data);
-		  }
-	  }
-  }
-
   void Signals::addSignal (Signal signal) {
+  	//todo: add check that indicator labels exist
 	  const auto label = signal.getLabel();
 
-	  if (auto found = by_label_->Find(label); found != by_label_->end()){
+	  if (auto found = this->getByLabel()->Find(label); found != this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal already exists; "));
 	  }
 	  auto new_signal = std::make_unique<Signal>(std::move(signal));
-	  by_label_->Insert({new_signal->getLabel(), std::move(new_signal)});
-
-	  auto shared = shareObject(label);
-	  by_ticker_->insert({shared->getTicker(), shared});
-  }
+	  this->getByLabel()->Insert({new_signal->getLabel(), std::move(new_signal)});
+}
 
   void Signals::removeSignal (const types::String &label) {
-	  auto found = by_label_->Find(label);
-	  if (found == by_label_->end()){
+	  auto found = this->getByLabel()->Find(label);
+	  if (found == this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal is not found; "));
 	  }
-
-	  //todo: very much dangerous - test this specific increment
-	  if (const auto [first, last] = by_ticker_->equal_range(found->second->getTicker()); first != by_ticker_->end()) {
-		  for (auto it = first, ite = last; it != ite;) {
-			  if (it->second->getLabel() == label) by_ticker_->erase(it);
-			  else ++it;
-		  }
+	  else {
+		  this->getByLabel()->Erase(found);
 	  }
-	  by_label_->Erase(label);
   }
 
 }//!namespace

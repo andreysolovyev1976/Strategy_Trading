@@ -6,7 +6,7 @@
 
 #include <curl/curl.h>
 
-#include "data_structures.h"
+#include "curl_data_structures.h"
 #include "json.h"
 
 #include <unordered_map>

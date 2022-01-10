@@ -103,7 +103,6 @@ Content-Length: 1256
   using Path = std::unique_ptr<PathData>;
 
 
-
   /*
 
   struct ParsedResponse {

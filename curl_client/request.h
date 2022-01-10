@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "data_structures.h"
-#include "const_values.h"
+#include "curl_data_structures.h"
+#include "curl_const_values.h"
 #include "json.h"
 #include "curl_handler.h"
 
@@ -40,6 +40,8 @@ namespace curl_client {
 	  Request* headerSetSingle (HttpHeader header);
 	  const HttpHeaders& headersGetAll () const;
 	  const HttpHeader& headerGetOne(HeaderName name) const;
+
+	  static Query makeQuery (std::string &&input);
 
   private:
 	  //curl

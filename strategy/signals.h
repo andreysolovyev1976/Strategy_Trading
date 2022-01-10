@@ -94,7 +94,6 @@ namespace algo {
 	  Signal();
 
 	  Signal(
-			  const Ticker &ticker,
 			  types::String signal_label,
 			  types::String signal_type,
 			  types::String relation,
@@ -103,14 +102,11 @@ namespace algo {
 	  );
 
 	  const signal_base::SignalData& getSignalData ();
-	  void updateSignal(const MarketData &market_data);
 	  const types::String& getLabel() const;
-	  const Ticker& getTicker() const;
 	  const signal_base::SignalType& getSignalType() const;
 
   private:
 	  ///signal
-	  Ticker ticker_;
 	  types::String label_;
 	  signal_base::SignalType type_;
 	  relations::RelationType relation_;
@@ -133,10 +129,12 @@ namespace algo {
   public:
   	using Objects<Signal>::Objects;
 
+	  ByTicker& getByTicker () = delete;
+	  const ByTicker& getByTicker () const = delete;
+
 	  void updateSignals (const MarketData &market_data);
 	  void addSignal (Signal signal);
 	  void removeSignal (const types::String &label);
-
   };
 
 

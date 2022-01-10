@@ -61,16 +61,16 @@ namespace algo {
 
 	template <typename Duration>
 	time_::Timestamp<Duration> getTimestamp(types::String time_str) {
-		return time_::fromString<Duration>(std::move(time_str), coinbase::input_fmt.c_str());
+		return time_::fromString<Duration>(std::move(time_str), data::coinbase::input_fmt.c_str());
 	}
 
 	template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
 	MarketData_<QuoteType, Duration> getNewMarketData (const types::String &t) {
-		using namespace coinbase;
+		using namespace data::coinbase;
 		auto tickers = utils::splitIntoWords(t, '-');
 		assert (tickers.size() == 2);
 		auto new_trade_data = processSingleTradeData(getSingleTradeData(tickers[0], tickers[1]));
-		Quote<QuoteType, Duration> quote = types::Value (new_trade_data.price);
+		Quote<QuoteType, Duration> quote = types::Value (new_trade_data.price, 6); //todo:: get precision from a ticker data
 		quote.timestamp = getTimestamp<Duration>(std::move(new_trade_data.time));
 
 		return MarketData_<QuoteType, Duration>{t, std::move(quote)};

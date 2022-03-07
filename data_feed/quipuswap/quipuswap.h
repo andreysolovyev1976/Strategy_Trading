@@ -5,7 +5,7 @@
 #pragma once
 
 #include "quipuswap_data_structures.h"
-#include "exceptions.h"
+#include "user_defined_exceptions.h"
 #include "tzkt_io.h"
 #include "json.h"
 #include "curl_client.h"

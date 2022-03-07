@@ -104,9 +104,9 @@ namespace algo {
 		  //todo: make it multithreading
 		  //todo: it may be different types of Data and Duration for the some strategies
 		  for (const auto &ticker : indicators_tickers_){
-		  	auto market_data = DataProcessor_::getNewMarketData(ticker);
+		  	auto market_data = DataProcessor_::getNewMarketData<types::Value, time_::Seconds>(ticker);
 			  std::cout << "new data for ticker: " << market_data.first << "; " << market_data.second << '\n';
-			  indicators_.updateIndicators(market_data);
+			  indicators_.updateIndicators<types::Value, time_::Seconds>(market_data);
 		  }
 		  std::cout << "==========\n";
 	  }

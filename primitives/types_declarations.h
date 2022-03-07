@@ -6,7 +6,7 @@
 
 #include "value.h"
 #include "maps.h"
-#include "strings.h"
+#include "user_defined_strings.h"
 
 #ifndef STRATEGY_TRADING_TYPES_DECLARATIONS_H
 #define STRATEGY_TRADING_TYPES_DECLARATIONS_H

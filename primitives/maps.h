@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 #include "safe_ptr.h"
-#include "exceptions.h"
+#include "user_defined_exceptions.h"
 
 #ifndef STRATEGY_TRADING_MAPS_H
 #define STRATEGY_TRADING_MAPS_H

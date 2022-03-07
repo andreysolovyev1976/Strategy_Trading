@@ -3,7 +3,7 @@
 //
 
 #include "json_handler.h"
-#include "exceptions.h"
+#include "user_defined_exceptions.h"
 #include "curl_client/utils.h"
 
 namespace Json {

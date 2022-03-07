@@ -49,7 +49,7 @@ namespace algo {
   }//!namespace
 
   Signal::Signal()
-  : signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>())
+  : signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>())
   {}
 
   Signal::Signal(
@@ -64,7 +64,7 @@ namespace algo {
 		  , relation_(relations::RelationFromString(std::move(relation)))
 		  , indicator_labels_(std::move(indicator_labels))
 		  , indicators_(indicators)
-		  , signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>())
+		  , signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>())
   {}
 
   const signal_base::SignalData& Signal::getSignalData () {

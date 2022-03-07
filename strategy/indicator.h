@@ -21,8 +21,8 @@
 namespace algo {
 
   //todo: make it pointer to timestamp, no copy - check Indicator file
-  using K = time_::Timestamp<time_::Milliseconds>;
-  using V = Quote<types::Value, time_::Milliseconds>;
+  using K = time_::Timestamp<time_::Seconds>;
+  using V = Quote<types::Value, time_::Seconds>;
   using MarketDataContainer = types::SingleThreadedLimitedSizeMap<K, V>;
   using ModifierFunc = std::function<V(const V&)>;
 

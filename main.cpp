@@ -4,6 +4,8 @@
 #include "strategy.h"
 #include "randomer.h"
 
+#include "tg_bot_ui.h"
+
 #include <iostream>
 #include <iomanip>
 #include <array>
@@ -11,6 +13,7 @@
 #include <chrono>
 #include <thread>
 
+#include "bot_config.h"
 
 using namespace algo;
 using namespace std;
@@ -44,8 +47,8 @@ int main() {
 	//todo: Add ThreadSafe maps
 	//todo: Add Map size limit
 	//todo: Add Value ctor from Json
-	//todo: Add logs
-	//todo: Unclear what happns with a Token price - need to check that
+	//todo: Add Logging at large
+	//todo: Unclear what happens with a Token price - need to check that
 
 
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
@@ -158,7 +161,7 @@ int main() {
 
 #endif
 
-#if 1
+#if 0
 
 	Strategy strategy ("simple_demo");
 
@@ -208,5 +211,99 @@ int main() {
 		if (counter++ > 10) break;
 	}
 #endif
+
+
+#if 0
+	/*
+	price diff
+	timeframe
+	 sizing in terms of Tezos
+	 */
+
+	Strategy strategy ("simple_demo");
+
+	///filtered and referenced data
+	strategy.addIndicator(
+			"ETH-BTC",				//ticker
+			"base_contract"			//label
+	);
+	strategy.addIndicator("ADA-ETH", "other_contract");
+//	strategy.addIndicator("C3", "modified_contract", modifier);
+
+	///relations of new market data and filtered/referenced data
+	strategy.addSignal(
+			"basic_comparison", //label
+			"Comparison",		//type of a Signal
+			"GT",				//relation between the indicators
+			{"base_contract", "other_contract"} //indicators to compare
+	);
+
+	//todo: check that this works - check relations
+	///actions, based on relations
+	strategy.addRule(
+			"ETH-BTC"s,						//ticker to generate trades for
+			"enter_when_less",				//rule_label
+			"Entry",						//type of a Rule
+			"basic_comparison",				//signal label
+			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
+			"Neutral", 						//Position to enter txn
+			types::Value(1),
+			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
+			"Market"						//how to behave in the market Market/Limited/FillOrKill
+	);
+
+	tg_bot::TgBotUI bot;
+
+	int counter = 0;
+	while (true) {
+		strategy.getMarketData();
+		auto trade = strategy.ruleSignal();
+		if (trade.has_value()) {
+			types::String text;
+			text += trade.value().getTicker();
+			text += " quantity to trade: ";
+			text += trade.value().getQuantity().ToString();
+			text += '\n';
+			bot.postData(std::move(text));
+		}
+		else {
+			bot.postData("no signal for a trade\n");
+		}
+
+		std::this_thread::sleep_for(2s);
+		if (counter++ > 10) break;
+	}
+#endif
+
+#if 0
+
+	auto& config = algo::config::RobotConfig::getInstance("../setup_user_data/bot_config.ini");
+	config.loadFromIni();
+	config.printIniFile(std::cerr);
+	config.printSettings(std::cerr);
+
+	algo::config::ContractInfo ci;
+	ci.name = "name5";
+	ci.ticker_cb = "CB 5";
+	ci.ticker_qs = "QS 5";
+	ci.price_diff = 42;
+	ci.timeframe = 42;
+	ci.trade_size = 42;
+	ci.slippage = 4;
+
+	config.updateIni(std::move(ci));
+	config.loadFromIni();
+	config.printIniFile(std::cerr);
+	config.printSettings(std::cerr);
+
+	auto c5 = config.getContractInfo("name5");
+	std::cerr << c5 << '\n';
+
+	auto fuck = config.getContractInfo("fuck");
+	std::cerr << fuck << '\n';
+
+#endif
+
+
 	return 0;
 }

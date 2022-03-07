@@ -19,7 +19,7 @@ namespace algo {
 
 	using Clock = std::chrono::system_clock;
 	using Milliseconds = std::chrono::milliseconds;
-	using Microseconds = std::chrono::milliseconds;
+	using Microseconds = std::chrono::microseconds;
 	using Seconds = std::chrono::seconds;
 
 	template<class Duration>

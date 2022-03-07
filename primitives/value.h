@@ -6,8 +6,8 @@
 
 #include <cstdint>
 
-#include "exceptions.h"
-#include "strings.h"
+#include "user_defined_exceptions.h"
+#include "user_defined_strings.h"
 #include "const_values.h"
 #if 0
 #include "json.h" //circular reference

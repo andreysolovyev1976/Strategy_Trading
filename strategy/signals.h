@@ -84,7 +84,7 @@ namespace algo {
 	[[maybe_unused]]
 	static SignalValue StringToSignalValue (const types::String& type);
 
-	using SignalData = types::SingleThreadedLimitedSizeMap<time_::Timestamp<time_::Milliseconds>, int>;
+	using SignalData = types::SingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>;
 
   }//!namespace
 

@@ -30,8 +30,7 @@ if(Boost_FOUND)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_MULTITHREAD ON)
     include_directories(${BOOST_ROOT})
-    link_directories(${BOOST_ROOT}/libs) # add this before add_executable()
-
+    #link_directories(${BOOST_ROOT}/libs) # add this before add_executable()
 else()
     message(STATUS "MAIN: NOT FOUND Boost")
 endif()
@@ -69,7 +68,6 @@ else()
 endif()
 # CURL FRAMEWORK ENDS HERE-------------------
 
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(primitives)
 include_directories(strategy)
@@ -79,8 +77,11 @@ include_directories(data_feed/tezos)
 include_directories(data_feed/coinbase)
 include_directories(data_feed/quipuswap)
 include_directories(data_feed/tzkt)
+include_directories(ini)
+include_directories(tg_bot_ui)
 include_directories(third_part/date_time/include)
 include_directories(third_part/cds)
+include_directories(third_part/tgbot/include)
 
 #either PROD or EXPERIMENTS
 SET(BUILD_BRANCH "PROD")
@@ -97,8 +98,11 @@ if(${BUILD_BRANCH} STREQUAL PROD)
     add_subdirectory(json)
     add_subdirectory(data_feed)
     add_subdirectory(curl_client)
+    add_subdirectory(tg_bot_ui)
+    add_subdirectory(ini)
 
     target_link_libraries(${PROJECT_NAME}
+            /usr/local/lib/libTgBot.a
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
             /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
             fmt::fmt
@@ -122,8 +126,12 @@ elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
     add_subdirectory(json)
     add_subdirectory(data_feed)
     add_subdirectory(curl_client)
+    add_subdirectory(tg_bot_ui)
+    add_subdirectory(ini)
+
     #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
     target_link_libraries(${PROJECT_NAME}_tryouts
+            /usr/local/lib/libTgBot.a
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
             /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
             ${CURL_LIBRARY}

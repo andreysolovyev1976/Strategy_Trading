@@ -7,7 +7,7 @@
 #include "types_declarations.h"
 #include "operators.h"
 #include "object_type.h"
-#include "exceptions.h"
+#include "user_defined_exceptions.h"
 
 #include <type_traits>
 #include <array>

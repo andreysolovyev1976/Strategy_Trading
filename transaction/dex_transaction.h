@@ -6,6 +6,7 @@
 
 #include "user_defined_strings.h"
 #include "user_defined_exceptions.h"
+#include "os_pipe.h"
 
 #ifndef STRATEGY_TRADING_DEX_TRANSACTION_H
 #define STRATEGY_TRADING_DEX_TRANSACTION_H
@@ -15,8 +16,7 @@ namespace algo {
 	namespace quipuswap {
 	  namespace transaction {
 
-		void makeTransaction([[maybe_unused]] const types::String& contract_address);
-
+		types::String makeCommand (const types::String& contract_address);
 
 	  }
 	}

@@ -3,23 +3,25 @@
 //
 
 #include "dex_transaction.h"
-#include <cstdlib>
 
 namespace algo {
   namespace tezos {
 	namespace quipuswap {
 	  namespace transaction {
 
-
-		void makeTransaction([[maybe_unused]] const types::String& contract_address){
-
+		types::String makeCommand (const types::String& contract_address) {
+			types::String command;
 #if defined(__APPLE__)
-	system ("ts-node ../setup_transacton_ts_script/test_transaction.ts --sourcePath=passedValue --targetPath=\"passed freaking Value\"");
+			command += "ts-node ../setup_transacton_ts_script/test_transaction.ts --sourcePath=";
 #endif
 #if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
-	system ("systemctl ts-node ../setup_transacton_ts_script/test_transaction.ts --sourcePath=passedValue --targetPath=\"passed freaking Value\"");
+			command += "systemctl ts-node ../setup_transacton_ts_script/test_transaction.ts --sourcePath=";
 #endif
-}//!func
+
+			command += contract_address;
+			command += " --targetPath=\"passed freaking Value\"";
+			return command;
+		}//!func
 
 
 	  }

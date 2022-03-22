@@ -79,6 +79,7 @@ include_directories(data_feed/quipuswap)
 include_directories(data_feed/tzkt)
 include_directories(ini)
 include_directories(tg_bot_ui)
+include_directories(pipe)
 include_directories(transaction)
 include_directories(third_part/date_time/include)
 include_directories(third_part/cds)
@@ -102,6 +103,7 @@ if(${BUILD_BRANCH} STREQUAL PROD)
     add_subdirectory(tg_bot_ui)
     add_subdirectory(ini)
     add_subdirectory(transaction)
+    add_subdirectory(pipe)
 
     target_link_libraries(${PROJECT_NAME}
             /usr/local/lib/libTgBot.a
@@ -131,6 +133,7 @@ elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
     add_subdirectory(tg_bot_ui)
     add_subdirectory(ini)
     add_subdirectory(transaction)
+    add_subdirectory(pipe)
 
     #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
     target_link_libraries(${PROJECT_NAME}_tryouts

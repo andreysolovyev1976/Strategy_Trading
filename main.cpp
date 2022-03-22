@@ -319,11 +319,16 @@ int main() {
 
 #if 1
 
-	algo::tezos::quipuswap::transaction::makeTransaction(""s);
+	using namespace types;
+	using namespace algo::tezos::quipuswap::transaction;
+
+	String result;
+
+	os::invokeCommandAndCaptureResult(
+			makeCommand("KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT").c_str(),
+			result);
+	std::cerr << result << '\n';
 
 #endif
-
-
-
 	return 0;
 }

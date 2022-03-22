@@ -1,7 +1,6 @@
 import {args} from "./test_cli_args";
 console.info(args);
 
-
 import { TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 import { swap, batchify } from "@quipuswap/sdk";
@@ -26,7 +25,7 @@ const factories = {
     try {
         const fromAsset = "tez";
         const toAsset = {
-            contract: "KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT",
+            contract: args.sourcePath,
             id: 0,
         };
         const inputValue = 1_000_000; // in mutez (without decimals)

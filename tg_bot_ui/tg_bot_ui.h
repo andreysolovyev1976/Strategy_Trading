@@ -18,10 +18,16 @@
 
 namespace tg_bot {
 
+  namespace {
+  }//noname namespace
+
   class TgBotUI final {
-	  using Commands = std::map<const types::String&, TgBot::BotCommand::Ptr>;
+	  using Commands = std::map<types::String, TgBot::BotCommand::Ptr>;
   public:
-	  TgBotUI(types::String token = "5217629109:AAGO8OQLcGbdNhnhBSuPr6ywKsE-d2Dib4U");
+	  TgBotUI();
+	  void init ();
+	  void run();
+
 	  void addCommand (types::String name, types::String description = "");
 	  void getCommand (types::String name) const;
 	  void removeCommand (types::String name);
@@ -29,12 +35,24 @@ namespace tg_bot {
 
 	  void postData (types::String text);
 
+	  void getCommands ();
+
   private:
 	  const types::String token_;
-	  types::UInt chat_id_, bot_id_;
-	  TgBot::Bot bot;
+	  types::UInt chat_id_;
 
-	  types::String makeCommand (const TgBot::BotCommand::Ptr bot_command);
+	  bool is_initialized = false;
+
+	  TgBot::Bot bot;
+	  Commands commands;
+
+
+/*
+	  static const std::unordered_map<
+			  ValueType,
+			  ValueObject (ValueGenerator::*)(const ValueObject&, ValueType)
+	  > RHS_SIMPLE_OPERATION_DIV_GENERATOR;
+*/
   };
 
 }//!namespace

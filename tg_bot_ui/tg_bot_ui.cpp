@@ -3,24 +3,75 @@
 //
 
 #include "tg_bot_ui.h"
+#include "const_values.h"
 
 using namespace TgBot;
 
 namespace tg_bot {
 
+  using namespace std::literals;
 
-  TgBotUI::TgBotUI(types::String token)
-  : token_ (std::move(token))
-  , bot(token_)
+  TgBotUI::TgBotUI()
+		  : token_ (const_values::TG_BOT_TOKEN)
+		  , bot(token_)
   {
-	  bot_id_ = bot.getApi().getMe()->id;
-		chat_id_ = 442233888;
-		bot.getApi().sendMessage(chat_id_, "Hi Alex!");
+	  chat_id_ = const_values::CHAT_ID;
   }
+
+  void TgBotUI::init () {
+	  bot.getApi().sendMessage(chat_id_, "Hi Alex!");
+
+	  bot.getEvents().onCommand("start", [this](Message::Ptr message) {
+		bot.getApi().sendMessage(message->chat->id, "it was start");
+	  });
+
+	  bot.getEvents().onCommand("get_contracts", [this](Message::Ptr message) {
+		bot.getApi().sendMessage(message->chat->id, "it was get_contracts");
+	  });
+
+	  bot.getEvents().onCommand("set_strategy", [this](Message::Ptr message) {
+		bot.getApi().sendMessage(message->chat->id, "it was set_strategy");
+	  });
+
+	  bot.getEvents().onCommand("exit", []([[maybe_unused]] Message::Ptr message) {
+		return;
+	  });
+
+	  is_initialized = true;
+  }
+
+
+  void TgBotUI::run() {
+	  if (not is_initialized){
+		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
+	  }
+	  try {
+		  bot.getApi().deleteWebhook();
+
+		  TgLongPoll longPoll(bot);
+		  while (true) {
+			  longPoll.start();
+		  }
+	  } catch (std::exception& e) {
+		  throw RuntimeError(EXCEPTION_MSG("TG Bot got broken: "s + e.what() + " "));
+	  }
+
+  }
+
+  void TgBotUI::addCommand (types::String name, types::String description) {
+
+	  BotCommand::Ptr new_command(new BotCommand);
+	  new_command->command = std::move(name);
+	  if (not description.empty()) new_command->description = std::move(description);
+
+	  bot.getApi().setMyCommands({new_command});
+
+  }
+
 
   void TgBotUI::postData (types::String text) {
 
-  	/*
+	  /*
      * @brief Use this method to send text messages.
      * @param chatId Unique identifier for the target chat.
      * @param text Text of the message to be sent.
@@ -35,15 +86,29 @@ namespace tg_bot {
 			  GenericReply::Ptr replyMarkup = std::make_shared<GenericReply>(), const std::string& parseMode = "", bool disableNotification = false) const;
 	  */
 
-	bot.getApi().sendMessage(chat_id_, std::move(text));
+	  bot.getApi().sendMessage(chat_id_, std::move(text));
 
   }
 
-  types::String TgBotUI::makeCommand (const TgBot::BotCommand::Ptr bot_command) {
-	  types::String output;
-	  output.reserve(bot_command->command.size() + 1);
-	  output += '/';
-	  output += bot_command->command;
-	  return output;
+  void TgBotUI::getCommands () {
+	  auto vectCmd = bot.getApi().getMyCommands();
+
+	  for(auto it_b = vectCmd.begin(), it_e = vectCmd.end(); it_b != it_e; ++it_b) {
+		  std::cerr << (*it_b)->command << ": " << (*it_b)->description << '\n';
+	  }
   }
+
+
+
+  void TgBotUI::executeCommand (types::String name) {
+	  if (auto command = commands.find(name); command != commands.end()) {
+
+
+	  } else {
+
+	  }
+
+  }
+
+
 }//!namespace

@@ -15,6 +15,10 @@
 
 #include "bot_config.h"
 
+
+#include "dex_transaction.h"
+
+
 using namespace algo;
 using namespace std;
 using namespace std::literals;
@@ -276,6 +280,14 @@ int main() {
 #endif
 
 #if 0
+	tg_bot::TgBotUI bot;
+	bot.init();
+	bot.run();
+
+#endif
+
+
+#if 0
 
 	auto& config = algo::config::RobotConfig::getInstance("../setup_user_data/bot_config.ini");
 	config.loadFromIni();
@@ -303,6 +315,14 @@ int main() {
 	std::cerr << fuck << '\n';
 
 #endif
+
+
+#if 1
+
+	algo::tezos::quipuswap::transaction::makeTransaction(""s);
+
+#endif
+
 
 
 	return 0;

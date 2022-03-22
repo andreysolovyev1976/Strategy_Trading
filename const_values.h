@@ -37,6 +37,11 @@ namespace const_values {
 		  TRADE_SIZE = 100,  	// Trade size (in tezos or whatever is easiest)
 		  SLIPPAGE = 1;  		//Slippage: prevents the bot from making unfavorable trades (e.g. 1% slippage)
 
+
+	//TG Bot
+	static const size_t CHAT_ID = 442233888;
+	static const types::String TG_BOT_TOKEN = "5217629109:AAGO8OQLcGbdNhnhBSuPr6ywKsE-d2Dib4U";
+
 }//!namespace
 
 #endif //TEZOSBOT_CONST_VALUES_H

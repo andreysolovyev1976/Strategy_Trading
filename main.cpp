@@ -4,18 +4,15 @@
 #include "strategy.h"
 #include "randomer.h"
 
-#include "tg_bot_ui.h"
+#include "ui.h"
 
 #include <iostream>
 #include <iomanip>
 #include <array>
-
 #include <chrono>
 #include <thread>
 
 #include "bot_config.h"
-
-
 #include "dex_transaction.h"
 
 
@@ -43,6 +40,7 @@ algo::Quote<types::Value, time_::Milliseconds>
 	modified.value() = quote.value() - types::Value(10);
 	return modified;
 }
+
 
 int main() {
 
@@ -279,10 +277,10 @@ int main() {
 	}
 #endif
 
-#if 0
-	tg_bot::TgBotUI bot;
-	bot.init();
+#if 1
+	user_interface::Controller bot;
 	bot.run();
+
 
 #endif
 
@@ -317,7 +315,7 @@ int main() {
 #endif
 
 
-#if 1
+#if 0
 
 	using namespace types;
 	using namespace algo::tezos::quipuswap::transaction;

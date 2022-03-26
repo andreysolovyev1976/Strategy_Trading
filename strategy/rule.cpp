@@ -110,4 +110,14 @@ namespace algo {
   }
 
 
+  void Rules::removeRule (const types::String &label) {
+	  auto found = this->getByLabel()->Find(label);
+	  if (found == this->getByLabel()->end()){
+		  throw std::invalid_argument(EXCEPTION_MSG("Rule is not found; "));
+	  }
+	  else {
+		  this->getByLabel()->Erase(found);
+	  }
+  }
+
 }//!namespace

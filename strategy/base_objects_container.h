@@ -84,11 +84,14 @@ class Objects {
 public:
 	using Owner = std::unique_ptr<T>;
 	using Ptr = T*;
-	//todo: add thread safe map
+	//todo: add thread safe map, and it shouldn't be LIMITED size
 	using ByLabel = types::SingleThreadedLimitedSizeMap<types::String, Owner>;
 	using ByTicker = types::SingleThreadedMultiMap<types::String, Ptr>;
 
 	Objects();
+	Objects(Objects<T>&& other_objects);
+	Objects(const Objects<T>& other_objects) = delete;
+
 	const ByLabel& getByLabel () const;
 	const ByTicker& getByTicker () const;
 	ByLabel& getByLabel ();
@@ -114,6 +117,13 @@ Objects<T>::Objects()
 		: by_label_ ( types::makeSingleThreadedLimitedSizeMap<types::String, Owner>())
 		, by_ticker_(types::makeSingleThreadedMultiMap<types::String, Ptr>())
 {}
+
+template <typename T>
+Objects<T>::Objects(Objects<T>&& other_objects)
+		: by_label_ (std::move(other_objects.by_label_))
+		, by_ticker_(std::move(other_objects.by_ticker_))
+{}
+
 
 template <typename T>
 const typename Objects<T>::ByLabel& Objects<T>::getByLabel () const {return by_label_;}

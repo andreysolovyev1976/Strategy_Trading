@@ -8,5 +8,6 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        tg_bot_ui.cpp
+        ui_events.cpp
+        ui.cpp
         )

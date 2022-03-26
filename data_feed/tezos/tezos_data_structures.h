@@ -31,7 +31,8 @@ namespace algo {
 // from https://tezostaquito.io/docs/rpc_nodes/
 	static const
 	std::vector<NodeAddress>
-			node_endpoint_hangzhou {{"Hangzhounet", "https://hangzhounet.api.tez.ie", NetworkID::Hangzhounet}},
+			node_endpoint_hangzhou {{"Hangzhounet by Tez.ie", "https://hangzhounet.api.tez.ie", NetworkID::Hangzhounet},
+									{"Hangzhounet by SmartPy", "https://hangzhounet.smartpy.io", NetworkID::Hangzhounet}},
 			node_endpoint_granada {{"ECAD Labs nodes", "https://granadanet.api.tez.ie", NetworkID::Granada},
 								   {"SmartPy nodes", "https://granadanet.smartpy.io/", NetworkID::Granada},
 								   {"Nodes operated by Blockscale on behalf of the Tezos Foundation", "https://rpczero.tzbeta.net/", NetworkID::Granada}},

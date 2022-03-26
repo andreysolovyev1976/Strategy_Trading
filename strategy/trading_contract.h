@@ -11,10 +11,6 @@
 
 namespace algo {
 
-  struct TradingContract {
-  	Ticker ticker;
-  	types::String id_at_chain;
-  };
 
 
 }//!namespace

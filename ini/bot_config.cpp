@@ -59,14 +59,14 @@ namespace algo {
 		elem.put("slippage", contract_info.slippage);
 
 		conf.put_child(contract_info.name, std::move(elem));
-		contracts_by_name->operator[](contract_info.name) = std::move(contract_info);
+		contracts_data_from_ini->operator[](contract_info.name) = std::move(contract_info);
 
 		ini_parser::write_ini(config_file_name, conf);
 	}
 
 	const ContractInfo& RobotConfig::getContractInfo(const types::String& contract_name) const {
-		if (auto ctr = contracts_by_name->find(contract_name); ctr != contracts_by_name->end()) {
-			return contracts_by_name->at(contract_name);
+		if (auto ctr = contracts_data_from_ini->find(contract_name); ctr != contracts_data_from_ini->end()) {
+			return contracts_data_from_ini->at(contract_name);
 		}
 		else {
 			return EMPTY_CONTRACT;
@@ -88,18 +88,20 @@ namespace algo {
 		os << "Settings stored:\n" << '\n';
 		os << "Tg Bot secret key: " << tg_bot_secret_key << '\n' << '\n';
 		os << "Contract data\n";
-
-		for (auto b = contracts_by_name->begin(), e = contracts_by_name->end(); b != e; ++b) {
+		for (auto b = contracts_data_from_ini->begin(), e = contracts_data_from_ini->end(); b != e; ++b) {
 			os << b->second;
 		}
 
 	}//!func
 
-	void RobotConfig::loadSettingsFromConfig() {
+	const Contracts& RobotConfig::getContracts() const {
+		return contracts_by_name;
+	}
 
+
+	void RobotConfig::loadSettingsFromConfig() {
 		try {
 			tg_bot_secret_key = conf.get<String>("connection.tg_bot_id");
-
 			for (const auto& item : conf) {
 				if (item.first != "connection") {
 					loadContractData(item.first);
@@ -115,7 +117,7 @@ namespace algo {
 	void RobotConfig::loadContractData(const std::string &contract_name) {
 //		_LOG(contract_name)
 
-		auto& contract = contracts_by_name->operator[](contract_name);
+		auto& contract = contracts_data_from_ini->operator[](contract_name);
 		contract.name = contract_name;
 		loadContractDataField<String>(contract_name, "ticker_cb", contract.ticker_cb);
 		loadContractDataField<String>(contract_name, "ticker_qs", contract.ticker_qs);
@@ -124,6 +126,11 @@ namespace algo {
 		loadContractDataField<Int>(contract_name, "trade_size", contract.trade_size);
 		loadContractDataField<Int>(contract_name, "slippage", contract.slippage);
 
+		TradingContract qs (contract_name, contract.ticker_qs);
+		contracts_by_name.operator->()->insert(std::make_pair(qs.joint_name, std::move(qs)));
+
+		TradingContract cb (contract_name, contract.ticker_cb);
+		contracts_by_name.operator->()->insert(std::make_pair(cb.joint_name, std::move(cb)));
 	}//!func
 
 

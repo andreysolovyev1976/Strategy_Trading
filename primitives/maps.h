@@ -147,6 +147,12 @@ namespace types {
 	return _;
   };
 
+  template <typename K, typename V>
+  using SingleThreadedMap = std::unique_ptr<std::map<K, V>>;
+  template <typename K, typename V>
+  using MultiThreadedMap = safe_ptr<std::map<K, V>>;
+
+
 
 }//!namespace
 

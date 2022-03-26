@@ -7,6 +7,7 @@
 #include "types_declarations.h"
 #include <ctime>
 #include <chrono>
+#include <ratio>
 #include <cstdint>
 #include <iosfwd>
 #include "date/date.h"
@@ -18,9 +19,20 @@ namespace algo {
   namespace time_ {
 
 	using Clock = std::chrono::system_clock;
-	using Milliseconds = std::chrono::milliseconds;
 	using Microseconds = std::chrono::microseconds;
+	using Milliseconds = std::chrono::milliseconds;
 	using Seconds = std::chrono::seconds;
+	using Minutes = std::chrono::minutes;
+	using FiveMinutes = std::chrono::duration<long, std::ratio<300>>;
+
+	/*
+typedef duration<long long,         nano> nanoseconds;
+typedef duration<long long,        micro> microseconds;
+typedef duration<long long,        milli> milliseconds;
+typedef duration<long long              > seconds;
+typedef duration<     long, ratio<  60> > minutes;
+typedef duration<     long, ratio<3600> > hours;
+	 */
 
 	template<class Duration>
 	using TimePoint = std::chrono::time_point<Clock, Duration>;

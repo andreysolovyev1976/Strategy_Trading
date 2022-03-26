@@ -8,12 +8,14 @@
 #include "user_defined_exceptions.h"
 #include "safe_ptr.h"
 #include "const_values.h"
+#include "maps.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
 #include <map>
+#include <vector>
 #include <ostream>
 
 #ifndef STRATEGY_TRADING_BOT_CONFIG_H
@@ -34,8 +36,20 @@ namespace algo {
 				slippage   = const_values::SLIPPAGE;
 	};
 	const static ContractInfo EMPTY_CONTRACT;
-
 	std::ostream& operator << (std::ostream &os, const ContractInfo& ci);
+
+	struct TradingContract {
+		types::String name;
+		Ticker ticker;
+		types::String joint_name;
+		explicit TradingContract (const types::String& name_, const Ticker& ticker_)
+				: name(name_)
+				, ticker(ticker_)
+				, joint_name(types::concatenateStrings('.', name, ticker))
+		{}
+	};
+
+	using Contracts = types::MultiThreadedMap<types::String, TradingContract>;
 
 	class RobotConfig final {
 	public:
@@ -49,9 +63,13 @@ namespace algo {
 		void printIniFile (std::ostream& os) const;
 		void printSettings (std::ostream& os) const;
 
+		const Contracts& getContracts() const;
+
 	private:
 		boost::property_tree::ptree conf;
-		safe_ptr<std::map<types::String, ContractInfo>> contracts_by_name;
+		safe_ptr<std::map<types::String, ContractInfo>> contracts_data_from_ini;
+		Contracts contracts_by_name;
+
 		types::String tg_bot_secret_key;
 		const types::String config_file_name;
 
@@ -70,9 +88,7 @@ namespace algo {
 	void RobotConfig::loadContractDataField(const types::String &contract_name, const types::String& field_name, T& value) {
 		types::String full_field_name;
 		full_field_name.reserve(contract_name.size() + field_name.size() + 1);
-		full_field_name += contract_name;
-		full_field_name += '.';
-		full_field_name += field_name;
+		full_field_name = types::concatenateStrings('.', contract_name, field_name);
 
 		if (auto o = conf.get_optional<T>(full_field_name); o) {
 			value = std::move(o.value());

@@ -3,6 +3,9 @@
 //
 #pragma once
 
+#include "types_declarations.h"
+#include <cstddef>
+
 #ifndef TEZOSBOT_CONST_VALUES_H
 #define TEZOSBOT_CONST_VALUES_H
 

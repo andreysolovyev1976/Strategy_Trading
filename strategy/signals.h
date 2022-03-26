@@ -45,9 +45,9 @@ namespace algo {
 	struct SignalType final : public types::ObjectType<signal_base::SignalTypeBase> {};
 
 	[[maybe_unused]]
-	static types::String SignalTypeToString (const SignalType &type);
+	types::String SignalTypeToString (const SignalType &type);
 	[[maybe_unused]]
-	static SignalType StringToSignalType (const types::String& type);
+	SignalType StringToSignalType (const types::String& type);
 
 	namespace signal_value {
 	  struct BaseType {};
@@ -127,7 +127,7 @@ namespace algo {
 
   class Signals final : public Objects <Signal>{
   public:
-  	using Objects<Signal>::Objects;
+	  using Objects<Signal>::Objects;
 
 	  ByTicker& getByTicker () = delete;
 	  const ByTicker& getByTicker () const = delete;

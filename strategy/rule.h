@@ -98,7 +98,6 @@ namespace algo {
   	using Objects<Rule>::Objects;
 	  void addRule (Rule rule);
 	  void removeRule (const types::String &label);
-
   };
 
 

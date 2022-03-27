@@ -24,45 +24,30 @@ namespace algo {
   class Strategy final {
   public:
 	  Strategy () = default;
-	  Strategy (types::String label, Account* account = nullptr);
+	  Strategy (types::String label,
+			  Indicators* indicators,
+			  Signals* signals,
+			  Rules* rules,
+			  Account* account = nullptr);
 
-	  void addIndicator(const Ticker & ticker, types::String indicator_label, MarketDataContainer input_value, ModifierFunc modifier);
-	  void addIndicator(const Ticker & ticker, types::String indicator_label, MarketDataContainer input_value);
-	  void addIndicator(const Ticker & ticker, types::String indicator_label, ModifierFunc modifier);
-	  void addIndicator(const Ticker & ticker, types::String indicator_label);
-	  void addSignal(
-			  types::String signal_label,
-			  types::String signal_type,
-			  types::String relation,
-			  std::vector<types::String> indicator_labels
-	  );
-	  void addRule (
-	  		Ticker ticker,
-			  types::String rule_label,
-			  types::String rule_type,
-			  const types::String& signal_label,
-			  int signal_value,
-			  types::String position_side,
-			  trade_base::OrderQuantity order_quantity,
-			  types::String trade_type,
-			  types::String order_type );
-
-	  const Indicators& getIndicators() const;
-	  const Signals& getSignals() const;
-	  const Rules& getRules() const;
+	  void addRule (const types::String& label);
 	  bool isInitialized() const;
 	  const types::String& getLabel () const;
-
 	  void getMarketData();
 	  std::optional<Trade> ruleSignal ();
 
   private:
 	  types::String label_;
-	  [[maybe_unused]] Account* account_;
-	  Indicators indicators_;
 	  std::set<Ticker> indicators_tickers_;
-	  Signals signals_;
-	  Rules rules_;
+	  std::set<types::String> rule_labels_;
+//	  Indicators indicators_;
+//	  Signals signals_;
+//	  Rules rules_;
+
+	  Indicators* indicators_;
+	  Signals* signals_;
+	  Rules* rules_;
+	  [[maybe_unused]] Account* account_;
   };
 
 

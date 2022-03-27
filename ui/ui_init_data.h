@@ -12,6 +12,8 @@
 
 namespace user_interface {
 
+  using namespace std::literals;
+
   struct InitData {
 	  types::String label;
 	  bool is_label_initialized;
@@ -61,34 +63,91 @@ namespace user_interface {
 	  bool isInitialized() override
 	  {
 		  return
-				  is_signal_type_initialized &&
+				  is_label_initialized &&
+						  is_signal_type_initialized &&
 						  is_relation_initialized &&
-						  is_indicator_labels_initialized &&
-						  is_label_initialized;
+						  is_indicator_labels_initialized;
 	  }
-
   };
+
   struct InitRule : public InitData {
+	  algo::Ticker ticker;
+	  const std::vector<types::String> rule_types {"Entry", "Exit", "Risk", "Order", "Rebalance"};
+	  types::String rule_type;
+	  types::String signal_label;
+	  int signal_value;
+
+	  const std::vector<types::String> position_sides {"Neutral", "Long", "Short"};
+	  types::String position_side;
+	  int order_quantity;
+	  const std::vector<types::String> trade_types {"Enter","Exit","StopLoss","TakeProfit","Chaining","Forced",};
+	  types::String trade_type;
+	  const std::vector<types::String> order_types {"Market", "Limited", "FillOrKill",};
+	  types::String order_type;
+
+	  bool
+			  is_ticker_initialized,
+			  is_rule_type_initialized,
+			  is_signal_label_initialized,
+			  is_signal_value_initialized,
+			  is_position_side_initialized,
+			  is_order_quantity_initialized,
+			  is_trade_type_initialized,
+			  is_order_type_initialized;
+
+
 	  void clear() override
 	  {
-		  label = ""s;
-		  is_label_initialized = false;
+		  label =
+		  ticker =
+		  rule_type =
+		  signal_label =
+		  position_side =
+		  trade_type =
+		  order_type =
+				  ""s;
+
+		  signal_value =
+		  order_quantity =
+				  0;
+
+		  is_label_initialized =
+		  is_ticker_initialized =
+		  is_rule_type_initialized =
+		  is_signal_label_initialized =
+		  is_signal_value_initialized =
+		  is_position_side_initialized =
+		  is_order_quantity_initialized =
+		  is_trade_type_initialized =
+		  is_order_type_initialized =
+				  false;
 	  }
 	  bool isInitialized() override
 	  {
-		  return is_label_initialized;
+		  return
+				  is_label_initialized &&
+						  is_ticker_initialized &&
+						  is_rule_type_initialized &&
+						  is_signal_label_initialized &&
+						  is_signal_value_initialized &&
+						  is_position_side_initialized &&
+						  is_order_quantity_initialized &&
+						  is_trade_type_initialized &&
+						  is_order_type_initialized;
 	  }
   };
 
   struct InitStrategy : public InitData {
-	  void clear() override
-	  {
+	  std::vector<types::String> rules_labels;
+	  bool is_rule_labels_initialized;
+
+	  void clear() override {
 		  label = ""s;
-		  is_label_initialized = false;
+		  rules_labels.clear();
+		  is_label_initialized = is_rule_labels_initialized = false;
 	  }
-	  bool isInitialized() override
-	  {
-		  return is_label_initialized;
+	  bool isInitialized() override{
+		  return is_label_initialized && is_rule_labels_initialized;
 	  }
   };
 

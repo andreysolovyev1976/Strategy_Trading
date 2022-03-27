@@ -4,11 +4,15 @@
 
 #pragma once
 
+
+
 #include <string>
 #include <algorithm>
 #include <cctype>
 #include <type_traits>
 #include <vector>
+#include <charconv>
+#include <stdexcept>
 
 #ifndef STRATEGY_TRADING_STRING_H
 #define STRATEGY_TRADING_STRING_H
@@ -63,6 +67,20 @@ namespace types {
 	  } //!while
 	  return result;
   } //!func
+
+
+  [[maybe_unused]]
+  static
+  int64_t fromChars(const std::string &str_int) {
+	  int64_t local_result{};
+	  auto [ptr, ec]{std::from_chars(str_int.data(), str_int.data() + str_int.size(), local_result)};
+	  if (ec == std::errc::invalid_argument) {
+		  throw std::invalid_argument("Attempt to convert not a number");
+	  } else if (ec == std::errc::result_out_of_range) {
+		  throw std::invalid_argument("Out of bound for an int64_t; ");
+	  }
+	  return local_result;
+  }
 
 
 }//!namespace

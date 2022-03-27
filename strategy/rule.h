@@ -61,7 +61,6 @@ namespace algo {
 			  types::String rule_type,
 			  types::String signal_label,
 			  int signal_value,
-			  Signal *signal,
 			  types::String position_side,
 			  trade_base::OrderQuantity order_quantity,
 			  types::String trade_type,

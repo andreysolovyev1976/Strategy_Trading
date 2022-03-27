@@ -2,6 +2,7 @@
 // Created by Andrey Solovyev on 26/03/2022.
 //
 
+#include "ui_events.h"
 
 namespace user_interface {
 

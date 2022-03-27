@@ -27,7 +27,7 @@ public:
 	using runtime_error::runtime_error;
 };
 
-class IvalidArgumentError : public std::invalid_argument {
+class InvalidArgumentError : public std::invalid_argument {
 public:
 	using invalid_argument::invalid_argument;
 };

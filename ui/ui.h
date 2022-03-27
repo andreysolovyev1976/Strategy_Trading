@@ -104,15 +104,17 @@ namespace user_interface {
 	  types::String getContracts(const types::String& input);
 
 	  InitIndicator init_indicator;
-	  algo::Indicators indicators;
 	  InitSignal init_signal;
-	  algo::Signals signals;
+	  InitRule init_rule;
 	  InitStrategy init_strategy;
+
+	  algo::Indicators indicators;
+	  algo::Signals signals;
+	  algo::Rules rules;
 	  algo::Strategies strategies;
 
 	  types::BigInt current_message_id;
 	  int64_t chat_id;
-
   };
 
 

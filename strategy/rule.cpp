@@ -35,7 +35,6 @@ namespace algo {
 		  types::String rule_type,
 		  types::String signal_label,
 		  int signal_value,
-		  Signal* signal,
 		  types::String position_side,
 		  trade_base::OrderQuantity order_quantity,
 		  types::String trade_type,
@@ -46,7 +45,7 @@ namespace algo {
 		  , rule_type_(rule_base::StringToRuleType(rule_type))
 		  , signal_label_(std::move(signal_label))
 		  , signal_value_(signal_value)
-		  , signal_(std::move(signal))
+		  , signal_(signals->shareObject(signal_label))
 		  , required_position_side_(StringToPositionSide(position_side))
 		  , order_quantity_(std::move(order_quantity))
 		  , trade_type_(trade_base::StringToTradeType(trade_type))

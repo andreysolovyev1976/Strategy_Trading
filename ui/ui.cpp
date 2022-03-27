@@ -131,22 +131,25 @@ namespace user_interface {
 					row.push_back(makeInlineCheckButton(curr->second.joint_name));
 					keyboard_select->inlineKeyboard.push_back(std::move(row));
 				}
-				bot.getApi().sendMessage(
+				auto _ = bot.getApi().sendMessage(
 						message->chat->id, "Select the ticker for Indicator", false, 0, keyboard_select);
+				current_message_id = _->messageId;
 			}
 		}
 	  });
 
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		const auto& contracts = robot_config.getContracts();
-		for (auto curr = contracts.operator->()->begin(),
-					 end = contracts.operator->()->end();
-			 curr!=end; ++curr) {
-			if (StringTools::startsWith(query->data, curr->second.joint_name)) {
-				init_indicator.ticker = curr->second.ticker;
-				init_indicator.is_ticker_initialized = true;
-				bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addIndicator));
-				break;
+		if (query->message->messageId == current_message_id) {
+			const auto& contracts = robot_config.getContracts();
+			for (auto curr = contracts.operator->()->begin(),
+						 end = contracts.operator->()->end();
+				 curr!=end; ++curr) {
+				if (StringTools::startsWith(query->data, curr->second.joint_name)) {
+					init_indicator.ticker = curr->second.ticker;
+					init_indicator.is_ticker_initialized = true;
+					bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addIndicator));
+					break;
+				}
 			}
 		}
 	  });
@@ -215,31 +218,35 @@ namespace user_interface {
 				row.push_back(makeInlineCheckButton("finished"));
 				keyboard_select->inlineKeyboard.push_back(std::move(row));
 
-				bot.getApi().sendMessage(message->chat->id,
+				auto _ = bot.getApi().sendMessage(message->chat->id,
 						"Select the Indicator(s) to include", false, 0, keyboard_select);
+				current_message_id = _->messageId;
+
 			}
 		}
 	  });
 
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		//todo: add there should be two only or extend the logic
-		if (query->data != "finished") {
-			if (auto found = indicators.getByLabel()->Find(query->data);
-					found!=indicators.getByLabel()->End()) {
-				init_signal.indicator_labels.push_back(query->data); //todo: can be changed for pointers
+		if (query->message->messageId == current_message_id) {
+			//todo: add there should be two only or extend the logic
+			if (query->data!="finished") {
+				if (auto found = indicators.getByLabel()->Find(query->data);
+						found!=indicators.getByLabel()->End()) {
+					init_signal.indicator_labels.push_back(query->data); //todo: can be changed for pointers
+				}
 			}
-		}
-		else {
-			init_signal.is_indicator_labels_initialized = true;
+			else {
+				init_signal.is_indicator_labels_initialized = true;
 
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto& s_type : init_signal.signal_types){
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(s_type));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
+				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+				for (const auto& s_type : init_signal.signal_types) {
+					std::vector<InlineKeyboardButton::Ptr> row;
+					row.push_back(makeInlineCheckButton(s_type));
+					keyboard_select->inlineKeyboard.push_back(std::move(row));
+				}
+				bot.getApi().sendMessage(query->message->chat->id,
+						"Select Signal type", false, 0, keyboard_select);
 			}
-			bot.getApi().sendMessage(query->message->chat->id,
-					"Select Signal type", false, 0, keyboard_select);
 		}
 	  });
 
@@ -255,20 +262,23 @@ namespace user_interface {
 					row.push_back(makeInlineCheckButton(r));
 					keyboard_select->inlineKeyboard.push_back(std::move(row));
 				}
-				bot.getApi().sendMessage(query->message->chat->id,
+				auto _ = bot.getApi().sendMessage(query->message->chat->id,
 						"Select relation", false, 0, keyboard_select);
+				current_message_id = _->messageId;
 				break;
 			}
 		}
 	  });
 
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		for (const auto& r : relations::relation_names){
-			if (query->data == r) {
-				init_signal.relation = query->data;
-				init_signal.is_relation_initialized = true;
-				bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addSignal));
-				break;
+		if (query->message->messageId == current_message_id) {
+			for (const auto& r : relations::relation_names) {
+				if (query->data==r) {
+					init_signal.relation = query->data;
+					init_signal.is_relation_initialized = true;
+					bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addSignal));
+					break;
+				}
 			}
 		}
 	  });
@@ -289,7 +299,6 @@ namespace user_interface {
 			}
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select the Signal to remove", false, 0, keyboard_select);
-
 			current_message_id = _->messageId;
 		}
 	  });
@@ -303,7 +312,6 @@ namespace user_interface {
 			}
 		}
 	  });
-
   }
   void Controller::initGetSignals(){
 	  bot.getEvents().onCommand("get_signals", [this](Message::Ptr message) {
@@ -312,10 +320,187 @@ namespace user_interface {
 
   }
   void Controller::initAddStrategy() {
+	  bot.getEvents().onCommand("add_strategy", [this](Message::Ptr message) {
+		ForceReply::Ptr keyboard_reply(new ForceReply);
+		bot.getApi().sendMessage(message->chat->id,
+				"Label new Strategy", false, 0, keyboard_reply);
+	  });
+
+	  bot.getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
+				"Label new Strategy")) {
+
+			if (auto found = strategies.getByLabel()->Find(message->text);
+					found!=strategies.getByLabel()->End()) {
+				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
+			}
+			else {
+
+				init_strategy.label = message->text;
+				init_strategy.is_label_initialized = true;
+
+				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+				for (const auto&[_label, _] : *rules.getByLabel()) {
+					std::vector<InlineKeyboardButton::Ptr> row;
+					row.push_back(makeInlineCheckButton(_label));
+					keyboard_select->inlineKeyboard.push_back(std::move(row));
+				}
+				std::vector<InlineKeyboardButton::Ptr> row;
+				row.push_back(makeInlineCheckButton("finished"));
+				keyboard_select->inlineKeyboard.push_back(std::move(row));
+
+				auto _ = bot.getApi().sendMessage(message->chat->id,
+						"Select the Rule(s) to include", false, 0, keyboard_select);
+				current_message_id = _->messageId;
+			}
+		}
+	  });
+
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (query->message->messageId == current_message_id) {
+			if (query->data!="finished") {
+				if (auto found = rules.getByLabel()->Find(query->data);
+						found!=rules.getByLabel()->End()) {
+					init_strategy.rules_labels.push_back(query->data); //todo: can be changed for pointers
+				}
+			}
+			else {
+				init_strategy.is_rule_labels_initialized = true;
+				bot.getApi().sendMessage(query->message->chat->id,
+						processEvent(Event::addStrategy, query->data));
+			}
+		}
+	  });
   }
-  void Controller::initRemoveStrategy(){
+  void Controller::initRemoveStrategy() {
+	  bot.getEvents().onCommand("remove_strategy", [this](Message::Ptr message) {
+		if (strategies.getByLabel()->Empty()) {
+			bot.getApi().sendMessage(message->chat->id, "No strategies yet to remove");
+		}
+		else {
+			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+			for (const auto&[_label, _] : *signals.getByLabel()) {
+				std::vector<InlineKeyboardButton::Ptr> row;
+				row.push_back(makeInlineCheckButton(_label));
+				keyboard_select->inlineKeyboard.push_back(std::move(row));
+			}
+			auto _ = bot.getApi().sendMessage(message->chat->id,
+					"Select the Signal to remove", false, 0, keyboard_select);
+
+			current_message_id = _->messageId;
+		}
+	  });
+
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (query->message->messageId == current_message_id) {
+			if (auto found = signals.getByLabel()->Find(query->data);
+					found!=signals.getByLabel()->End()) {
+				bot.getApi().sendMessage(query->message->chat->id,
+						processEvent(Event::removeStrategy, query->data));
+			}
+		}
+	  });
+
   }
   void Controller::initAddRule(){
+	  bot.getEvents().onCommand("add_rule", [this](Message::Ptr message) {
+		ForceReply::Ptr keyboard_reply(new ForceReply);
+		bot.getApi().sendMessage(message->chat->id,
+				"Label new Rule", false, 0, keyboard_reply);
+	  });
+
+	  bot.getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
+				"Label new Rule")) {
+
+			if (auto found = rules.getByLabel()->Find(message->text);
+					found!=rules.getByLabel()->End()) {
+				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
+			}
+			else {
+
+				init_rule.label = message->text;
+				init_rule.is_label_initialized = true;
+
+				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+				const auto& contracts = robot_config.getContracts();
+				for (auto curr = contracts.operator->()->begin(),
+							 end = contracts.operator->()->end();
+					 curr!=end; ++curr) {
+					std::vector<InlineKeyboardButton::Ptr> row;
+					row.push_back(makeInlineCheckButton(curr->second.joint_name));
+					keyboard_select->inlineKeyboard.push_back(std::move(row));
+				}
+				auto _ = bot.getApi().sendMessage(
+						message->chat->id, "Select the ticker to trade with the Rule", false, 0, keyboard_select);
+				current_message_id = _->messageId;
+			}
+		}
+	  });
+
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (query->message->messageId == current_message_id) {
+			const auto& contracts = robot_config.getContracts();
+			for (auto curr = contracts.operator->()->begin(),
+						 end = contracts.operator->()->end();
+				 curr!=end; ++curr) {
+				if (StringTools::startsWith(query->data, curr->second.joint_name)) {
+					init_rule.ticker = curr->second.ticker;
+					init_rule.is_ticker_initialized = true;
+
+					InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+					for (const auto& [label, _] : *signals.getByLabel()) {
+						std::vector<InlineKeyboardButton::Ptr> row;
+						row.push_back(makeInlineCheckButton(label));
+						keyboard_select->inlineKeyboard.push_back(std::move(row));
+					}
+					auto _ = bot.getApi().sendMessage(query->message->chat->id,
+							"Select Signal", false, 0, keyboard_select);
+					current_message_id = _->messageId;
+					break;
+				}
+			}
+		}
+	  });
+
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (query->message->messageId == current_message_id) {
+			if (auto found = signals.getByLabel()->Find(query->data); found!=signals.getByLabel()->End()) {
+				init_rule.signal_label = query->data;
+				init_rule.is_signal_label_initialized = true;
+
+				//todo: CHANGE THIS TO TRUE / FALSE / VALUE
+				ForceReply::Ptr keyboard_reply(new ForceReply);
+				auto _ = bot.getApi().sendMessage(query->message->chat->id,
+						"Please provide required signal value", false, 0, keyboard_reply);
+				current_message_id = _->messageId;
+			}
+		}
+	  });
+
+	  bot.getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
+				"Please provide required signal value")) {
+
+			init_rule.signal_value = fromChars(message->text);
+			init_rule.is_signal_value_initialized = true;
+
+			init_rule.position_side = init_rule.position_sides[0]; //todo: CHANGE THIS!!!
+			init_rule.is_position_side_initialized = true;
+
+			init_rule.order_quantity = 42; //todo: CHANGE THIS!!!
+			init_rule.is_order_quantity_initialized = true;
+
+			init_rule.trade_type = init_rule.trade_types[0]; //todo: CHANGE THIS!!!
+			init_rule.is_trade_type_initialized = true;
+
+			init_rule.order_type = init_rule.order_types[0]; //todo: CHANGE THIS!!!
+			init_rule.is_order_type_initialized = true;
+
+			bot.getApi().sendMessage(message->chat->id, processEvent(Event::addRule));
+
+		}
+	  });
   }
   void Controller::initRemoveRule(){
   }
@@ -440,14 +625,50 @@ namespace user_interface {
 	  return result;
   }
   String Controller::addStrategy([[maybe_unused]] const types::String& input){
-	  return "";
+	  if (not init_strategy.isInitialized()) return "Strategy is not initialized"s;
+
+	  Strategy strategy (init_strategy.label,
+	  		&this->indicators,
+	  		&this->signals,
+	  		&this->rules
+	  		);
+	  for (const auto& rule_label : init_strategy.rules_labels) {
+		  if (auto found = rules.getByLabel()->Find(rule_label);
+				  found != rules.getByLabel()->End()) {
+			  strategy.addRule(rule_label);
+		  }
+	  }
+	  if (not strategy.isInitialized()) {
+		  return "None of the Rules' Labels is found, please check"s;
+	  }
+	  strategies.addStrategy(std::move(strategy));
+	  init_strategy.clear();
+	  return "Strategy successfully added"s;
   }
   String Controller::removeStrategy([[maybe_unused]] const types::String& input){
-	  return "";
+	  return "WIP - Removing Strategy"s;
   }
   String Controller::addRule([[maybe_unused]] const types::String& input){
-	  return "";
+	  if (not init_rule.isInitialized()) return "Rule is not initialized"s;
+
+	  Rule rule (
+			  init_rule.ticker,
+			  init_rule.label,
+			  init_rule.rule_type,
+			  init_rule.signal_label,
+			  init_rule.signal_value,
+			  init_rule.position_side,
+			  init_rule.order_quantity,
+			  init_rule.trade_type,
+			  init_rule.order_type,
+			  &signals
+	  );
+
+	  rules.addRule(std::move(rule));
+	  init_strategy.clear();
+	  return "Rule successfully added"s;
   }
+
   String Controller::removeRule([[maybe_unused]] const types::String& input){
 	  return "";
   }

@@ -104,6 +104,7 @@ namespace algo {
 	  const signal_base::SignalData& getSignalData ();
 	  const types::String& getLabel() const;
 	  const signal_base::SignalType& getSignalType() const;
+	  const std::vector<types::String>& getIndicatorsLabels();
 
   private:
 	  ///signal

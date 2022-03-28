@@ -14,6 +14,8 @@
 
 #include "bot_config.h"
 #include "dex_transaction.h"
+#include "strategy_engine.h"
+
 
 
 using namespace algo;
@@ -54,19 +56,6 @@ int main() {
 
 
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
-
-#if 0
-	auto trade1 = processSingleTradeData(getSingleTradeData("ETH", "USD"));
-	std::stringstream ss (trade1.time);
-
-	std::cerr << trade1.time << '\t';
-
-	time_::Timestamp<time_::Microseconds> t;
-	std::cerr << t << '\t';
-	date::from_stream(ss, input_fmt.c_str(), t.time_point);
-	std::cerr << t << '\n';
-#endif
-
 
 #if 0
 	getListOfCurrencies();
@@ -112,29 +101,6 @@ int main() {
 		}
 	}
 #endif
-//	std::cout << "Work in progress...\n";
-
-
-#if 0
-	for (int i = 0; i != 10; ++i) {
-		auto trade1 = processSingleTradeData(getSingleTradeData("ADA", "ETH"));
-		if (not trade1.empty) {
-			cout << "ADA-ETH: " << trade1.price << ' ' << trade1.volume << ' ' << trade1.time << '\n';
-		}
-		else {
-			cout << "ADA-ETH: " << "no data\n";
-		}
-
-		auto trade3 = processSingleTradeData(getSingleTradeData("ETH", "BTC"));
-		if (not trade3.empty) {
-			cout << "ETH-BTC: " << trade3.price << ' ' << trade3.volume << ' ' << trade3.time << '\n';
-		}
-		else {
-			cout << "ETH-BTC: " << "no data\n";
-		}
-	}
-#endif
-
 
 #if 0
 
@@ -165,27 +131,33 @@ int main() {
 
 #if 0
 
-	Strategy strategy ("simple_demo");
+	Engine engine;
 
 	///filtered and referenced data
-	strategy.addIndicator(
+	Indicator i1(
 			"ETH-BTC",				//ticker
 			"base_contract"			//label
 	);
-	strategy.addIndicator("ADA-ETH", "other_contract");
+
+	Indicator i2("ETH-USD", "other_contract");
 //	strategy.addIndicator("C3", "modified_contract", modifier);
+	engine.addTradingObject(std::move(i1));
+	engine.addTradingObject(std::move(i2));
 
 	///relations of new market data and filtered/referenced data
-	strategy.addSignal(
+	Signal s1(
 			"basic_comparison", //label
 			"Comparison",		//type of a Signal
 			"LT",				//relation between the indicators
-			{"base_contract", "other_contract"} //indicators to compare
+			{"base_contract", "other_contract"}, //indicators to compare
+			engine.getPtr<Indicators>()
 	);
+	engine.addTradingObject(std::move(s1));
+
 
 	//todo: check that this works - check relations
 	///actions, based on relations
-	strategy.addRule(
+	Rule r1 (
 			"ETH-BTC"s,						//ticker to generate trades for
 			"enter_when_less",				//rule_label
 			"Entry",						//type of a Rule
@@ -194,94 +166,30 @@ int main() {
 			"Neutral", 						//Position to enter txn
 			types::Value(1),
 			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
-			"Market"						//how to behave in the market Market/Limited/FillOrKill
+			"Market",						//how to behave in the market Market/Limited/FillOrKill
+			engine.getPtr<Signals>()
 	);
+	engine.addTradingObject(std::move(r1));
+
+	Strategy st1 ("simple_demo"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
+	st1.addRule("enter_when_less");
+	engine.addTradingObject(std::move(st1));
+
+	engine.activateStrategy("simple_demo"s);
 
 	int counter = 0;
 	while (true) {
-		strategy.getMarketData();
-		auto trade = strategy.ruleSignal();
-		if (trade.has_value()) {
-			cout << trade.value().getTicker() << " quantity to trade: " << trade.value().getQuantity() << '\n';
-		}
-		else {
-			cout << "no signal for a trade\n";
-		}
-
+		engine.iterateOverStrategies();
 		std::this_thread::sleep_for(1ms);
 		cout << "==========\n";
 		if (counter++ > 10) break;
 	}
-#endif
 
-
-#if 0
-	/*
-	price diff
-	timeframe
-	 sizing in terms of Tezos
-	 */
-
-	Strategy strategy ("simple_demo");
-
-	///filtered and referenced data
-	strategy.addIndicator(
-			"ETH-BTC",				//ticker
-			"base_contract"			//label
-	);
-	strategy.addIndicator("ADA-ETH", "other_contract");
-//	strategy.addIndicator("C3", "modified_contract", modifier);
-
-	///relations of new market data and filtered/referenced data
-	strategy.addSignal(
-			"basic_comparison", //label
-			"Comparison",		//type of a Signal
-			"GT",				//relation between the indicators
-			{"base_contract", "other_contract"} //indicators to compare
-	);
-
-	//todo: check that this works - check relations
-	///actions, based on relations
-	strategy.addRule(
-			"ETH-BTC"s,						//ticker to generate trades for
-			"enter_when_less",				//rule_label
-			"Entry",						//type of a Rule
-			"basic_comparison",				//signal label
-			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			"Neutral", 						//Position to enter txn
-			types::Value(1),
-			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
-			"Market"						//how to behave in the market Market/Limited/FillOrKill
-	);
-
-	tg_bot::TgBotUI bot;
-
-	int counter = 0;
-	while (true) {
-		strategy.getMarketData();
-		auto trade = strategy.ruleSignal();
-		if (trade.has_value()) {
-			types::String text;
-			text += trade.value().getTicker();
-			text += " quantity to trade: ";
-			text += trade.value().getQuantity().ToString();
-			text += '\n';
-			bot.postData(std::move(text));
-		}
-		else {
-			bot.postData("no signal for a trade\n");
-		}
-
-		std::this_thread::sleep_for(2s);
-		if (counter++ > 10) break;
-	}
 #endif
 
 #if 1
-	user_interface::Controller bot;
-	bot.run();
-
-
+	user_interface::Controller app;
+	app.run();
 #endif
 
 

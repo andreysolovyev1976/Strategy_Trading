@@ -11,6 +11,7 @@
 #include "base_objects_container.h"
 
 #include <optional>
+#include <vector>
 
 #ifndef STRATEGY_TRADING_RULE_H
 #define STRATEGY_TRADING_RULE_H
@@ -50,7 +51,7 @@ namespace algo {
 
   class Rule final {
   public:
-	  Rule() = default;
+//	  Rule() = default;
 	  //todo: implement ctor as a variadic template
 	  //todo: either to share related signals through special shared_ptr with no deleter
 	  // or to share entire Signals using simple ptr
@@ -71,22 +72,24 @@ namespace algo {
 
 	  const types::String& getLabel() const;
 	  const Ticker& getTicker() const;
+	  const std::vector<types::String>& getIndicatorsLabels() const;
+
   private:
 	  ///rule
-	  Ticker ticker_;
+	  Ticker trading_ticker_;
 	  types::String label_;
 	  rule_base::RuleType rule_type_;
 	  ///signal
 	  types::String signal_label_;
 	  int signal_value_;
-	  Signal* signal_;
 	  ///result of applying the rule over signal
 	  PositionSide required_position_side_;
 	  trade_base::OrderQuantity order_quantity_;
 	  trade_base::TradeType trade_type_;
 	  trade_base::OrderType order_type_;
-	  [[maybe_unused]] Signals* signals_;
-
+	  Signals* signals_;
+	  Signal* signal_;
+	  const std::vector<types::String>& indicator_labels_;
 
 	  std::optional<Trade> ProcessSignal ();
   };

@@ -23,4 +23,6 @@ target_sources(${PROJECT_NAME} PRIVATE
         trading_contract.cpp
 
         trade.h
+
+        strategy_engine.cpp
         )

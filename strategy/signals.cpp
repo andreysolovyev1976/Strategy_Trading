@@ -74,6 +74,7 @@ namespace algo {
 
   const types::String& Signal::getLabel() const {return label_;}
   const signal_base::SignalType& Signal::getSignalType() const {return type_;}
+  const std::vector<types::String>& Signal::getIndicatorsLabels() {return indicator_labels_;}
 
   void Signal::ProcessSignal() {
 	  //todo: make sure only new timestamps are updated

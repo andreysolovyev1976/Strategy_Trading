@@ -33,7 +33,8 @@ namespace const_values {
 
 
   //INI file params
-  static const types::String NO_NAME = "NO_NAME";
+	static const types::String CONFIG_FILENAME ("../setup_user_data/bot_config.ini");
+  static const types::String NO_NAME ("NO_NAME");
   static const int
 		  PRICE_DIFF = 5,  		// Price differential ( in % difference relative to coinbase price)
 		  TIMEFRAME  = 60,   	// How often to check for price differences (e.g. every 5 minutes)

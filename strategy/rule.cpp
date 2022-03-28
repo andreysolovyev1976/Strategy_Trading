@@ -28,7 +28,6 @@ namespace algo {
 
   }//!namespace
 
-
   Rule::Rule(
 		  const Ticker &ticker,
 		  types::String rule_label,
@@ -40,26 +39,26 @@ namespace algo {
 		  types::String trade_type,
 		  types::String order_type,
 		  Signals* signals)
-		  : ticker_(ticker)
+		  : trading_ticker_(ticker)
 		  , label_(std::move(rule_label))
 		  , rule_type_(rule_base::StringToRuleType(rule_type))
 		  , signal_label_(std::move(signal_label))
 		  , signal_value_(signal_value)
-		  , signal_(signals->shareObject(signal_label))
 		  , required_position_side_(StringToPositionSide(position_side))
 		  , order_quantity_(std::move(order_quantity))
 		  , trade_type_(trade_base::StringToTradeType(trade_type))
 		  , order_type_(trade_base::StringToOrderType(order_type))
 		  , signals_(signals)
-  { }
-
+		  , signal_(signals_->getPtr(signal_label_))
+		  , indicator_labels_ (signal_->getIndicatorsLabels())
+  {}
 
   std::optional<Trade> Rule::ruleSignal () {
 	  return ProcessSignal();
   }
 
-
   std::optional<Trade> Rule::ProcessSignal () {
+	  if (not signal_) throw RuntimeError(EXCEPTION_MSG("No signal?!? "));
 
 	  const auto &value = signal_->getSignalData ();
 
@@ -68,7 +67,7 @@ namespace algo {
 	  if (type_.TryAs<signal_base::signal_type::Comparison>()) {
 		  if (not value->Empty() &&
 				  std::prev(value->End())->second == signal_value_){
-			  Trade trade (ticker_,
+			  Trade trade (trading_ticker_,
 					  order_quantity_,
 					  required_position_side_,
 					  trade_type_,
@@ -92,7 +91,11 @@ namespace algo {
   }
 
   const Ticker& Rule::getTicker() const {
-  	return ticker_;
+  	return trading_ticker_;
+  }
+
+  const std::vector<types::String>& Rule::getIndicatorsLabels() const {
+  	return indicator_labels_;
   }
 
   void Rules::addRule (Rule rule) {

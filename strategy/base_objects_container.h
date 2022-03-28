@@ -97,6 +97,7 @@ public:
 	ByLabel& getByLabel ();
 	ByTicker& getByTicker ();
 	const T& getObject (const types::String &label) const;
+	T* getPtr (const types::String &label);
 	Ptr shareObject (const types::String &label);
 
 	//todo: should I go with this design?
@@ -140,6 +141,14 @@ const T& Objects<T>::getObject (const types::String &label) const {
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}
 	else return *found->second;
+}
+
+template <typename T>
+T* Objects<T>::getPtr (const types::String &label) {
+	if (auto found = by_label_->Find(label); found == by_label_->end()){
+		return nullptr;
+	}
+	else return found->second.get();
 }
 
 template <typename T>

@@ -23,7 +23,9 @@ namespace algo {
 	  if (rule_labels_.count(label)) throw InvalidArgumentError(EXCEPTION_MSG("Rule Label already exists in this Strategy; "));
 	  if (auto found = rules_->getByLabel()->Find(label); found != rules_->getByLabel()->End()) {
 		  rule_labels_.insert(label);
-		  indicators_tickers_.insert(found->second->getTicker());
+		  for (const auto& item : found->second->getIndicatorsLabels()) {
+			  indicators_tickers_.insert(indicators_->getObject(item).getTicker());
+		  }
 	  }
 	  else{
 		  throw RuntimeError(EXCEPTION_MSG("Rule Label is not found in the Rules; "));
@@ -49,6 +51,9 @@ namespace algo {
 
 
   std::optional<Trade> Strategy::ruleSignal () {
+	  if (not isInitialized())
+	  	throw RuntimeError(EXCEPTION_MSG("No Rules selected; "));
+
 	  std::vector<Trade> trades;
 
 	  for (auto& rule : *(rules_->getByLabel()) ) {

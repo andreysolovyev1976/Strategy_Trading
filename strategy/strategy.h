@@ -38,15 +38,12 @@ namespace algo {
 
   private:
 	  types::String label_;
-	  std::set<Ticker> indicators_tickers_;
+	  std::set<algo::Ticker> indicators_tickers_;
 	  std::set<types::String> rule_labels_;
-//	  Indicators indicators_;
-//	  Signals signals_;
-//	  Rules rules_;
 
-	  Indicators* indicators_;
-	  Signals* signals_;
-	  Rules* rules_;
+	  [[maybe_unused]] Indicators* indicators_;
+	  [[maybe_unused]] Signals* signals_;
+	  [[maybe_unused]] Rules* rules_;
 	  [[maybe_unused]] Account* account_;
   };
 

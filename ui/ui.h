@@ -13,24 +13,23 @@
 #include "ui_init_data.h"
 #include "ui_events.h"
 
-#include "trading_contract.h"
-#include "indicator.h"
-#include "signals.h"
-#include "strategy.h"
+#include "strategy_engine.h"
 
 #include <map>
 #include <vector>
+#include <thread>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-
 
 #ifndef STRATEGY_TRADING_TG_BOT_UI_H
 #define STRATEGY_TRADING_TG_BOT_UI_H
 
 namespace user_interface {
-
   using namespace std::literals;
+
+  using Username = types::String;
+  using UserUI_Activity = std::map<Username, Event>;
 
   class Controller final {
 	  using Commands = std::map<types::String, TgBot::BotCommand::Ptr>;
@@ -108,13 +107,14 @@ namespace user_interface {
 	  InitRule init_rule;
 	  InitStrategy init_strategy;
 
-	  algo::Indicators indicators;
-	  algo::Signals signals;
-	  algo::Rules rules;
-	  algo::Strategies strategies;
+	  algo::Engine engine;
 
-	  types::BigInt current_message_id;
-	  int64_t chat_id;
+	  UserUI_Activity user_ui_activity;
+
+	  void runBot();
+	  std::map<std::thread::id, std::thread> threads;
+	  std::map<types::String, std::thread::id> strategies_to_threads;
+	  std::set<types::String> active_strategies;
   };
 
 

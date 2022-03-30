@@ -9,7 +9,9 @@
 #include "rule.h"
 #include "strategy.h"
 #include "trade.h"
+#include "threads_engine.h"
 #include "bot_config.h"
+
 
 #ifndef STRATEGY_TRADING_STRATEGY_ENGINE_H
 #define STRATEGY_TRADING_STRATEGY_ENGINE_H
@@ -37,6 +39,8 @@ namespace algo {
 	  Signals signals;
 	  Rules rules;
 	  Strategies strategies;
+
+	  threads::Engine threads_engine;
 
 //	  config::RobotConfig robot_config;
   };

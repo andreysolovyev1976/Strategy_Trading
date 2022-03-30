@@ -24,7 +24,7 @@ ENDIF()
 
 
 # BOOST STARTS HERE-------------------
-find_package (Boost REQUIRED filesystem)
+find_package (Boost COMPONENTS filesystem thread REQUIRED)
 if(Boost_FOUND)
     message(STATUS "MAIN: FOUND Boost, including and linking...")
     set(Boost_USE_STATIC_LIBS ON)

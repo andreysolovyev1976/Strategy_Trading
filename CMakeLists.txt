@@ -7,7 +7,12 @@ project(${PROJECT_NAME}
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -o")
+if (APPLE)
+    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -Wno-missing-field-initializers -o")
+else()
+    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-c99-extensions -Wno-missing-field-initializers -o")
+endif()
+
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=undefined -g")
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=address -g -fno-omit-frame-pointer -fno-optimize-sibling-calls")
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=thread -g")

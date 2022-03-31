@@ -39,6 +39,8 @@ namespace algo {
   private:
 	  types::String label_;
 	  std::set<algo::Ticker> indicators_tickers_;
+	  std::set<algo::TradingContract> indicators_tickers_;
+
 	  std::set<types::String> rule_labels_;
 
 	  [[maybe_unused]] Indicators* indicators_;

@@ -18,6 +18,8 @@
 namespace algo {
   namespace time_ {
 
+    //todo: add is_convertible to duration
+
 	using Clock = std::chrono::system_clock;
 	using Microseconds = std::chrono::microseconds;
 	using Milliseconds = std::chrono::milliseconds;

@@ -38,7 +38,12 @@ endif()
 
 
 # OPENSSL STARTS HERE-------------------
-find_package(OpenSSL 3.0 REQUIRED)
+if (APPLE)
+    find_package(OpenSSL 3.0 REQUIRED)
+else()
+    find_package(OpenSSL 3.0.2 REQUIRED)
+endif()
+
 if(OpenSSL_FOUND)
     message(STATUS "MAIN: FOUND OpenSSL, including and linking...")
     include_directories(/usr/local/Cellar/openssl@3/3.0.0/include)
@@ -49,13 +54,16 @@ endif()
 
 
 # FMT STARTS HERE-------------------
-find_package(fmt)
-if(fmt_FOUND)
-    message(STATUS "MAIN: FOUND fmt, including and linking...")
-else()
-    message(STATUS "MAIN: NOT FOUND fmt")
+if (APPLE)
+    find_package(fmt)
+    if(fmt_FOUND)
+        message(STATUS "MAIN: FOUND fmt, including and linking...")
+    else()
+        message(STATUS "MAIN: NOT FOUND fmt")
+    endif()
 endif()
 # FMT FRAMEWORK ENDS HERE-------------------
+
 
 
 # CURL STARTS HERE-------------------
@@ -85,25 +93,22 @@ include_directories(third_part/date_time/include)
 include_directories(third_part/cds)
 include_directories(third_part/tgbot/include)
 
-#either PROD or EXPERIMENTS
-SET(BUILD_BRANCH "PROD")
 
-if(${BUILD_BRANCH} STREQUAL PROD)
+add_executable(${PROJECT_NAME}
+        main.cpp
+        )
+add_subdirectory(primitives)
+add_subdirectory(strategy)
+add_subdirectory(json)
+add_subdirectory(dexes)
+add_subdirectory(curl_client)
+add_subdirectory(ini)
+add_subdirectory(pipe)
+add_subdirectory(ui)
 
-    message(STATUS "Build Branch - selected PROD")
 
-    add_executable(${PROJECT_NAME}
-            main.cpp
-            )
-    add_subdirectory(primitives)
-    add_subdirectory(strategy)
-    add_subdirectory(json)
-    add_subdirectory(dexes)
-    add_subdirectory(curl_client)
-    add_subdirectory(ini)
-    add_subdirectory(pipe)
-    add_subdirectory(ui)
-
+if (APPLE)
+    message(STATUS "Loading APPLE HOME COMPUTER Configuration...")
     target_link_libraries(${PROJECT_NAME}
             /Users/elenasolovyeva/Documents/Cpp/Projects/StrategyTrading/third_part/tgbot/libTgBot.a
             /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
@@ -112,37 +117,20 @@ if(${BUILD_BRANCH} STREQUAL PROD)
             ${Boost_LIBRARIES}
             ${CURL_LIBRARY}
             )
-
-    enable_testing()
-    add_subdirectory(tests)
-
-    message(STATUS "STATUS ======== OK ========")
-
-elseif(${BUILD_BRANCH} STREQUAL EXPERIMENTS)
-
-    message(STATUS "Build Branch - selected EXPERIMENTS")
-
-    include_directories (third_part/signalR/include)
-
-    add_executable(${PROJECT_NAME}_tryouts tryouts.cpp)
-    add_subdirectory(third_part/signalR)
-    add_subdirectory(json)
-    add_subdirectory(dexes)
-    add_subdirectory(curl_client)
-    add_subdirectory(ini)
-    add_subdirectory(pipe)
-    add_subdirectory(ui)
-
-    #add_executable(${PROJECT_NAME}_tryouts boost_ws.cpp)
-    target_link_libraries(${PROJECT_NAME}_tryouts
-            /Users/elenasolovyeva/Documents/Cpp/Projects/StrategyTrading/third_part/tgbot/libTgBot.a
-            /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
-            /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
-            ${CURL_LIBRARY}
-            ${Boost_LIBRARIES}
-            )
-    message(STATUS "STATUS ======== OK ========")
 else()
-    message(STATUS "STATUS ======= FAIL =======")
-    message(STATUS "Error of selecting a Build Branch - see CMakeLists.txt for the details")
+    message(STATUS "Loading DEBIAN REMOTE COMPUTER Configuration...")
+    target_link_libraries(${PROJECT_NAME}
+            /Users/elenasolovyeva/Documents/Cpp/Projects/StrategyTrading/third_part/tgbot/libTgBot.a
+            OpenSSL::SSL
+            OpenSSL::Crypto
+            ${Boost_LIBRARIES}
+            ${CURL_LIBRARY}
+            )
 endif()
+
+message(STATUS "Loading Testing Environment...")
+enable_testing()
+add_subdirectory(tests)
+
+message(STATUS "STATUS ======== OK ========")
+

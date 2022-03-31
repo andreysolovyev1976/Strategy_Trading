@@ -1,5 +1,3 @@
-#if 1
-
 #include "coinbase.h"
 #include "tzkt_io.h"
 #include "quipuswap.h"
@@ -53,6 +51,7 @@ int main() {
 	//todo: Add Value ctor from Json
 	//todo: Add Logging at large
 	//todo: Unclear what happens with a Token price - need to check that
+	//todo: Manage threads - it seems like a leak with no proper interruption
 
 
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
@@ -131,7 +130,7 @@ int main() {
 
 #if 0
 
-	Engine engine;
+	algo::Engine engine;
 
 	///filtered and referenced data
 	Indicator i1(
@@ -154,7 +153,6 @@ int main() {
 	);
 	engine.addTradingObject(std::move(s1));
 
-
 	//todo: check that this works - check relations
 	///actions, based on relations
 	Rule r1 (
@@ -171,19 +169,42 @@ int main() {
 	);
 	engine.addTradingObject(std::move(r1));
 
-	Strategy st1 ("simple_demo"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
+	Rule r2 (
+			"ETH-USD"s,						//ticker to generate trades for
+			"exit_when_greater",			//rule_label
+			"Exit",							//type of a Rule
+			"basic_comparison",				//signal label
+			-1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
+			"Neutral", 						//Position to enter txn
+			types::Value(1),
+			"Exit", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
+			"Market",						//how to behave in the market Market/Limited/FillOrKill
+			engine.getPtr<Signals>()
+	);
+	engine.addTradingObject(std::move(r2));
+
+	Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
 	st1.addRule("enter_when_less");
 	engine.addTradingObject(std::move(st1));
 
-	engine.activateStrategy("simple_demo"s);
+	Strategy st2 ("simple_demo 2"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
+	st2.addRule("exit_when_greater");
+	engine.addTradingObject(std::move(st2));
 
-	int counter = 0;
-	while (true) {
-		engine.iterateOverStrategies();
-		std::this_thread::sleep_for(1ms);
-		cout << "==========\n";
-		if (counter++ > 10) break;
-	}
+	std::cout << "two strategies\n";
+	engine.activateStrategy("simple_demo 1"s);
+	engine.activateStrategy("simple_demo 2"s);
+	std::this_thread::sleep_for(30s);
+	std::cout << "one strategy\n";
+	engine.deactivateStrategy("simple_demo 1"s);
+	std::this_thread::sleep_for(30s);
+	engine.deactivateStrategy("simple_demo 2"s);
+	std::cout << "no strategy\n";
+	std::this_thread::sleep_for(30s);
+	std::cout << "ok\n";
+	std::cout << "one strategy\n";
+	engine.activateStrategy("simple_demo 1"s);
+	std::this_thread::sleep_for(30s);
 
 #endif
 
@@ -237,211 +258,6 @@ int main() {
 
 #endif
 
-
-
-
-	return 0;
-}
-#endif
-
-#if 0
-
-#include <thread>
-#include <mutex>
-#include <iostream>
-#include <unordered_map>
-#include <chrono>
-#include <cstring>
-#include <pthread.h>
-#include <unistd.h>
-
-
-void show_thread(const std::string &keyword)
-{
-	std::string cmd("ps -T | grep ");
-	cmd += keyword;
-	system(cmd.c_str());
-}
-
-class Foo {
-public:
-	void sleep_for([[maybe_unused]] const std::string &tname, [[maybe_unused]] int num)
-	{
-	}
-
-	void start_thread(const std::string &tname)
-	{
-		std::thread thrd = std::thread(&Foo::sleep_for, this, tname, 3600);
-		tm_[tname] = thrd.native_handle();
-		thrd.detach();
-		std::cout << "Thread " << tname << " created:" << std::endl;
-	}
-
-	void stop_thread(const std::string &tname)
-	{
-		ThreadMap::const_iterator it = tm_.find(tname);
-		if (it != tm_.end()) {
-			pthread_cancel(it->second);
-			tm_.erase(tname);
-			std::cout << "Thread " << tname << " killed:" << std::endl;
-		}
-	}
-
-private:
-	typedef std::unordered_map<std::string, pthread_t> ThreadMap;
-	ThreadMap tm_;
-};
-
-
-
-int main()
-{
-	Foo foo;
-	std::string keyword("test_thread");
-	std::string tname1 = keyword + "1";
-	std::string tname2 = keyword + "2";
-
-	// create and kill thread 1
-	foo.start_thread(tname1);
-	show_thread(keyword);
-	foo.stop_thread(tname1);
-	show_thread(keyword);
-
-	// create and kill thread 2
-	foo.start_thread(tname2);
-	show_thread(keyword);
-	foo.stop_thread(tname2);
-	show_thread(keyword);
-
 	return 0;
 }
 
-#endif
-
-
-#if 0
-
-#include "operators.h"
-
-#include <boost/thread/thread.hpp>
-#include <mutex>
-#include <thread>
-#include <iostream>
-#include <chrono>
-#include <map>
-
-
-using namespace std::chrono_literals;
-using namespace std::string_literals;
-
-std::mutex iomutex;
-void f1(int num) {
-	std::this_thread::sleep_for(std::chrono::seconds(2));
-	std::lock_guard<std::mutex> lk(iomutex);
-	std::cout << "Thread " << num << " pthread_t " << pthread_self() << std::endl;
-}
-
-void f2(int num, int b) {
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-	std::lock_guard<std::mutex> lk(iomutex);
-	std::cout << "Thread " << num << "; second arg is " << b << " pthread_t " << pthread_self() << std::endl;
-}
-
-/// less than
-template <typename L, typename R>
-using HasLT = std::enable_if_t<operators::has_less_than<L, R>::value, bool>;
-
-template <typename Label, HasLT<Label,Label> = true>
-class ThreadEngine {
-	using Thread = boost::thread;
-	using ThreadID = boost::thread::id;
-	using ThreadMap = std::map<ThreadID, Thread>;
-	using ThreadMapIter = typename std::map<ThreadID, Thread>::iterator;
-	using LabelIdMap = std::map<Label, ThreadID>;
-	using IdLabelMap = std::map<ThreadID, Label>;
-public:
-	explicit ThreadEngine () = default;
-	ThreadEngine (const ThreadEngine&) = delete;
-	ThreadEngine operator = (const ThreadEngine&) = delete;
-	void addThread (Thread&& thread, Label label){
-		auto id = thread.get_id();
-		thread_map.insert(std::make_pair(id, std::move(thread)));
-		label_to_id.insert(std::make_pair(label, id));
-		id_to_label.insert(std::make_pair(id, std::move(label)));
-		thread_map.at(id).detach();
-	}
-	template <typename F, typename... Args>
-	void createThread (Label label, F func, Args... args) {
-		boost::thread _ (func, args...);
-		this->addThread(std::move(_), std::move(label));
-	}
-
-	bool interruptThread (ThreadID id){
-		if (auto found_thread = thread_map.find(id); found_thread != thread_map.end()) {
-			__eraseThread(found_thread);
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	bool interruptThread (Label label){
-		if (auto found_label = label_to_id.find(label); found_label != label_to_id.end()) {
-			const auto& id = found_label.second;
-			if (auto found_thread = thread_map.find(id); found_thread!=thread_map.end()) {
-				__eraseThread(found_thread);;
-				return true;
-			}
-		}
-		else {
-			return false;
-		}
-	}
-
-	size_t size() const {return __size();}
-
-private:
-	ThreadMap thread_map;
-	LabelIdMap label_to_id;
-	IdLabelMap id_to_label;
-	size_t __size() {
-		if (id_to_label.size() != label_to_id.size()) {
-			throw std::runtime_error("Map sizes are not equal, can't proceed.");
-		}
-		else {
-			return id_to_label.size();
-		}
-	}
-
-	void __eraseThread (ThreadMapIter found) {
-		Thread tr (&ThreadEngine::__eraseThreadHelper, this, std::move(found->second));
-		tr.detach();
-		auto id_label = id_to_label.find(found->first);
-		label_to_id.erase(id_label->second);
-		id_to_label.erase(id_label);
-		thread_map.erase(found);
-	}
-	void __eraseThreadHelper (Thread&& thread) {
-		thread.interrupt();
-	}
-
-
-};
-
-
-
-#include <string>
-
-int main () {
-
-	ThreadEngine<std::string> te;
-	te.createThread("1st"s, f1, 1);
-	te.createThread("2nd"s, f1, 2);
-	te.createThread("3rd"s, f2, 3, 4);
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-
-	return 0;
-}
-
-#endif

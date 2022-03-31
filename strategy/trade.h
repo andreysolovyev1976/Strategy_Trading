@@ -8,7 +8,6 @@
 
 #include <iosfwd>
 
-
 #ifndef STRATEGY_TRADING_TRADE_H
 #define STRATEGY_TRADING_TRADE_H
 

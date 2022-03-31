@@ -12,6 +12,8 @@ namespace user_interface {
 	  begin,
 	  initRobot,
 
+	  help,
+
 	  addIndicator,
 	  removeIndicator,
 	  getIndicators,

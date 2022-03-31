@@ -30,16 +30,6 @@ namespace user_interface {
   }//!ctor
 
   void Controller::run() {
-	  std::thread bot_thread(&Controller::runBot, this);
-	  bot_thread.detach();
-
-	  std::thread engine_thread(&Engine::iterateOverStrategies, std::ref(this->engine), std::ref(active_strategies));
-	  engine_thread.detach();
-
-	  while (true) {}
-  }
-
-  void Controller::runBot() {
 	  if (not is_initialized){
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
@@ -56,10 +46,13 @@ namespace user_interface {
 	  }
   }
 
+  void Controller::runBot() {}
+
   const std::unordered_map<
 		  Event,
 		  void (Controller::*)()
   > Controller::INIT = {
+		  {Event::help, &Controller::initHelp},
 		  {Event::addIndicator, &Controller::initAddIndicator},
 		  {Event::removeIndicator, &Controller::initRemoveIndicator},
 		  {Event::getIndicators, &Controller::initGetIndicators},
@@ -111,6 +104,12 @@ namespace user_interface {
 	  std::cerr << fuck << '\n';
 */
   }
+  void Controller::initHelp(){
+	  bot.getEvents().onCommand("help", [this](Message::Ptr message) {
+		bot.getApi().sendMessage(message->chat->id, processEvent(Event::help));
+	  });
+  }
+
   void Controller::initAddIndicator(){
 
 	  bot.getEvents().onCommand("add_indicator", [this](Message::Ptr message) {
@@ -637,6 +636,7 @@ namespace user_interface {
 		  Event,
 		  String (Controller::*)(const types::String&)
   > Controller::EVENT_HANDLER = {
+		  {Event::help, &Controller::help},
 		  {Event::addIndicator, &Controller::addIndicator},
 		  {Event::removeIndicator, &Controller::removeIndicator},
 		  {Event::getIndicators, &Controller::getIndicators},
@@ -659,6 +659,16 @@ namespace user_interface {
 
   String Controller::processEvent (Event event, const types::String& input) {
 	  return (this->*EVENT_HANDLER.at(event))(input);
+  }
+  String Controller::help([[maybe_unused]] const types::String& input){
+  	types::String result = R"(
+1) Create an Indicator, that holds and updates Market Data for a ticker, either Quipuswap or Coinbase.
+2) Create a Signal, that compares two Indicators or an Indicator and a threshold.
+3) Create a Rule, that determines what to do in the market once Signal triggers action.
+4) Create a Strategy, that may hold several Rules, helping to organize complex behaviour for the Robot.
+5) Each strategy should be started separately. Each strategy can be either stopped or started.
+)";
+	  return result;
   }
   String Controller::addIndicator([[maybe_unused]] const types::String& input){
 	  if (not init_indicator.isInitialized()) return "Indicator is not initialized"s;
@@ -782,7 +792,7 @@ namespace user_interface {
 	  return result;
   }
   String Controller::stopStrategy([[maybe_unused]] const types::String& input){
-	  engine.deactivateStrategy(input, active_strategies); //todo - make it a separate thread
+	  engine.deactivateStrategy(input);
 
 	  String result = "Strategy with Label ";
 	  result += input;
@@ -790,7 +800,7 @@ namespace user_interface {
 	  return result;
   }
   String Controller::startStrategy([[maybe_unused]] const types::String& input){
-	  engine.activateStrategy(input, active_strategies); //todo - make it a separate thread
+	  engine.activateStrategy(input);
 
 	  String result = "Strategy with Label ";
 	  result += input;

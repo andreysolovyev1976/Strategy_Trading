@@ -59,6 +59,7 @@ namespace user_interface {
 	  void initCommand (Event event);
 	  algo::config::RobotConfig& robot_config;
 	  void initRobot();
+	  void initHelp();
 	  void initAddIndicator();
 	  void initRemoveIndicator();
 	  void initGetIndicators();
@@ -83,6 +84,7 @@ namespace user_interface {
 			  types::String (Controller::*)(const types::String&)
 	  > EVENT_HANDLER;
 	  types::String processEvent (Event event, const types::String& input = ""s);
+	  types::String help(const types::String& input);
 	  types::String addIndicator(const types::String& input);
 	  types::String removeIndicator(const types::String& input);
 	  types::String getIndicators(const types::String& input);
@@ -112,10 +114,7 @@ namespace user_interface {
 	  UserUI_Activity user_ui_activity;
 
 	  void runBot();
-	  std::map<std::thread::id, std::thread> threads;
-	  std::map<types::String, std::thread::id> strategies_to_threads;
-	  std::set<types::String> active_strategies;
-  };
+ };
 
 
 

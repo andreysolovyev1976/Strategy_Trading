@@ -20,16 +20,13 @@ namespace algo {
 
   class Engine final {
   public:
-	  void run();
-	  void iterateOverStrategies(const std::set<types::String>& active_strategies);
-	  void activateStrategy(const types::String& label, std::set<types::String>& active_strategies);
-	  void deactivateStrategy(const types::String& label, std::set<types::String>& active_strategies);
+
+	  void activateStrategy(const types::String& label);
+	  void deactivateStrategy(const types::String& label);
 	  void getStrategies() const;
 
 	  template <typename Object>
 	  void addTradingObject (Object object);
-
-	  types::String implementTransaction (Trade trade) const;
 
 	  template <typename Ptr>
 	  Ptr* getPtr ();
@@ -40,9 +37,14 @@ namespace algo {
 	  Rules rules;
 	  Strategies strategies;
 
-	  threads::Engine threads_engine;
+	  threads::Engine<types::String> threads_engine;
 
 //	  config::RobotConfig robot_config;
+	  std::set<types::String> active_strategies;
+	  bool isStrategyActive(const types::String& label) const;
+	  void runStrategy (const types::String& label);
+	  types::String implementTransaction (Trade trade) const;
+
   };
 
   template <typename Object>

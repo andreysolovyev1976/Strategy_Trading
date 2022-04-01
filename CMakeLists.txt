@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 if (APPLE)
     set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -Wno-missing-field-initializers -o")
 else()
-    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-c99-extensions -Wno-missing-field-initializers -o")
+    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-c99-extensions -Wno-missing-field-initializers")
 endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=undefined -g")
@@ -123,7 +123,7 @@ if (APPLE)
 else()
     message(STATUS "Loading DEBIAN REMOTE COMPUTER Configuration...")
     target_link_libraries(${PROJECT_NAME}
-            /Users/elenasolovyeva/Documents/Cpp/Projects/StrategyTrading/third_part/tgbot/libTgBot.a
+            libTgBot.a
             OpenSSL::SSL
             OpenSSL::Crypto
             ${Boost_LIBRARIES}

@@ -75,9 +75,7 @@ namespace algo {
 
 		return MarketData_<QuoteType, Duration>{t, std::move(quote)};
 	}
-  };
-
-
+  }
 }//!namespace
 
 #endif //STRATEGY_TRADING_DATA_PROCESSOR_H

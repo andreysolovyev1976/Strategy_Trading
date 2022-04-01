@@ -130,14 +130,14 @@ namespace types {
   MultiThreadedLimitedSizeMap<K, V> makeMultiThreadedLimitedSizeMap () {
 	safe_ptr<MapLimitedSize<K, V>> _;
 	return _;
-  };
+  }
 
   template <typename K, typename V>
   using SingleThreadedMultiMap = std::unique_ptr<std::multimap<K, V>>;
   template <typename K, typename V>
   SingleThreadedMultiMap<K, V> makeSingleThreadedMultiMap (){
 	return std::make_unique<std::multimap<K, V>>();
-  };
+  }
 
   template <typename K, typename V>
   using MultiThreadedMultiMap = safe_ptr<std::multimap<K, V>>;
@@ -145,7 +145,7 @@ namespace types {
   MultiThreadedMultiMap<K,V> makeMultiThreadedMultiMap (){
 	safe_ptr<std::multimap<K, V>> _;
 	return _;
-  };
+  }
 
   template <typename K, typename V>
   using SingleThreadedMap = std::unique_ptr<std::map<K, V>>;

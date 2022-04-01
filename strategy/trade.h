@@ -57,7 +57,7 @@ namespace algo {
 		else if (type == "Chaining") return TradeType{trade_type::Chaining{}};
 		else if (type == "Forced") return TradeType{trade_type::Forced{}};
 		else return TradeType{};
-	};
+	}
 
 
 	namespace order_type {

@@ -30,27 +30,38 @@ namespace algo {
 	};
 
 
-	types::String SignalValueToString (const SignalValue &type ) {
-		if (type.TryAs<signal_value::True>()) return "True";
-		else if (type.TryAs<signal_value::False>()) return "False";
-		else if (type.TryAs<signal_value::Zero>()) return "Zero";
-		else if (type.TryAs<signal_value::Value>()) return "Numeric";
+	types::String SignalValueToString (const SignalValue &value ) {
+		if (value.TryAs<signal_value::True>()) return "True";
+		else if (value.TryAs<signal_value::False>()) return "False";
+		else if (value.TryAs<signal_value::Zero>()) return "Zero";
+		else if (value.TryAs<signal_value::Value>()) return "Numeric";
 		else return "";
 	}
 
-	SignalValue StringToSignalValue (const types::String& type) {
-		if (type == "True") return SignalValue{signal_value::True{}};
-		else if (type == "False") return SignalValue{signal_value::False{}};
-		else if (type == "Zero") return SignalValue{signal_value::Zero{}};
-		else if (type == "Numeric") return SignalValue{signal_value::Value{}}; //todo: parsing of argument is required here
+	SignalValue StringToSignalValue (const types::String& value) {
+		if (value == "True") return SignalValue{signal_value::True{}};
+		else if (value == "False") return SignalValue{signal_value::False{}};
+		else if (value == "Zero") return SignalValue{signal_value::Zero{}};
+		else if (value == "Numeric") return SignalValue{signal_value::Value{}}; //todo: parsing of argument is required here
 		else return SignalValue{};
-	};
+	}
+
+	SignalValue BoolToSignalValue (bool relation) {
+		if (relation == true) return SignalValue{signal_value::True{}};
+		else return SignalValue{signal_value::False{}};
+	}
+
+	bool operator == (const SignalValue& lhs, const SignalValue& rhs) {
+		if 		(lhs.TryAs<signal_value::True>() && rhs.TryAs<signal_value::True>()) return true;
+		else if (lhs.TryAs<signal_value::False>() && rhs.TryAs<signal_value::False>()) return true;
+		else if (lhs.TryAs<signal_value::Zero>() && rhs.TryAs<signal_value::Zero>()) return true;
+		else if ((lhs.TryAs<signal_value::Value>() && rhs.TryAs<signal_value::Value>()) &&
+				(lhs.As<signal_value::Value>().value == rhs.As<signal_value::Value>().value)) return true;
+
+		else return false;
+	}
 
   }//!namespace
-
-  Signal::Signal()
-  : signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>())
-  {}
 
   Signal::Signal(
 		  types::String signal_label,
@@ -64,7 +75,7 @@ namespace algo {
 		  , relation_(relations::RelationFromString(std::move(relation)))
 		  , indicator_labels_(std::move(indicator_labels))
 		  , indicators_(indicators)
-		  , signal_ (types::makeSingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>())
+		  , signal_ (types::makeMultiThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, signal_base::SignalValue>())
   {}
 
   const signal_base::SignalData& Signal::getSignalData () {
@@ -84,23 +95,29 @@ namespace algo {
 	  const auto &ind1 = indicators_->getObject(indicator_labels_[0]).getOutputValues();
 	  const auto &ind2 = indicators_->getObject(indicator_labels_[1]).getOutputValues();
 
-	  for (const auto &[tstamp1, quote1] : (*ind1)) {
-		  if (auto found_at_second = ind2->Find(tstamp1); found_at_second != ind2->End()) {
+	  for (auto it1 = ind1->begin(), e1 = ind1->end(); it1 != e1; ++it1){
+		  const auto &[tstamp1, quote1] = *it1;
+
+		  if (auto found_at_second = ind2->Find(tstamp1); found_at_second != ind2->end()) {
 			  const auto &[tstamp2, quote2] = *found_at_second;
 			  bool rel = relations::RelationImpl(quote1, quote2, relation_);
 
 			  if (auto found_at_signal = signal_->Find(tstamp1); found_at_signal == signal_->end()){
+				  signal_->Insert({tstamp1, signal_base::BoolToSignalValue(rel)});
+
+				  //todo: IMPORTANT!!! this doesn't work
+/*
 				  if (found_at_signal != signal_->begin()) {
 					  auto &prev_singal_value = prev(found_at_signal)->second;
-					  //todo: IMPORTANT!!! this doesn't work
-					  if (not rel && prev_singal_value != -1) (*signal_).Insert({tstamp1, -1});
-					  else if (rel && prev_singal_value != 1) (*signal_).Insert({tstamp1, 1});
-					  else (*signal_).Insert({tstamp1, 0});
+					  if (not rel && prev_singal_value != -1) signal_->Insert({tstamp1, -1});
+					  else if (rel && prev_singal_value != 1) signal_->Insert({tstamp1, 1});
+					  else signal_->Insert({tstamp1, 0});
 				  }
 				  else {
-					  if (not rel) (*signal_).Insert({tstamp1, -1});
-					  else (*signal_).Insert({tstamp1, 1});
+					  if (not rel) signal_->Insert({tstamp1, -1});
+					  else signal_->Insert({tstamp1, 1});
 				  }
+*/
 			  } else {
 				  //todo: this must be addressed
 
@@ -109,7 +126,7 @@ namespace algo {
 		  }
 		  else {
 			  //todo: update indicators when there is no data
-			  (*signal_).Insert({tstamp1, INT32_MIN});
+			  signal_->Insert({tstamp1, signal_base::SignalValue{}});
 		  }
 	  }
   }

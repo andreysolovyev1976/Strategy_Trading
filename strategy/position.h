@@ -7,6 +7,8 @@
 #include "types_declarations.h"
 #include "object_type.h"
 
+#include "trading_contract.h"
+
 #ifndef STRATEGY_TRADING_POSITION_H
 #define STRATEGY_TRADING_POSITION_H
 

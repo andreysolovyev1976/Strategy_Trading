@@ -29,13 +29,13 @@ namespace user_interface {
   using namespace std::literals;
 
   using Username = types::String;
-  using UserUI_Activity = std::map<Username, Event>;
+  using UserActivity = std::map<Username, Event>;
 
-  class Controller final {
+  class UI final {
 	  using Commands = std::map<types::String, TgBot::BotCommand::Ptr>;
 	  using Keyboards = std::map<types::String, TgBot::GenericReply::Ptr>;
   public:
-	  Controller();
+	  UI();
 	  void run();
 
 	  void addCommand (types::String name, types::String description = ""s);
@@ -45,19 +45,30 @@ namespace user_interface {
 	  void getCommands ();
 
   private:
-	  bool is_initialized = false;
+	  bool is_ui_initialized = false;
 	  const types::String token_;
 	  TgBot::Bot bot;
 	  Commands commands;
 	  [[maybe_unused]] Keyboards keyboards;
-	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
+
+	  algo::config::RobotConfig& robot_config;
+
+	  InitIndicator init_indicator;
+	  InitSignal init_signal;
+	  InitRule init_rule;
+	  InitStrategy init_strategy;
+	  InitContract init_contract;
+
+	  algo::Engine engine;
+
+	  UserActivity user_activity;
+
 
 	  static const std::unordered_map<
 			  Event,
-			  void (Controller::*)()
+			  void (UI::*)()
 	  > INIT;
 	  void initCommand (Event event);
-	  algo::config::RobotConfig& robot_config;
 	  void initRobot();
 	  void initHelp();
 	  void initAddIndicator();
@@ -77,11 +88,12 @@ namespace user_interface {
 	  void initStopOperations();
 	  void initStartUI();
 	  void initStopUI();
+	  void initAddContract();
 	  void initGetContracts();
 
 	  static const std::unordered_map<
 			  Event,
-			  types::String (Controller::*)(const types::String&)
+			  types::String (UI::*)(const types::String&)
 	  > EVENT_HANDLER;
 	  types::String processEvent (Event event, const types::String& input = ""s);
 	  types::String help(const types::String& input);
@@ -102,18 +114,10 @@ namespace user_interface {
 	  types::String stopOperations(const types::String& input);
 	  types::String startUI(const types::String& input);
 	  types::String stopUI(const types::String& input);
+	  types::String addContract(const types::String& input);
 	  types::String getContracts(const types::String& input);
 
-	  InitIndicator init_indicator;
-	  InitSignal init_signal;
-	  InitRule init_rule;
-	  InitStrategy init_strategy;
-
-	  algo::Engine engine;
-
-	  UserUI_Activity user_ui_activity;
-
-	  void runBot();
+	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
  };
 
 

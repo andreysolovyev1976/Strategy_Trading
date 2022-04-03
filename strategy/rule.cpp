@@ -5,6 +5,7 @@
 #include "rule.h"
 
 namespace algo {
+  using namespace std::string_literals;
 
   namespace rule_base {
 
@@ -28,29 +29,31 @@ namespace algo {
 
   }//!namespace
 
+
   Rule::Rule(
-		  const Ticker &ticker,
 		  types::String rule_label,
-		  types::String rule_type,
+		  const Ticker &ticker,
+		  types::String quipuswap_trade_side,
+//		  types::String rule_type,
 		  types::String signal_label,
-		  int signal_value,
-		  types::String position_side,
+		  types::String signal_value,
+//		  types::String position_side,
 		  trade_base::OrderQuantity order_quantity,
-		  types::String trade_type,
-		  types::String order_type,
+//		  types::String trade_type,
+//		  types::String order_type,
 		  Signals* signals)
-		  : trading_ticker_(ticker)
-		  , label_(std::move(rule_label))
-		  , rule_type_(rule_base::StringToRuleType(rule_type))
+		  : label_(std::move(rule_label))
+		  , trading_contract_(ticker, quipuswap_trade_side)
+		  , rule_type_(rule_base::StringToRuleType("Entry"s))
 		  , signal_label_(std::move(signal_label))
-		  , signal_value_(signal_value)
-		  , required_position_side_(StringToPositionSide(position_side))
+		  , signal_value_(signal_base::StringToSignalValue(signal_value))
+		  , required_position_side_(StringToPositionSide("Neutral"s))
 		  , order_quantity_(std::move(order_quantity))
-		  , trade_type_(trade_base::StringToTradeType(trade_type))
-		  , order_type_(trade_base::StringToOrderType(order_type))
+		  , trade_type_(trade_base::StringToTradeType("Enter"s))
+		  , order_type_(trade_base::StringToOrderType("Market"))
 		  , signals_(signals)
 		  , signal_(signals_->getPtr(signal_label_))
-		  , indicator_labels_ (signal_->getIndicatorsLabels())
+		  , indicator_labels_ ({signal_->getIndicatorsLabels().begin(), signal_->getIndicatorsLabels().end()})
   {}
 
   std::optional<Trade> Rule::ruleSignal () {
@@ -59,21 +62,13 @@ namespace algo {
 
   std::optional<Trade> Rule::ProcessSignal () {
 	  if (not signal_) throw RuntimeError(EXCEPTION_MSG("No signal?!? "));
-
-	  const auto &value = signal_->getSignalData ();
+	  const auto &signal_data = signal_->getSignalData ();
 
 	  //todo: implement visitor
 	  const auto type_ = signal_->getSignalType();
 	  if (type_.TryAs<signal_base::signal_type::Comparison>()) {
-		  if (not value->Empty() &&
-				  std::prev(value->End())->second == signal_value_){
-			  Trade trade (trading_ticker_,
-					  order_quantity_,
-					  required_position_side_,
-					  trade_type_,
-					  order_type_);
-
-			  return trade;
+		  if (not signal_data->Empty() && std::prev(signal_data->end())->second == signal_value_){
+			  return Trade (trading_contract_, order_quantity_, types::Value(0.005, 3));
 		  }
 		  else return std::nullopt;
 	  }
@@ -83,19 +78,23 @@ namespace algo {
 	  else if (type_.TryAs<signal_base::signal_type::Timestamp>()) {}
 	  else if (type_.TryAs<signal_base::signal_type::Threshold>()) {}
 
-	  return Trade();
+	  return std::nullopt;
   }
 
   const types::String& Rule::getLabel() const {
-  	return label_;
+	  return label_;
   }
 
   const Ticker& Rule::getTicker() const {
-  	return trading_ticker_;
+	  return trading_contract_.ticker;
   }
 
-  const std::vector<types::String>& Rule::getIndicatorsLabels() const {
-  	return indicator_labels_;
+  const std::set<types::String>& Rule::getIndicatorsLabels() const {
+	  return indicator_labels_;
+  }
+
+  trading_contract_base::QiupuswapTradeSide Rule::getTradeSide() const {
+  	return trading_contract_.quipuswap_trade_side;
   }
 
   void Rules::addRule (Rule rule) {

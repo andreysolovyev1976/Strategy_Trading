@@ -8,5 +8,5 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        ui.cpp
+        app_controller.cpp
         )

@@ -9,6 +9,7 @@
 #include "safe_ptr.h"
 #include "const_values.h"
 #include "maps.h"
+#include "trading_contract.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/filesystem.hpp>
@@ -63,7 +64,7 @@ namespace algo {
 		void printIniFile (std::ostream& os) const;
 		void printSettings (std::ostream& os) const;
 
-		const Contracts& getContracts() const;
+		const Contracts getContracts() const;
 
 	private:
 		boost::property_tree::ptree conf;

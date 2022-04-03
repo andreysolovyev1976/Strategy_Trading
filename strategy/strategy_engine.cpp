@@ -14,6 +14,9 @@ namespace algo {
   using namespace std::chrono_literals;
   using namespace algo::tezos::quipuswap::transaction;
 
+  Engine::Engine (TgBot::Bot* b) : bot (b)
+  {}
+
   void Engine::activateStrategy(const types::String& label) {
 	  if (auto found = strategies.getPtr(label); found) {
 		  active_strategies.insert(label);
@@ -36,10 +39,10 @@ namespace algo {
 
   void Engine::getStrategies() const {}
 
-  types::String Engine::implementTransaction ([[maybe_unused]] Trade trade) const {
+  types::String Engine::implementTransaction (Trade trade) const {
 	  types::String result;
 	  os::invokeCommandAndCaptureResult(
-			  makeCommand("KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT").c_str(),
+			  makeCommand(std::move(trade)).c_str(),
 			  result);
 	  return result;
   }
@@ -50,12 +53,16 @@ namespace algo {
 
   void Engine::runStrategy (const types::String& label) {
 	  if (auto strategy = strategies.getPtr(label); strategy) {
+		  types::String result;
 		  while (isStrategyActive(label)) {
 			  strategy->getMarketData();
 			  auto trade = strategy->ruleSignal();
-			  types::String result = "no signal for trade at strategy ";
+			  result = "no signal for trade at strategy ";
 			  if (trade.has_value()) {
 				  result = implementTransaction(trade.value());
+			  }
+			  if (result != "no signal for trade at strategy ") {
+				  bot->getApi().sendMessage(strategy->getUserID(), result);
 			  }
 			  std::cerr << "Strategy Label - " << label << "\n " << result << '\n';
 			  //todo: need to rationalize 10

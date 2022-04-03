@@ -94,7 +94,7 @@ namespace algo {
 
 	}//!func
 
-	const Contracts& RobotConfig::getContracts() const {
+	const Contracts RobotConfig::getContracts() const {
 		return contracts_by_name;
 	}
 

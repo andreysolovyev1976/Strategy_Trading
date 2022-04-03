@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "tgbot/tgbot.h"
+
 #include "indicator.h"
 #include "signals.h"
 #include "rule.h"
@@ -12,7 +14,6 @@
 #include "threads_engine.h"
 #include "bot_config.h"
 
-
 #ifndef STRATEGY_TRADING_STRATEGY_ENGINE_H
 #define STRATEGY_TRADING_STRATEGY_ENGINE_H
 
@@ -20,7 +21,7 @@ namespace algo {
 
   class Engine final {
   public:
-
+	  explicit Engine (TgBot::Bot* b);
 	  void activateStrategy(const types::String& label);
 	  void deactivateStrategy(const types::String& label);
 	  void getStrategies() const;
@@ -32,6 +33,7 @@ namespace algo {
 	  Ptr* getPtr ();
 
   private:
+	  TgBot::Bot* bot;
 	  Indicators indicators;
 	  Signals signals;
 	  Rules rules;
@@ -39,12 +41,11 @@ namespace algo {
 
 	  threads::Engine<types::String> threads_engine;
 
-//	  config::RobotConfig robot_config;
 	  std::set<types::String> active_strategies;
 	  bool isStrategyActive(const types::String& label) const;
 	  void runStrategy (const types::String& label);
+  public:
 	  types::String implementTransaction (Trade trade) const;
-
   };
 
   template <typename Object>

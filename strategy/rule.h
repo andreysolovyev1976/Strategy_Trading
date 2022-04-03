@@ -57,39 +57,43 @@ namespace algo {
 	  // or to share entire Signals using simple ptr
 	  // same dilemma for Indicators
 	  Rule(
-			  const Ticker &ticker,
 			  types::String rule_label,
-			  types::String rule_type,
+			  const Ticker &ticker,
+			  types::String quipuswap_trade_side,
+//			  types::String rule_type,
 			  types::String signal_label,
-			  int signal_value,
-			  types::String position_side,
+			  types::String signal_value,
+//			  types::String position_side,
 			  trade_base::OrderQuantity order_quantity,
-			  types::String trade_type,
-			  types::String order_type,
+//			  types::String trade_type,
+//			  types::String order_type,
 			  Signals* signals);
 
 	  std::optional<Trade> ruleSignal ();
 
 	  const types::String& getLabel() const;
+	  const std::set<types::String>& getIndicatorsLabels() const;
 	  const Ticker& getTicker() const;
-	  const std::vector<types::String>& getIndicatorsLabels() const;
+	  trading_contract_base::QiupuswapTradeSide getTradeSide() const;
 
   private:
 	  ///rule
-	  Ticker trading_ticker_;
 	  types::String label_;
+	  const TradingContract trading_contract_;
 	  rule_base::RuleType rule_type_;
 	  ///signal
 	  types::String signal_label_;
-	  int signal_value_;
+	  signal_base::SignalValue signal_value_;
 	  ///result of applying the rule over signal
 	  PositionSide required_position_side_;
 	  trade_base::OrderQuantity order_quantity_;
 	  trade_base::TradeType trade_type_;
 	  trade_base::OrderType order_type_;
+
+	  //links to the other strategy objects
 	  Signals* signals_;
 	  Signal* signal_;
-	  const std::vector<types::String>& indicator_labels_;
+	  const std::set<types::String> indicator_labels_;
 
 	  std::optional<Trade> ProcessSignal ();
   };

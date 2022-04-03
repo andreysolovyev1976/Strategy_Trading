@@ -11,6 +11,7 @@
 #include "rule.h"
 #include "trade.h"
 #include "account.h"
+#include "trading_contract.h"
 
 #include <map>
 #include <set>
@@ -28,27 +29,29 @@ namespace algo {
 			  Indicators* indicators,
 			  Signals* signals,
 			  Rules* rules,
-			  Account* account = nullptr);
+			  int64_t user_id,
+			  Account* account = nullptr
+	  );
 
 	  void addRule (const types::String& label);
 	  bool isInitialized() const;
 	  const types::String& getLabel () const;
+	  int64_t getUserID() const;
+
 	  void getMarketData();
 	  std::optional<Trade> ruleSignal ();
 
   private:
 	  types::String label_;
-	  std::set<algo::Ticker> indicators_tickers_;
-	  std::set<algo::TradingContract> indicators_tickers_;
-
 	  std::set<types::String> rule_labels_;
+	  std::set<types::String> indicator_labels_;
 
 	  [[maybe_unused]] Indicators* indicators_;
 	  [[maybe_unused]] Signals* signals_;
 	  [[maybe_unused]] Rules* rules_;
+	  [[maybe_unused]] int64_t user_id_;
 	  [[maybe_unused]] Account* account_;
   };
-
 
   class Strategies final : public Objects <Strategy>{
   public:

@@ -23,17 +23,15 @@ namespace algo {
   //todo: make it pointer to timestamp, no copy - check Indicator file
   using K = time_::Timestamp<time_::Seconds>;
   using V = Quote<types::Value, time_::Seconds>;
-  using MarketDataContainer = types::SingleThreadedLimitedSizeMap<K, V>;
+  using MarketDataContainer = types::MultiThreadedLimitedSizeMap<K, V>;
   using ModifierFunc = std::function<V(const V&)>;
 
   class Indicator final {
   public:
-	  Indicator() = default;
-
-	  Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value, const ModifierFunc &modifier);
-	  Indicator(const Ticker &ticker, types::String indicator_label, const ModifierFunc &modifier);
-	  Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value);
-	  Indicator(const Ticker &ticker, types::String indicator_label);
+	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, const ModifierFunc &modifier);
+	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, const ModifierFunc &modifier);
+	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value);
+	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side);
 
 	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
 	  void updateIndicator (const MarketData_<QuoteType, Duration> &market_data) {
@@ -45,14 +43,15 @@ namespace algo {
 	  [[nodiscard]] const MarketDataContainer& getOutputValues() const;
 	  [[nodiscard]] const MarketDataContainer& getInputValues() const;
 	  [[nodiscard]] const types::String& getLabel () const;
-	  const Ticker& getTicker() const;
+	  [[nodiscard]] Ticker getTicker () const;
+	  [[nodiscard]] const TradingContract& getTradingContract () const;
 
 	  [[nodiscard]] bool Empty () const;
 	  [[nodiscard]] size_t Size() const;
 
   private:
-	  Ticker ticker_;
 	  types::String label_;
+	  TradingContract trading_contract_;
 	  ModifierFunc modifier;
 	  MarketDataContainer input_value_, output_value_;
 	  size_t size_ = const_values::DEFAULT_INDICATOR_SIZE;
@@ -77,7 +76,6 @@ namespace algo {
 			  }
 		  }
 	  }
-
 	  void addIndicator (Indicator indicator);
   };
 

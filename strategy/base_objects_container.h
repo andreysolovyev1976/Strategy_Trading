@@ -13,6 +13,8 @@
 #ifndef STRATEGY_TRADING_BASE_OBJECTS_CONTAINER_H
 #define STRATEGY_TRADING_BASE_OBJECTS_CONTAINER_H
 
+//todo UPDATE for multithreading!!!!
+
 template <typename T>
 struct Labels {
 	using ByLabel = types::SingleThreadedLimitedSizeMap<types::String, std::unique_ptr<T>>;

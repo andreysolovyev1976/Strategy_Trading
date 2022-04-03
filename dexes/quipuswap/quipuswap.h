@@ -248,9 +248,9 @@ namespace algo {
 	  }
 
 	  template <typename Duration>
-	  TokenPair<Duration> estimateTezToToken(TokenPair<Duration> &&token) {
+	  TokenPair<Duration> estimateTezToToken(TokenPair<Duration> token) {
 		  token = updateToken(token);
-		  token.current_price =
+		  token.current_price_tez =
 		  		const_values::FEE_VALUE_PRODUCT * token.token_pool
 				  / (token.tez_pool + const_values::FEE_VALUE_PRODUCT)
 				  / const_values::VALUE_FOR_QUOTE_DETERMINATION;
@@ -258,15 +258,14 @@ namespace algo {
 	  }
 
 	  template <typename Duration>
-	  TokenPair<Duration> estimateTokenToTez(TokenPair<Duration> &&token) {
+	  TokenPair<Duration> estimateTokenToTez(TokenPair<Duration> token) {
 		  token = updateToken(token);
-		  token.current_price =
+		  token.current_price_token =
 		  		const_values::FEE_VALUE_PRODUCT * token.tez_pool
 				  / (token.token_pool + const_values::FEE_VALUE_PRODUCT)
 		  		  / const_values::VALUE_FOR_QUOTE_DETERMINATION;
 		  return std::move(token); //got compiler warning on copying attempt
 	  }
-
 
 	}//!namespace
   }//!namespace

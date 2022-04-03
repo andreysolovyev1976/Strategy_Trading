@@ -11,6 +11,7 @@
 #include "base_objects_container.h"
 
 #include <memory>
+#include <set>
 #include <string_view>
 
 
@@ -80,20 +81,22 @@ namespace algo {
 	};
 
 	[[maybe_unused]]
-	static types::String SignalValueToString (const SignalValue &type );
+	types::String SignalValueToString (const SignalValue &value );
 	[[maybe_unused]]
-	static SignalValue StringToSignalValue (const types::String& type);
+	SignalValue StringToSignalValue (const types::String& value);
+	[[maybe_unused]]
+	SignalValue BoolToSignalValue (bool relation);
 
-	using SignalData = types::SingleThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, int>;
+	bool operator == (const SignalValue& lhs, const SignalValue& rhs);
+
+	using SignalData = types::MultiThreadedLimitedSizeMap<time_::Timestamp<time_::Seconds>, signal_base::SignalValue>;
 
   }//!namespace
 
 
   class Signal final {
   public:
-	  Signal();
-
-	  Signal(
+	  explicit Signal(
 			  types::String signal_label,
 			  types::String signal_type,
 			  types::String relation,

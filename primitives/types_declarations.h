@@ -11,11 +11,4 @@
 #ifndef STRATEGY_TRADING_TYPES_DECLARATIONS_H
 #define STRATEGY_TRADING_TYPES_DECLARATIONS_H
 
-
-namespace algo {
-
-  using Ticker = types::String;
-
-}//!namespace
-
 #endif //STRATEGY_TRADING_TYPES_DECLARATIONS_H

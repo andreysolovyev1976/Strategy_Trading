@@ -1,4 +1,4 @@
-import {args} from "./test_cli_args";
+import {args} from "./cli_args";
 console.info(args);
 
 import { TezosToolkit } from "@taquito/taquito";
@@ -11,6 +11,7 @@ const tezos = new TezosToolkit("https://hangzhounet.smartpy.io");
 // const publicKey = "edpkvWbk81uh1DEvdWKR4g1bjyTGhdu1mDvznPUFE2zDwNsLXrEb9K";
 // tezos.setSignerProvider(new ReadOnlySigner(publicKeyHash, publicKey));
 
+//it is a dummy empty account, don't bother
 const privateKey = "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz";
 tezos.setProvider({
     signer: new InMemorySigner(privateKey),
@@ -23,21 +24,47 @@ const factories = {
 
 (async () => {
     try {
-        const fromAsset = "tez";
-        const toAsset = {
-            contract: args.sourcePath,
+
+        const tradeSide = {
+            contract: args.TradeSide,
             id: 0,
         };
-        const inputValue = 1_000_000; // in mutez (without decimals)
-        const slippageTolerance = 0.005; // 0.5%
+        console.assert((tradeSide.contract == "fromTez") || (tradeSide.contract == "toTez"));
+
+        const fromAsset = (tradeSide.contract == "fromTez") ?
+            "tez" :
+            {
+                contract: args.Asset,
+                id: 1,
+            };
+        console.log("fromAsset = ", fromAsset);
+        const toAsset = (tradeSide.contract == "fromTez") ?
+            {
+                contract: args.Asset,
+                id: 2,
+            } :
+            "tez";
+        console.log("toAsset = ", toAsset);
+
+        // const inputValue = 1_000_000; // in mutez (without decimals)
+        const inputValue = {
+            contract:  args.inputValue,
+            id: 3,
+        };
+
+        // const slippageTolerance = 0.005; // 0.5%
+        const slippageTolerance = {
+            contract: args.slippageTolerance,
+            id: 4,
+        };
 
         const swapParams = await swap(
             tezos,
             factories,
             fromAsset,
             toAsset,
-            inputValue,
-            slippageTolerance
+            inputValue.contract,
+            slippageTolerance.contract
         );
 
         const op = await batchify(tezos.wallet.batch([]), swapParams).send();

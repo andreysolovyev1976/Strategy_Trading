@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tezos_data_structures.h"
-
+#include "trading_contract.h"
 
 #ifndef QUIPUSWAP_DATA_STRUCTURES_H
 #define QUIPUSWAP_DATA_STRUCTURES_H
@@ -19,7 +19,7 @@ namespace algo {
 	  struct TokenPair {
 		  Ticker ticker;
 		  types::String token_address, pair_address;
-		  types::Value token_pool, tez_pool, current_price;
+		  types::Value token_pool, tez_pool, current_price_token, current_price_tez;
 		  time_::Timestamp<Duration> timestamp;
 	  };
 

@@ -55,6 +55,7 @@ namespace algo {
 	  const types::Value& value () const;
 	  types::Value& value ();
 
+	  //todo: refactor member - remove lower dash
 	  time_::Timestamp<Duration> timestamp;
 	  types::ObjectType<quote_base::QuoteTypeBase> value_;
   };

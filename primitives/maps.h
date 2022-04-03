@@ -88,6 +88,9 @@ namespace types {
 	  Iterator begin () { //todo: stupid as I need this for range-based for. Change this.
 		  return data.begin();
 	  }
+	  ConstIterator begin () const { //todo: stupid as I need this for range-based for. Change this.
+		  return data.begin();
+	  }
 	  ConstIterator CBegin () const {
 		  return data.begin();
 	  }
@@ -101,6 +104,9 @@ namespace types {
 		  return data.end();
 	  }
 	  Iterator end () { //todo: stupid as I need this for range-based for. Change this.
+		  return data.end();
+	  }
+	  ConstIterator end () const { //todo: stupid as I need this for range-based for. Change this.
 		  return data.end();
 	  }
 	  ConstIterator CEnd () const {
@@ -122,7 +128,7 @@ namespace types {
   template <typename K, typename V>
   SingleThreadedLimitedSizeMap<K, V> makeSingleThreadedLimitedSizeMap (){
   	return std::make_unique<MapLimitedSize<K, V>>();
-  };
+  }
 
   template <typename K, typename V>
   using MultiThreadedLimitedSizeMap = safe_ptr<MapLimitedSize<K, V>>;

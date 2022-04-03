@@ -36,6 +36,8 @@ typedef duration<     long, ratio<  60> > minutes;
 typedef duration<     long, ratio<3600> > hours;
 	 */
 
+	//todo: add SFINAE / concept to check Duration is a time constructible
+
 	template<class Duration>
 	using TimePoint = std::chrono::time_point<Clock, Duration>;
 

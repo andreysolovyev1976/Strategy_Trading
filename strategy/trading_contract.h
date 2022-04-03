@@ -12,38 +12,60 @@
 
 namespace algo {
 
-	namespace trading_contract_base {
+  using Ticker = types::String;
 
-	  namespace dex_source {
-		struct Quipuswap {};
-		struct Coinbase {};
-	  }
+  namespace trading_contract_base {
 
-	  using DexSource =
+	namespace dex_source {
+	  struct Quipuswap {};
+	  struct Coinbase {};
+	}
+
+	using DexSource =
+	std::variant<
+			std::monostate,
+			dex_source::Quipuswap,
+			dex_source::Coinbase
+	>;
+
+	struct Dex final : public types::ObjectType<DexSource> {};
+
+	types::String DexToString (const Dex &type);
+	Dex StringToDex (const types::String& type);
+	Dex TickerToDex (Ticker ticker);
+
+	namespace quipuswap {
+	  struct SellXTZBuyToken{};
+	  struct BuyXTZSellToken{};
+
+	  using QuipuswapTradeSideBase =
 	  std::variant<
 			  std::monostate,
-			  dex_source::Quipuswap,
-			  dex_source::Coinbase
+			  quipuswap::SellXTZBuyToken,
+			  quipuswap::BuyXTZSellToken
 	  >;
+	}//!namespace
 
-	  struct Dex final : public types::ObjectType<DexSource> {};
+	struct QiupuswapTradeSide final : public types::ObjectType<quipuswap::QuipuswapTradeSideBase> {};
 
-	}//namespace
+	types::String QiupuswapTradeSideToString (const QiupuswapTradeSide &type);
+	QiupuswapTradeSide StringToQiupuswapTradeSide (const types::String& type);
+
+  }//namespace
 
 
-	struct TradingContract final {
-		Ticker ticker;
-		trading_contract_base::Dex dex;
+  struct TradingContract final {
+	  Ticker ticker;
+	  trading_contract_base::Dex dex;
+	  trading_contract_base::QiupuswapTradeSide quipuswap_trade_side;
 
-		explicit TradingContract (Ticker t) : ticker (t) {
-			char c = checkDex ();
-			 if (c == 'Q') dex.emplace<trading_contract_base::dex_source::Quipuswap>();
-			 else if (c == 'C') dex.emplace<trading_contract_base::dex_source::Coinbase>();
-		}
-		char checkDex () const;
+	  explicit TradingContract (Ticker t);
+	  explicit TradingContract (Ticker t, types::String trade_side);
+  };
 
-	};
+  bool operator < (const TradingContract& lhs, const TradingContract& rhs);
 
-}//!namespace
+
+  }//!namespace
 
 #endif //STRATEGY_TRADING_TRADING_CONTRACT_H

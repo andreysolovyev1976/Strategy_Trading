@@ -6,42 +6,42 @@
 
 namespace algo {
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value, const ModifierFunc &modifier)
-		  : ticker_(ticker)
-		  , label_(std::move(indicator_label))
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, const ModifierFunc &modifier)
+		  : label_(std::move(indicator_label))
+		  , trading_contract_ (ticker, trade_side)
 		  , modifier(modifier)
 		  , input_value_(std::move(input_value))
-		  , output_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
+		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  size_ = input_value_->Size();
 	  this->ProcessIndicator();
   }
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, const ModifierFunc &modifier)
-		  : ticker_(ticker)
-		  , label_(std::move(indicator_label))
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, const ModifierFunc &modifier)
+		  : label_(std::move(indicator_label))
+		  , trading_contract_ (ticker, trade_side)
 		  , modifier(modifier)
-		  , input_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
-		  , output_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
+		  , input_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
+		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  this->ProcessIndicator();
   }
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label, MarketDataContainer input_value)
-		  : ticker_(ticker)
-		  , label_(std::move(indicator_label))
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value)
+		  : label_(std::move(indicator_label))
+		  , trading_contract_ (ticker, trade_side)
 		  , input_value_(std::move(input_value))
-		  , output_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
+		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  size_ = input_value_->Size();
 	  this->ProcessIndicator();
   }
 
-  Indicator::Indicator(const Ticker &ticker, types::String indicator_label)
-		  : ticker_(ticker)
-		  , label_(std::move(indicator_label))
-		  , input_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
-		  , output_value_(types::makeSingleThreadedLimitedSizeMap<K, V>())
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side)
+		  : label_(std::move(indicator_label))
+		  , trading_contract_ (ticker, trade_side)
+		  , input_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
+		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  this->ProcessIndicator();
   }
@@ -49,7 +49,8 @@ namespace algo {
   const MarketDataContainer& Indicator::getOutputValues() const {return output_value_;}
   const MarketDataContainer& Indicator::getInputValues() const {return input_value_;}
   const types::String& Indicator::getLabel () const {return label_;}
-  const Ticker& Indicator::getTicker() const {return ticker_;}
+  Ticker Indicator::getTicker () const {return trading_contract_.ticker;}
+  const TradingContract& Indicator::getTradingContract () const {return trading_contract_;}
 
   bool Indicator::Empty () const {
 	  if (not modifier) return input_value_->Empty();
@@ -57,7 +58,6 @@ namespace algo {
   }
 
   size_t Indicator::Size() const {return size_;}
-
 
   void Indicator::ProcessIndicator () {
 	  if (input_value_->Empty()) return;
@@ -71,12 +71,12 @@ namespace algo {
 	  }
 	  if (modifier) {
 		  for (auto it = first_to_use, ite = input_value_->End(); it != ite; ++it) {
-			  (*output_value_).Insert({it->first, modifier(it->second)});
+			  output_value_->Insert({it->first, modifier(it->second)});
 		  }
 	  }
 	  else {
 		  for (auto it = first_to_use, ite = input_value_->End(); it != ite; ++it) {
-			  (*output_value_).Insert({it->first, it->second});
+			  output_value_->Insert({it->first, it->second});
 		  }
 	  }
   }
@@ -84,8 +84,9 @@ namespace algo {
 
   std::ostream& operator<<(std::ostream& os, const Indicator &indicator) {
 	  os << "label: " << indicator.getLabel() << '\n';
-	  const auto &indicator_values = indicator.getOutputValues();
-	  for (const auto &[tstamp, quote] : *indicator_values) {
+	  const auto& indicator_data = indicator.getOutputValues();
+	  for (auto it = indicator_data->begin(), e = indicator_data->end(); it != e; ++it){
+		  const auto& [tstamp, quote] = *it;
 		  os << tstamp << ": " << quote << '\n';
 	  }
 	  return os;

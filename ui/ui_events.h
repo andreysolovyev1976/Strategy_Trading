@@ -10,11 +10,14 @@ namespace user_interface {
 
   enum class Event : int {
 	  begin,
+
 	  initRobot,
 
 	  help,
 
 	  addIndicator,
+	  addIndicator_Ticker,
+	  addIndicator_TradeSide,
 	  removeIndicator,
 	  getIndicators,
 
@@ -24,9 +27,16 @@ namespace user_interface {
 
 	  addStrategy,
 	  removeStrategy,
+
 	  addRule,
+	  addRule_TradingTicker,
+	  addRule_TradeSide,
+	  addRule_SignalLabel,
+	  addRule_SignalValue,
+	  addRule_PairTrade,
 	  removeRule,
 	  getRules,
+
 	  stopStrategy,
 	  startStrategy,
 
@@ -34,11 +44,22 @@ namespace user_interface {
 	  stopOperations,
 	  startUI,
 	  stopUI,
+
+	  addContract,
+	  addContract_Label,
+	  addContract_TickerQS,
+	  addContract_TickerCB,
 	  getContracts,
+
 	  end,
   };
 
-  Event nextEvent(Event current_event);
+  inline
+  Event nextEvent(Event current_event) {
+	  if (current_event==Event::end) return current_event;
+	  int curr = static_cast<int>(current_event);
+	  return static_cast<Event>(++curr);
+  }
 }
 
 #endif //STRATEGY_TRADING_UI_EVENTS_H

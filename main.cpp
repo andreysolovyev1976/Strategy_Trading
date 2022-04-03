@@ -42,6 +42,7 @@ algo::Quote<types::Value, time_::Milliseconds>
 }
 
 
+
 int main() {
 
 	//todo: Check The Rules - add tickers
@@ -128,20 +129,22 @@ int main() {
 
 #endif
 
-#if 0
-
-	algo::Engine engine;
+#if 1
+	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
+	algo::Engine engine (&bot);
 
 	///filtered and referenced data
 	Indicator i1(
+			"base_contract",		//label
 			"ETH-BTC",				//ticker
-			"base_contract"			//label
+			"SellXTZBuyToken"
 	);
 
-	Indicator i2("ETH-USD", "other_contract");
-//	strategy.addIndicator("C3", "modified_contract", modifier);
+	Indicator i2("other_contract", "ETH-USD", "BuyXTZSellToken");
+	Indicator i3 ("quipuswap_contract", "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1", "SellXTZBuyToken");
 	engine.addTradingObject(std::move(i1));
 	engine.addTradingObject(std::move(i2));
+	engine.addTradingObject(std::move(i3));
 
 	///relations of new market data and filtered/referenced data
 	Signal s1(
@@ -153,44 +156,101 @@ int main() {
 	);
 	engine.addTradingObject(std::move(s1));
 
+	Signal s2(
+			"qs_vs_cb", 		//label
+			"Comparison",		//type of a Signal
+			"LT",				//relation between the indicators
+			{"other_contract", "quipuswap_contract"}, //indicators to compare
+			engine.getPtr<Indicators>()
+	);
+	engine.addTradingObject(std::move(s2));
+
+	Signal s3(
+			"threshhold_test", 	//label
+			"Threshold",		//type of a Signal
+			"GT",				//relation between the indicator and threshold
+			{"other_contract", "quipuswap_contract"}, //indicators to compare
+			engine.getPtr<Indicators>()
+	);
+	engine.addTradingObject(std::move(s3));
+
+	Signal s4(
+			"equality_test", 	//label
+			"Comparison",		//type of a Signal
+			"EQ",				//relation between the indicator and threshold
+			{"other_contract", "other_contract"}, //indicators to compare
+			engine.getPtr<Indicators>()
+	);
+	engine.addTradingObject(std::move(s4));
+
+
 	//todo: check that this works - check relations
 	///actions, based on relations
 	Rule r1 (
-			"ETH-BTC"s,						//ticker to generate trades for
 			"enter_when_less",				//rule_label
-			"Entry",						//type of a Rule
+			"KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1"s,						//ticker to generate trades for
+			"SellXTZBuyToken",
 			"basic_comparison",				//signal label
-			1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			"Neutral", 						//Position to enter txn
-			types::Value(1),
-			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
-			"Market",						//how to behave in the market Market/Limited/FillOrKill
+			"True",							//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
+			42,
 			engine.getPtr<Signals>()
 	);
 	engine.addTradingObject(std::move(r1));
 
 	Rule r2 (
+			"enter_when_greater",			//rule_label
 			"ETH-USD"s,						//ticker to generate trades for
-			"exit_when_greater",			//rule_label
-			"Exit",							//type of a Rule
-			"basic_comparison",				//signal label
-			-1,								//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			"Neutral", 						//Position to enter txn
+			"BuyXTZSellToken",
+//			"Exit",							//type of a Rule
+			"qs_vs_cb",						//signal label
+			"True",							//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
+//			"Neutral", 						//Position to enter txn
 			types::Value(1),
-			"Exit", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
-			"Market",						//how to behave in the market Market/Limited/FillOrKill
+//			"Enter", 						//Exit, Riskm Rebalance - required for prioritization if there are several Rules triggering
+//			"Market",						//how to behave in the market Market/Limited/FillOrKill
 			engine.getPtr<Signals>()
 	);
 	engine.addTradingObject(std::move(r2));
 
-	Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
+	Rule r3 (
+			"enter_tokens",			//rule_label
+			"KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT"s,						//ticker to generate trades for
+			"SellXTZBuyToken",
+			"equality_test",						//signal label
+			"True",
+			types::Value(1000),
+			engine.getPtr<Signals>()
+	);
+	engine.addTradingObject(std::move(r3));
+
+	Rule r4 (
+			"exit_tokens",			//rule_label
+			"KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT"s,						//ticker to generate trades for
+			"BuyXTZSellToken",
+			"equality_test",						//signal label
+			"True",
+			types::Value(2000),
+			engine.getPtr<Signals>()
+	);
+	engine.addTradingObject(std::move(r4));
+
+
+	Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
 	st1.addRule("enter_when_less");
 	engine.addTradingObject(std::move(st1));
 
-	Strategy st2 ("simple_demo 2"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>());
-	st2.addRule("exit_when_greater");
+	Strategy st2 ("simple_demo 2"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
+	st2.addRule("enter_when_greater");
 	engine.addTradingObject(std::move(st2));
 
+	Strategy st3 ("tez_to_token"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
+	st3.addRule("enter_tokens");
+	engine.addTradingObject(std::move(st3));
+
+	Strategy st4 ("token_to_tez"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
+	st4.addRule("exit_tokens");
+	engine.addTradingObject(std::move(st4));
+/*
 	std::cout << "two strategies\n";
 	engine.activateStrategy("simple_demo 1"s);
 	engine.activateStrategy("simple_demo 2"s);
@@ -205,6 +265,12 @@ int main() {
 	std::cout << "one strategy\n";
 	engine.activateStrategy("simple_demo 1"s);
 	std::this_thread::sleep_for(30s);
+*/
+
+	std::cout << "test there and back\n";
+	engine.activateStrategy("tez_to_token"s);
+	engine.activateStrategy("token_to_tez"s);
+	std::this_thread::sleep_for(90s);
 
 #endif
 
@@ -256,8 +322,25 @@ int main() {
 			result);
 	std::cerr << result << '\n';
 
+//	ts-node ../setup_transacton_ts_script/test_transaction.ts --sourcePath=KT1EKo1Eihucz9N4cQyaDKeYRoMzTEoiZRAT
+
 #endif
 
 	return 0;
 }
 
+//todo:
+/*
+1) Figure out what to do with QS data (two sides)
+ DONE		SIGNAL 2) Add signal value in a human readable format
+ SIGNAL 2.1) Add threshold
+ SIGNAL 2.2) check comment at 104
+DONE		RULE 3) Add Rule - enter / exit from the market
+4) Add second transaction - Sell
+RULE 5) figure out where to put trading details - ie Slipage and others
+6) Add / remove the contract data to ini file
+7) submit transaction data to bot
+8) check data race
+
+ 9) in strategy i visit all the indicators, not just the ones related to the strategy
+ */

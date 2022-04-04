@@ -3,8 +3,7 @@ import {UnitValue} from "@taquito/taquito";
 
 
 interface ICopyFilesArguments {
-    TradeSide: string;
-    Asset: string;
+    someAsset: string;
     inputValue: number;
     slippageTolerance: number;
     help?: boolean;
@@ -12,8 +11,7 @@ interface ICopyFilesArguments {
 
 export const args = parse<ICopyFilesArguments>(
     {
-        TradeSide: String,
-        Asset: String,
+        someAsset: String,
         inputValue: Number,
         slippageTolerance: Number,
         help: { type: Boolean, optional: true, alias: 'h', description: 'Prints this usage guide' },

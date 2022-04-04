@@ -38,8 +38,7 @@ namespace algo {
 	  const types::String& getLabel () const;
 	  int64_t getUserID() const;
 
-	  void getMarketData();
-	  std::optional<Trade> ruleSignal ();
+	  std::optional<std::vector<Trade>> processRules ();
 
   private:
 	  types::String label_;
@@ -51,6 +50,8 @@ namespace algo {
 	  [[maybe_unused]] Rules* rules_;
 	  [[maybe_unused]] int64_t user_id_;
 	  [[maybe_unused]] Account* account_;
+
+	  void getMarketData();
   };
 
   class Strategies final : public Objects <Strategy>{

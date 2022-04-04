@@ -3,7 +3,7 @@ console.info(args);
 
 import { TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
-import { swap, batchify } from "@quipuswap/sdk";
+import { swap, batchify} from "@quipuswap/sdk";
 
 const tezos = new TezosToolkit("https://hangzhounet.smartpy.io");
 
@@ -25,37 +25,22 @@ const factories = {
 (async () => {
     try {
 
-        const tradeSide = {
-            contract: args.TradeSide,
-            id: 0,
-        };
-        console.assert((tradeSide.contract == "fromTez") || (tradeSide.contract == "toTez"));
-
-        const fromAsset = (tradeSide.contract == "fromTez") ?
-            "tez" :
-            {
-                contract: args.Asset,
-                id: 1,
+        const fromAsset = "tez";
+        const toAsset =  {
+                contract: args.someAsset,
+                id: 0,
             };
-        console.log("fromAsset = ", fromAsset);
-        const toAsset = (tradeSide.contract == "fromTez") ?
-            {
-                contract: args.Asset,
-                id: 2,
-            } :
-            "tez";
-        console.log("toAsset = ", toAsset);
 
         // const inputValue = 1_000_000; // in mutez (without decimals)
         const inputValue = {
             contract:  args.inputValue,
-            id: 3,
+            id: 1,
         };
 
         // const slippageTolerance = 0.005; // 0.5%
         const slippageTolerance = {
             contract: args.slippageTolerance,
-            id: 4,
+            id: 2,
         };
 
         const swapParams = await swap(

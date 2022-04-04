@@ -5,28 +5,28 @@
 #include "indicator.h"
 
 namespace algo {
-
-  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, const ModifierFunc &modifier)
+/*
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, ModifierFunc modifier)
 		  : label_(std::move(indicator_label))
 		  , trading_contract_ (ticker, trade_side)
-		  , modifier(modifier)
+		  , modifier(std::move(modifier))
 		  , input_value_(std::move(input_value))
 		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  size_ = input_value_->Size();
 	  this->ProcessIndicator();
   }
-
-  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, const ModifierFunc &modifier)
+*/
+  Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, ModifierFunc modifier)
 		  : label_(std::move(indicator_label))
 		  , trading_contract_ (ticker, trade_side)
-		  , modifier(modifier)
+		  , modifier(std::move(modifier))
 		  , input_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
 		  , output_value_(types::makeMultiThreadedLimitedSizeMap<K, V>())
   {
 	  this->ProcessIndicator();
   }
-
+/*
   Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value)
 		  : label_(std::move(indicator_label))
 		  , trading_contract_ (ticker, trade_side)
@@ -36,7 +36,7 @@ namespace algo {
 	  size_ = input_value_->Size();
 	  this->ProcessIndicator();
   }
-
+*/
   Indicator::Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side)
 		  : label_(std::move(indicator_label))
 		  , trading_contract_ (ticker, trade_side)
@@ -71,7 +71,8 @@ namespace algo {
 	  }
 	  if (modifier) {
 		  for (auto it = first_to_use, ite = input_value_->End(); it != ite; ++it) {
-			  output_value_->Insert({it->first, modifier(it->second)});
+			  it->second.value() = modifier(it->second.value());
+			  output_value_->Insert({it->first, it->second});
 		  }
 	  }
 	  else {

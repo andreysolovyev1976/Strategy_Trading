@@ -55,25 +55,28 @@ namespace algo {
 	  if (auto strategy = strategies.getPtr(label); strategy) {
 		  types::String result;
 		  while (isStrategyActive(label)) {
-			  strategy->getMarketData();
-			  auto trade = strategy->ruleSignal();
-			  result = "no signal for trade at strategy ";
-			  if (trade.has_value()) {
-				  result = implementTransaction(trade.value());
+			  auto generated_trades = strategy->processRules();
+			  result.clear();
+			  if (generated_trades.has_value()) {
+				  for (auto& trade : generated_trades.value()) {
+					  result = implementTransaction(std::move(trade));
+					  if (not result.empty()){
+						  bot->getApi().sendMessage(strategy->getUserID(), result);
+						  std::cerr << "Strategy Label - " << label << "\n " << result << '\n';
+					  }
+				  }
 			  }
-			  if (result != "no signal for trade at strategy ") {
-				  bot->getApi().sendMessage(strategy->getUserID(), result);
+			  else {
+				  std::cerr << "Strategy Label - " << label << ", no trades generated\n";
 			  }
-			  std::cerr << "Strategy Label - " << label << "\n " << result << '\n';
 			  //todo: need to rationalize 10
 			  // don't want to use boost here
-			  std::this_thread::sleep_for(10s);
+			  std::this_thread::sleep_for(20s);
 		  }
 	  }
+
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));
 	  }
-  }
-
-
+  }//!func
 }//!namespace

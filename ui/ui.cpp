@@ -73,9 +73,9 @@ namespace user_interface {
 		  {Event::initRobot, &UI::initRobot},
   };
   void UI::initCommand (Event event) {
-  	if (auto event_exists = INIT.find(event); event_exists != INIT.end()) {
-		(this->*INIT.at(event))();
-	}
+	  if (auto event_exists = INIT.find(event); event_exists != INIT.end()) {
+		  (this->*INIT.at(event))();
+	  }
   }
   void UI::initRobot() {
 	  robot_config.loadFromIni();
@@ -111,13 +111,11 @@ namespace user_interface {
 	  });
   }
   void UI::initAddIndicator(){
-
 	  bot.getEvents().onCommand("add_indicator", [this](Message::Ptr message) {
 		ForceReply::Ptr keyboard_reply(new ForceReply);
 		bot.getApi().sendMessage(message->chat->id,
 				"Label new Indicator", false, 0, keyboard_reply);
 	  });
-
 	  bot.getEvents().onNonCommandMessage([this](Message::Ptr message) {
 		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
 				"Label new Indicator")) {
@@ -144,7 +142,6 @@ namespace user_interface {
 			}
 		}
 	  });
-
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (user_activity[query->message->chat->username] == Event::addIndicator_Ticker) {
 			const auto& contracts = robot_config.getContracts();
@@ -161,7 +158,6 @@ namespace user_interface {
 						row.push_back(makeInlineCheckButton(t_side));
 						keyboard_select->inlineKeyboard.push_back(std::move(row));
 					}
-
 					bot.getApi().sendMessage(
 							query->message->chat->id, "Select the Trade Side for Indicator (for CB click any)", false, 0, keyboard_select);
 					user_activity[query->message->chat->username] = Event::addIndicator_TradeSide;
@@ -174,6 +170,38 @@ namespace user_interface {
 		if (user_activity[query->message->chat->username] == Event::addIndicator_TradeSide) {
 			init_indicator.trade_side = query->data;
 			init_indicator.is_trade_side_initialized = true;
+
+			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
+			for (const auto& mods : init_indicator.modifiers) {
+				std::vector<InlineKeyboardButton::Ptr> row;
+				row.push_back(makeInlineCheckButton(mods));
+				keyboard_select->inlineKeyboard.push_back(std::move(row));
+			}
+			bot.getApi().sendMessage(
+					query->message->chat->id, "Select a modifier for the Indicator", false, 0, keyboard_select);
+			user_activity[query->message->chat->username] = Event::addIndicator_ModifierType;
+		}
+	  });
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (user_activity[query->message->chat->username] == Event::addIndicator_ModifierType) {
+			init_indicator.modifier = query->data;
+
+			if (init_indicator.modifier != "none") {
+				ForceReply::Ptr keyboard_reply(new ForceReply);
+				bot.getApi().sendMessage(query->message->chat->id,
+						"Type in a new Modifier value", false, 0, keyboard_reply);
+				user_activity[query->message->chat->username] = Event::addIndicator_ModifierValue;
+			}
+			else {
+				init_indicator.is_modifier_initialized = true;
+				bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addIndicator));
+			}
+		}
+	  });
+	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (user_activity[query->message->chat->username] == Event::addIndicator_ModifierValue) {
+			init_indicator.modifier_value = types::Value(query->data);
+			init_indicator.is_modifier_initialized = true;
 			bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::addIndicator));
 		}
 	  });
@@ -804,12 +832,31 @@ namespace user_interface {
 //	  using _K = Timestamp<Minutes>;
 //	  using _V = Quote<types::Value, Minutes>;
 //	  using _MarketDataContainer = SingleThreadedLimitedSizeMap<_K, _V>;
-	  Indicator indicator (
-			  init_indicator.label,
-			  init_indicator.ticker,
-			  init_indicator.trade_side);
-	  engine.addTradingObject(std::move(indicator));
-	  init_indicator.clear();
+
+	  if (init_indicator.modifier == "none") {
+		  Indicator indicator (
+				  init_indicator.label,
+				  init_indicator.ticker,
+				  init_indicator.trade_side);
+		  engine.addTradingObject(std::move(indicator));
+		  init_indicator.clear();
+	  }
+	  else {
+		  //todo: type deduction must aligned with Indicator type - amend it later
+		  Modifier<types::Value> modifier (init_indicator.label);
+		  modifier.setModifierValue(std::move(init_indicator.modifier_value));
+
+		  Indicator indicator (
+				  init_indicator.label,
+				  init_indicator.ticker,
+				  init_indicator.trade_side,
+				  modifier.getModifierMethod(init_indicator.modifier)
+		  );
+
+		  engine.addTradingObject(std::move(modifier));
+		  engine.addTradingObject(std::move(indicator));
+		  init_indicator.clear();
+	  }
 	  return "Indicator successfully added"s;
   }
   String UI::removeIndicator([[maybe_unused]] const types::String& input){
@@ -952,30 +999,16 @@ namespace user_interface {
 	  return "WIP - Stop the UI";
   }
   String UI::addContract([[maybe_unused]] const types::String& input){
-	  std::stringstream ss;
-	  robot_config.printIniFile(ss);
-	  return ss.str();
-/*
+	  if (not init_contract.isInitialized()) return "Contract is not initialized"s;
+
 	  config::ContractInfo ci;
-	  ci.name = "name5";
-	  ci.ticker_cb = "CB 5";
-	  ci.ticker_qs = "QS 5";
-	  ci.price_diff = 42;
-	  ci.timeframe = 42;
-	  ci.trade_size = 42;
-	  ci.slippage = 4;
+	  ci.name = init_contract.label;
+	  ci.ticker_cb = init_contract.ticker_cb;
+	  ci.ticker_qs = init_contract.ticker_qs;
 
-	  config.updateIni(std::move(ci));
-	  config.loadFromIni();
-	  config.printIniFile(std::cerr);
-	  config.printSettings(std::cerr);
-
-	  auto c5 = config.getContractInfo("name5");
-	  std::cerr << c5 << '\n';
-
-	  auto fuck = config.getContractInfo("fuck");
-	  std::cerr << fuck << '\n';
-	  */
+	  robot_config.updateIni(std::move(ci));
+	  init_contract.clear();
+	  return "Contract list was updated"s;
   }
   String UI::getContracts([[maybe_unused]] const types::String& input){
 	  std::stringstream ss;

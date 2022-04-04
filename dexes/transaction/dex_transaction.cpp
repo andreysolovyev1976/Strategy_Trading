@@ -17,25 +17,25 @@ namespace algo {
 
 			types::String command;
 #if defined(__APPLE__)
-			command += "ts-node ../setup_transacton_ts_script/quipuswap_transaction.ts";
+			command += "ts-node ../setup_transacton_ts_script/";
 #endif
 #if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
-			command += "systemctl ts-node ../setup_transacton_ts_script/quipuswap_transaction.ts";
+			command += "systemctl ts-node ../setup_transacton_ts_script/";
 #endif
 
 			if (auto p1 =
 						t_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>();
 					p1) {
-				command += " --TradeSide=fromTez";
-				command += " --Asset=";
+				command += "from_tez_to_token.ts";
+				command += " --someAsset=";
 				command += t_contract.ticker;
 			}
 			else if (auto p2 =
 						t_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::BuyXTZSellToken>();
 					p2) {
 
-				command += " --TradeSide=toTez";
-				command += " --Asset=";
+				command += "from_token_to_tez.ts";
+				command += " --someAsset=";
 				command += t_contract.ticker;
 			}
 			else {
@@ -47,7 +47,7 @@ namespace algo {
 			command += " --slippageTolerance=";
 			command += trade.getSlippage().ToString();
 
-			std::cerr << command << '\n';
+//			std::cerr << command << '\n';
 
 			return command;
 		}//!func

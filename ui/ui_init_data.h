@@ -33,24 +33,38 @@ namespace user_interface {
 			  "From Tez to Token",
 	  };
 	  types::String trade_side;
+	  const std::vector<types::String> modifiers = {
+			  "none",
+			  "add",
+			  "subtract",
+			  "mutliply",
+			  "divide",
+	  };
+	  types::String modifier;
+	  types::Value modifier_value;
 
-	  bool is_ticker_initialized, is_trade_side_initialized;
+	  bool is_ticker_initialized, is_trade_side_initialized, is_modifier_initialized;
 	  void clear() override
 	  {
 		  ticker =
 		  label =
 		  trade_side =
+		  modifier =
 				  ""s;
+		  modifier_value = INT32_MIN; //todo: implement NaN analogy at Value class
+
 		  is_ticker_initialized =
 		  is_label_initialized =
 		  is_trade_side_initialized =
+		  is_modifier_initialized =
 				  false;
 	  }
 	  bool isInitialized() override
 	  {
 		  return is_label_initialized &&
-		  is_ticker_initialized &&
-		  is_trade_side_initialized;
+				  is_ticker_initialized &&
+				  is_trade_side_initialized &&
+				  is_modifier_initialized;
 	  }
   };
   struct InitSignal : public InitData {

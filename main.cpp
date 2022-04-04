@@ -45,16 +45,10 @@ algo::Quote<types::Value, time_::Milliseconds>
 
 int main() {
 
-	//todo: Check The Rules - add tickers
 	//todo: check Indicator and Signal updates
-	//todo: Add ThreadSafe maps
-	//todo: Add Map size limit
 	//todo: Add Value ctor from Json
 	//todo: Add Logging at large
-	//todo: Unclear what happens with a Token price - need to check that
 	//todo: Manage threads - it seems like a leak with no proper interruption
-
-
 	//todo: add a case when there is a new data for some of the labels in strategy - probably check that when ruleSignaling
 
 #if 0
@@ -129,7 +123,7 @@ int main() {
 
 #endif
 
-#if 1
+#if 0
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
 	algo::Engine engine (&bot);
 
@@ -267,18 +261,15 @@ int main() {
 	std::this_thread::sleep_for(30s);
 */
 
+	engine.activateStrategy("simple_demo 1"s);
+	engine.activateStrategy("simple_demo 2"s);
 	std::cout << "test there and back\n";
 	engine.activateStrategy("tez_to_token"s);
+	std::this_thread::sleep_for(2s);
 	engine.activateStrategy("token_to_tez"s);
 	std::this_thread::sleep_for(90s);
 
 #endif
-
-#if 0
-	user_interface::Controller app;
-	app.run();
-#endif
-
 
 #if 0
 
@@ -326,21 +317,20 @@ int main() {
 
 #endif
 
+
+#if 0
+	user_interface::Controller app;
+	app.run();
+#endif
+
 	return 0;
 }
 
 //todo:
+
 /*
-1) Figure out what to do with QS data (two sides)
- DONE		SIGNAL 2) Add signal value in a human readable format
- SIGNAL 2.1) Add threshold
  SIGNAL 2.2) check comment at 104
-DONE		RULE 3) Add Rule - enter / exit from the market
-4) Add second transaction - Sell
 RULE 5) figure out where to put trading details - ie Slipage and others
-6) Add / remove the contract data to ini file
-7) submit transaction data to bot
 8) check data race
 
- 9) in strategy i visit all the indicators, not just the ones related to the strategy
  */

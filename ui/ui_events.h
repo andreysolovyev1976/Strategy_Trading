@@ -18,6 +18,8 @@ namespace user_interface {
 	  addIndicator,
 	  addIndicator_Ticker,
 	  addIndicator_TradeSide,
+	  addIndicator_ModifierType,
+	  addIndicator_ModifierValue,
 	  removeIndicator,
 	  getIndicators,
 

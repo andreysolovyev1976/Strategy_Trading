@@ -24,13 +24,13 @@ namespace algo {
   using K = time_::Timestamp<time_::Seconds>;
   using V = Quote<types::Value, time_::Seconds>;
   using MarketDataContainer = types::MultiThreadedLimitedSizeMap<K, V>;
-  using ModifierFunc = std::function<V(const V&)>;
+  using ModifierFunc = std::function<types::Value(const types::Value&)>;
 
   class Indicator final {
   public:
-	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, const ModifierFunc &modifier);
-	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, const ModifierFunc &modifier);
-	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value);
+//	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value, ModifierFunc modifier);
+	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, ModifierFunc modifier);
+//	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side, MarketDataContainer input_value);
 	  explicit Indicator(types::String indicator_label, const Ticker &ticker, types::String trade_side);
 
 	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>

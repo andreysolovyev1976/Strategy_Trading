@@ -41,10 +41,10 @@ namespace algo {
 	struct RuleType final : public types::ObjectType<rule_base::RuleTypeBase> {};
 
 	[[maybe_unused]]
-	static types::String RuleTypeToString (const RuleType &type );
+	types::String RuleTypeToString (const RuleType &type );
 
 	[[maybe_unused]]
-	static RuleType StringToRuleType (const types::String& type);
+	RuleType StringToRuleType (const types::String& type);
 
   }//!namespace
 

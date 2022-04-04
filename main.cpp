@@ -318,9 +318,9 @@ int main() {
 #endif
 
 
-#if 0
-	user_interface::Controller app;
-	app.run();
+#if 1
+	user_interface::UI ui;
+	ui.run();
 #endif
 
 	return 0;

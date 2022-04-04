@@ -61,8 +61,8 @@ namespace user_interface {
 
 	  algo::Engine engine;
 
+	  int64_t current_message_id;
 	  UserActivity user_activity;
-
 
 	  static const std::unordered_map<
 			  Event,

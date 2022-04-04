@@ -44,8 +44,28 @@ namespace const_values {
 
 	//TG Bot
 	static const size_t CHAT_ID = 442233888;
-	static const types::String TG_BOT_TOKEN = "5217629109:AAGO8OQLcGbdNhnhBSuPr6ywKsE-d2Dib4U";
+	static const types::String TG_BOT_TOKEN = "5062134652:AAG_9ecP_tQxSClfwYjPTsm5SYCqf_Y0_s8";
 
 }//!namespace
 
 #endif //TEZOSBOT_CONST_VALUES_H
+
+/*
+help - Short description
+add_indicator - Adding an Indicator
+remove_indicator - Removing an Indicator
+get_indicators - List all the Indicators
+add_signal - Adding a Signal
+remove_signal - Removing a Signal
+get_signals - List all the Signals
+add_rule - Adding a Rule
+remove_rule - Removing a Rule
+get_rules - List all the Rules
+add_strategy - Adding a Strategy
+remove_strategy - Removing a Strategy
+get_strategies - List all the Strategies
+stop_strategy - Stop a Strategy from running
+start_strategy - Start a Strategy running
+add_contract - Adding a Contract
+get_contracts - List all Current contracts available
+ */

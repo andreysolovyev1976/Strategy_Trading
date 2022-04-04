@@ -73,8 +73,8 @@ namespace user_interface {
 			  /// see signals.h for full list of types
 			  /// can be automated as well once ready
 			  "Comparison",
-			  "CrossOver",
-			  "Threshold",
+			  "CrossOver - for future functionality",
+			  "Threshold - for future functionality",
 	  };
 	  types::String signal_type;
 	  types::String relation; //using relations::relation_names as a universe
@@ -108,7 +108,6 @@ namespace user_interface {
 	  types::String signal_label;
 	  const std::vector<types::String> signal_values {"True", "False", "Zero", "Value"};
 	  types::String signal_value;
-
 	  const std::vector<types::String> position_sides {"Neutral", "Long", "Short"};
 	  types::String position_side;
 	  int order_quantity;
@@ -116,7 +115,6 @@ namespace user_interface {
 	  types::String trade_type;
 	  const std::vector<types::String> order_types {"Market", "Limited", "FillOrKill",};
 	  types::String order_type;
-
 	  const std::vector<types::String> trade_sides {"from Tez to Token", "from Token to Tez",};
 	  types::String quipuswap_trade_side;
 

@@ -35,7 +35,6 @@ namespace user_interface {
 	  addRule_TradeSide,
 	  addRule_SignalLabel,
 	  addRule_SignalValue,
-	  addRule_PairTrade,
 	  removeRule,
 	  getRules,
 

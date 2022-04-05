@@ -319,6 +319,8 @@ int main() {
 
 
 #if 1
+//#define BOT_OVER_CERR
+#define CERR_OVER_BOT
 	user_interface::UI ui;
 	ui.run();
 #endif

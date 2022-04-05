@@ -29,8 +29,7 @@ namespace user_interface {
 	  is_ui_initialized = true;
   }//!ctor
 
-  void UI::run()
-  {
+  void UI::run() {
 	  if (not is_ui_initialized) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
@@ -46,11 +45,15 @@ namespace user_interface {
 		  catch (std::exception& e) {
 			  if (chat_id.has_value())
 				  bot.getApi().sendMessage(chat_id.value(), EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
+#ifdef CERR_OVER_BOT
 			  else std::cerr << e.what() << '\n';
-//		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
+#endif
+#ifdef BOT_OVER_CERR
+		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
+#endif
 		  }
 	  }
-  }
+  }//!func
 
   const std::unordered_map<
 		  Event,

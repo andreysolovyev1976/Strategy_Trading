@@ -40,7 +40,7 @@ namespace algo {
 
 	void RobotConfig::loadFromIni(){
 		try {
-			ini_parser::read_ini(config_file_name, conf);
+  			ini_parser::read_ini(config_file_name, conf);
 		}
 		catch (const ptree_error &e) {
 			throw LogicError(EXCEPTION_MSG("Error while loading: "s + config_file_name + " - " + e.what() + " "));

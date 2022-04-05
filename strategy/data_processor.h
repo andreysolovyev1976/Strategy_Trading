@@ -119,6 +119,7 @@ namespace algo {
 #endif
 #if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
 		Quote<QuoteType, Duration> quote;
+
 		if (auto dex = trading_contract.dex.TryAs<trading_contract_base::dex_source::Coinbase>(); dex) {
 			using namespace data::coinbase;
 			auto tickers = utils::splitIntoWords(trading_contract.ticker, '-');

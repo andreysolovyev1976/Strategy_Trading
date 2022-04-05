@@ -24,5 +24,4 @@ namespace os {
 	  }
   }//!func
 
-
 }//!namespace

@@ -148,8 +148,17 @@ namespace user_interface {
 	  });
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::addIndicator_TradeSide) {
-			init_indicator.trade_side = query->data;
-			init_indicator.is_trade_side_initialized = true;
+            if (query->data == "from Tez to Token") {
+                init_indicator.trade_side = "SellXTZBuyToken";
+                init_indicator.is_trade_side_initialized = true;
+            }
+            else if (query->data == "from Token to Tez") {
+                init_indicator.trade_side = "BuyXTZSellToken";
+                init_indicator.is_trade_side_initialized = true;
+            }
+            else {
+                return;
+            }
 
 			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 			for (const auto& mods : init_indicator.modifiers) {
@@ -507,7 +516,6 @@ namespace user_interface {
 
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::addRule_TradeSide) {
-
 			if (query->data == "from Tez to Token") {
 				init_rule.quipuswap_trade_side = "SellXTZBuyToken";
 				init_rule.is_quipuswap_trade_side_initialized = true;
@@ -519,7 +527,6 @@ namespace user_interface {
 			else {
 				return;
 			}
-
 			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 			auto* signals = engine.getPtr<Signals>();
 			for (const auto& [label, _] : *(signals->getByLabel()) ) {

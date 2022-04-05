@@ -19,30 +19,30 @@ namespace algo {
 									pathSetNew(std::move(handle))->
 									Implement(curl_client::Method::Get);
 
-		  auto output =
-				  std::visit(utils::overloaded {
-						  []([[maybe_unused]] std::monostate arg) -> std::optional<Json::Dict> { return std::nullopt; },
-						  []([[maybe_unused]] const std::string &arg) -> std::optional<Json::Dict> {
-						  	std::stringstream ss(arg);
-						  	try {
+		  std::optional<Json::Dict> output;
+		  try {
+			  output =
+					  std::visit(utils::overloaded{
+							  []([[maybe_unused]] std::monostate arg) -> std::optional<Json::Dict> { return std::nullopt; },
+							  []([[maybe_unused]] const std::string& arg) -> std::optional<Json::Dict> {
+								std::stringstream ss(arg);
 								auto doc = Json::Load(ss);
-								auto &m = doc.GetRoot().AsDict();
-								if (auto found = m.find("storage"); found == m.end()) return std::nullopt;
+								auto& m = doc.GetRoot().AsDict();
+								if (auto found = m.find("storage"); found==m.end()) return std::nullopt;
 								else if (not found->second.IsDict()) return std::nullopt;
 								else return std::optional{found->second.AsDict()};
-							}
-						  	catch (std::exception &e) {
-						  		std::cerr << e.what();
-						  	}
-						  	return std::nullopt;
-						  	},
-						  [](Json::Document& arg) -> std::optional<Json::Dict> {
-							auto &m = arg.GetRoot().AsDict();
-							if (auto found = m.find("storage"); found == m.end()) return std::nullopt;
-							else if (not found->second.IsDict()) return std::nullopt;
-							else return std::optional{found->second.AsDict()};
-						  }
-				  }, response->body);
+							  },
+							  [](Json::Document& arg) -> std::optional<Json::Dict> {
+								auto& m = arg.GetRoot().AsDict();
+								if (auto found = m.find("storage"); found==m.end()) return std::nullopt;
+								else if (not found->second.IsDict()) return std::nullopt;
+								else return std::optional{found->second.AsDict()};
+							  }
+					  }, response->body);
+		  }
+		  catch (std::exception& e) {
+			  std::cerr << e.what();
+		  }
 		  return output;
 	  }//!func
 

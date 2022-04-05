@@ -85,7 +85,6 @@ namespace algo {
 							return MarketData<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
 						  }
 				  }, trading_contract.dex);
-		  #endif
 #endif
 #if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
 		  Quote<QuoteType, Duration> quote;

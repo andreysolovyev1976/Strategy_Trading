@@ -33,8 +33,13 @@ namespace const_values {
 
 
   //INI file params
-	static const types::String CONFIG_FILENAME ("../setup_user_data/bot_config.ini");
-  static const types::String NO_NAME ("NO_NAME");
+#if defined(__APPLE__)
+  static const types::String CONFIG_FILENAME ("../setup_user_data/bot_config.ini");
+#endif
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+  static const types::String CONFIG_FILENAME ("../../setup_user_data/bot_config.ini");
+#endif
+static const types::String NO_NAME ("NO_NAME");
   static const int
 		  PRICE_DIFF = 5,  		// Price differential ( in % difference relative to coinbase price)
 		  TIMEFRAME  = 60,   	// How often to check for price differences (e.g. every 5 minutes)
@@ -45,6 +50,16 @@ namespace const_values {
 	//TG Bot
 	static const size_t CHAT_ID = 442233888;
 	static const types::String TG_BOT_TOKEN = "5062134652:AAG_9ecP_tQxSClfwYjPTsm5SYCqf_Y0_s8";
+
+
+//TS_node file
+#if defined(__APPLE__)
+  static const types::String TS_NODE_FILENAME ("ts-node ../setup_transacton_ts_script/");
+#endif
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+  static const types::String TS_NODE_FILENAME ("ts-node ../../setup_transacton_ts_script/");
+#endif
+
 
 }//!namespace
 

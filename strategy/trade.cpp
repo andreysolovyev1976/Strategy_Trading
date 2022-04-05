@@ -40,7 +40,7 @@ namespace algo {
 		else if (type == "Market") return OrderType{order_type::Market{}};
 		else if (type == "FillOrKill") return OrderType{order_type::FillOrKill{}};
 		else return OrderType{};
-	};
+	}
 
   }//!namespace
 

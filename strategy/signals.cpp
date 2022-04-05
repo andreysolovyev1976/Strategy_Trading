@@ -27,7 +27,7 @@ namespace algo {
 		else if (type == "Timestamp") return SignalType{signal_type::Timestamp{}};
 		else if (type == "Threshold") return SignalType{signal_type::Threshold{}};
 		else return SignalType{};
-	};
+	}
 
 
 	types::String SignalValueToString (const SignalValue &value ) {

@@ -8,7 +8,7 @@ project(${PROJECT_NAME}
 
 set(CMAKE_CXX_STANDARD 20)
 if (APPLE)
-    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -Wno-missing-field-initializers")
+    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -Wno-missing-field-initializers -o")
 else()
     set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers -Wno-attributes")
 endif()

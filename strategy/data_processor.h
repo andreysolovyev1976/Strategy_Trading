@@ -74,6 +74,7 @@ namespace algo {
 	// will work poorly in multithreading
 	template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
 	MarketData_<QuoteType, Duration> getNewMarketData (const TradingContract& trading_contract) {
+#if defined(__APPLE__)
 		return
 				std::visit(utils::overloaded {
 						[]([[maybe_unused]] std::monostate arg) -> MarketData_<QuoteType, Duration> {
@@ -103,7 +104,6 @@ namespace algo {
 									token = tezos::quipuswap::estimateTezToToken(std::move(token));
 									quote.timestamp = std::move(token.timestamp);
 									quote.value_ = std::move(token.current_price_tez);
-
 								  },
 								  [&quote, &trading_contract]([[maybe_unused]] trading_contract_base::quipuswap::BuyXTZSellToken arg) {
 									tezos::quipuswap::TokenPair<Duration> token;
@@ -116,6 +116,43 @@ namespace algo {
 						  return MarketData_<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
 						}
 				}, trading_contract.dex);
+#endif
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+		Quote<QuoteType, Duration> quote;
+		if (auto dex = trading_contract.dex.TryAs<trading_contract_base::dex_source::Coinbase>(); dex) {
+			using namespace data::coinbase;
+			auto tickers = utils::splitIntoWords(trading_contract.ticker, '-');
+			assert (tickers.size()==2);
+			auto new_trade_data = processSingleTradeData(getSingleTradeData(tickers[0], tickers[1]));
+			quote.value() = types::Value(new_trade_data.price, 6); //todo:: get precision from a ticker data
+			quote.timestamp = getTimestamp<Duration>(std::move(new_trade_data.time));
+		}
+		else if (auto dex_ = trading_contract.dex.TryAs<trading_contract_base::dex_source::Quipuswap>(); dex_) {
+			if (auto side = trading_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>(); side) {
+				tezos::quipuswap::TokenPair<Duration> token;
+				token.pair_address = trading_contract.ticker;
+				token = tezos::quipuswap::estimateTezToToken(std::move(token));
+				quote.timestamp = std::move(token.timestamp);
+				quote.value_ = std::move(token.current_price_tez);
+			}
+			else if (auto side_ = trading_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::BuyXTZSellToken>(); side_) {
+				tezos::quipuswap::TokenPair<Duration> token;
+				token.pair_address = trading_contract.ticker;
+				token = tezos::quipuswap::estimateTokenToTez(std::move(token));
+				quote.timestamp = std::move(token.timestamp);
+				quote.value_ = std::move(token.current_price_token);
+			}
+			else {
+				throw InvalidArgumentError(EXCEPTION_MSG("Unexpected Quipuswap - no Trade side selected; "));
+			}
+		}
+		else {
+			throw InvalidArgumentError(EXCEPTION_MSG("Unexpected Trading Contract - no Dex associated; "));
+		}
+
+		return MarketData_<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
+#endif
+
 	}//!func
   }//!namespace
 }//!namespace

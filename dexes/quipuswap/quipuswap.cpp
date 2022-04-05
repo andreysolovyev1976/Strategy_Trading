@@ -18,34 +18,32 @@ namespace algo {
 		  response = request.
 									pathSetNew(std::move(handle))->
 									Implement(curl_client::Method::Get);
-#if defined(__APPLE__)
-		  return
+
+		  auto output =
 				  std::visit(utils::overloaded {
 						  []([[maybe_unused]] std::monostate arg) -> std::optional<Json::Dict> { return std::nullopt; },
-						  []([[maybe_unused]] const std::string &arg) -> std::optional<Json::Dict> { return std::nullopt; },
-						  [](const Json::Document& arg) -> std::optional<Json::Dict> {
-							const auto &m = arg.GetRoot().AsDict();
+						  []([[maybe_unused]] const std::string &arg) -> std::optional<Json::Dict> {
+						  	std::stringstream ss(arg);
+						  	try {
+								auto doc = Json::Load(ss);
+								auto &m = doc.GetRoot().AsDict();
+								if (auto found = m.find("storage"); found == m.end()) return std::nullopt;
+								else if (not found->second.IsDict()) return std::nullopt;
+								else return std::optional{found->second.AsDict()};
+							}
+						  	catch (std::exception &e) {
+						  		std::cerr << e.what();
+						  	}
+						  	return std::nullopt;
+						  	},
+						  [](Json::Document& arg) -> std::optional<Json::Dict> {
+							auto &m = arg.GetRoot().AsDict();
 							if (auto found = m.find("storage"); found == m.end()) return std::nullopt;
 							else if (not found->second.IsDict()) return std::nullopt;
 							else return std::optional{found->second.AsDict()};
 						  }
 				  }, response->body);
-
-#endif
-#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
-
-		  if (std::holds_alternative<std::monostate>(response->body)) {return std::nullopt;}
-		  else if (std::holds_alternative<std::string>(response->body)) {return std::nullopt;}
-		  else if (std::holds_alternative<Json::Document>(response->body)) {
-			  const auto& r = std::get<Json::Document>(response->body).GetRoot().AsDict();
-			  if (auto found = r.find("storage"); found == r.end()) return std::nullopt;
-			  else if (not found->second.IsDict()) return std::nullopt;
-			  else return std::optional{found->second.AsDict()};
-		  }
-		  else {
-		  	return std::nullopt;
-		  }
-#endif
+		  return output;
 	  }//!func
 
 

@@ -33,7 +33,6 @@ namespace user_interface {
 	  if (not is_ui_initialized) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
-	  while(true) {
 		  try {
 			  bot.getApi().deleteWebhook();
 
@@ -52,7 +51,6 @@ namespace user_interface {
 		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
 #endif
 		  }
-	  }
   }//!func
 
   const std::unordered_map<

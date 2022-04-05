@@ -14,7 +14,9 @@ namespace algo {
   using namespace std::chrono_literals;
   using namespace algo::tezos::quipuswap::transaction;
 
-  Engine::Engine (TgBot::Bot* b) : bot (b)
+  Engine::Engine (TgBot::Bot* b)
+  : bot (b)
+  , data_processor_ptr(std::make_shared<DataProcessor>())
   {}
 
   void Engine::activateStrategy(const types::String& label) {
@@ -55,7 +57,7 @@ namespace algo {
 	  if (auto strategy = strategies.getPtr(label); strategy) {
 		  types::String result;
 		  while (isStrategyActive(label)) {
-			  auto generated_trades = strategy->processRules();
+			  auto generated_trades = strategy->processRules(data_processor_ptr);
 			  result.clear();
 			  if (generated_trades.has_value()) {
 				  for (auto& trade : generated_trades.value()) {

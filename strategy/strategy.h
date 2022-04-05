@@ -38,7 +38,7 @@ namespace algo {
 	  const types::String& getLabel () const;
 	  int64_t getUserID() const;
 
-	  std::optional<std::vector<Trade>> processRules ();
+	  std::optional<std::vector<Trade>> processRules (DataProcessorPtr data_processor_ptr);
 
   private:
 	  types::String label_;
@@ -51,7 +51,7 @@ namespace algo {
 	  [[maybe_unused]] int64_t user_id_;
 	  [[maybe_unused]] Account* account_;
 
-	  void getMarketData();
+	  void getMarketData(DataProcessorPtr data_processor_ptr);
   };
 
   class Strategies final : public Objects <Strategy>{

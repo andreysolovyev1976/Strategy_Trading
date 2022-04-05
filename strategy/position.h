@@ -34,10 +34,23 @@ namespace algo {
   struct PositionSide final : public types::ObjectType<position_base::PositionSideBase> {};
 
   [[maybe_unused]]
-  types::String PositionSideToString (const PositionSide &type);
+  inline
+  types::String PositionSideToString (const PositionSide &type ) {
+	  if      (type.TryAs<position_base::position_side::Neutral>()) return "Neutral";
+	  else if (type.TryAs<position_base::position_side::Long>()) return "Long";
+	  else if (type.TryAs<position_base::position_side::Short>()) return "Short";
+	  else return "";
+  }
 
   [[maybe_unused]]
-  PositionSide StringToPositionSide (const types::String& type);
+  inline
+  PositionSide StringToPositionSide (const types::String& type) {
+	  if      (type == "Neutral")return PositionSide{position_base::position_side::Neutral{}};
+	  else if (type == "Long") return PositionSide{position_base::position_side::Long{}};
+	  else if (type == "Short") return PositionSide{position_base::position_side::Short{}};
+	  else return PositionSide{};
+  }
+
 
   struct Position final {
 	  Ticker ticker;

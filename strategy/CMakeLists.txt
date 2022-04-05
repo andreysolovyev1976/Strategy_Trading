@@ -9,19 +9,12 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        account.cpp
-        client.cpp
-        data_processor.cpp
         indicator.cpp
-        portfolio.cpp
-        position.cpp
         quote.cpp
         rule.cpp
         signals.cpp
         strategy.cpp
-        trade.cpp
         trading_contract.cpp
-        trade.h
 
         strategy_engine.cpp
         )

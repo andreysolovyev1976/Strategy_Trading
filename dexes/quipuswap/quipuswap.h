@@ -219,7 +219,9 @@ namespace algo {
 		  return true;
 	  }
 
-	  std::optional<Json::Dict> getStorage (const types::String &contract_address);
+	  std::optional<Json::Dict> getStorage (const types::String &contract_address,
+			  curl_client::Response& response, curl_client::Request& request
+	  );
 
 	  inline types::Value fromJsonToValue (const Json::Node &node) {
 		  if (node.IsInt()) return types::Value (node.AsInt());
@@ -229,10 +231,12 @@ namespace algo {
 	  }
 
 	  template <typename Duration>
-	  TokenPair<Duration> updateToken (TokenPair<Duration> token) {
+	  TokenPair<Duration> updateToken (TokenPair<Duration> token,
+			  curl_client::Response& response, curl_client::Request& request
+	  ) {
 		  if (token.pair_address.empty()) throw std::invalid_argument(EXCEPTION_MSG("Token address is empty; "));
 
-		  auto storage = getStorage(token.pair_address);
+		  auto storage = getStorage(token.pair_address, response, request);
 		  if (not storage.has_value()) throw std::runtime_error(EXCEPTION_MSG("Bad response from tzkt; "));
 		  token.timestamp = time_::Timestamp<Duration>();
 
@@ -248,8 +252,9 @@ namespace algo {
 	  }
 
 	  template <typename Duration>
-	  TokenPair<Duration> estimateTezToToken(TokenPair<Duration> token) {
-		  token = updateToken(token);
+	  TokenPair<Duration> estimateTezToToken(TokenPair<Duration> token,
+			  curl_client::Response& response, curl_client::Request& request) {
+		  token = updateToken(token, response, request);
 		  token.current_price_tez =
 		  		const_values::FEE_VALUE_PRODUCT * token.token_pool
 				  / (token.tez_pool + const_values::FEE_VALUE_PRODUCT)
@@ -258,8 +263,9 @@ namespace algo {
 	  }
 
 	  template <typename Duration>
-	  TokenPair<Duration> estimateTokenToTez(TokenPair<Duration> token) {
-		  token = updateToken(token);
+	  TokenPair<Duration> estimateTokenToTez(TokenPair<Duration> token,
+			  curl_client::Response& response, curl_client::Request& request) {
+		  token = updateToken(token, response, request);
 		  token.current_price_token =
 		  		const_values::FEE_VALUE_PRODUCT * token.tez_pool
 				  / (token.token_pool + const_values::FEE_VALUE_PRODUCT)

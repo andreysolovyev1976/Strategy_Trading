@@ -136,7 +136,6 @@ namespace algo {
 	  ByTicker& getByTicker () = delete;
 	  const ByTicker& getByTicker () const = delete;
 
-	  void updateSignals (const MarketData &market_data);
 	  void addSignal (Signal signal);
 	  void removeSignal (const types::String &label);
   };

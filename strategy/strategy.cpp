@@ -43,11 +43,11 @@ namespace algo {
   const types::String& Strategy::getLabel () const {return label_;}
   int64_t Strategy::getUserID() const {return user_id_;}
 
-  std::optional<std::vector<Trade>> Strategy::processRules () {
+  std::optional<std::vector<Trade>> Strategy::processRules (DataProcessorPtr data_processor_ptr) {
 	  if (not isInitialized())
 		  throw RuntimeError(EXCEPTION_MSG("No Rules selected; "));
 
-	  getMarketData();
+	  getMarketData(data_processor_ptr);
 
 	  std::vector<Trade> trades;
 
@@ -64,14 +64,14 @@ namespace algo {
 	  return trades.empty() ? std::nullopt : std::optional<std::vector<Trade>>{trades};
   }
 
-  void Strategy::getMarketData(){
+  void Strategy::getMarketData(DataProcessorPtr data_processor_ptr){
 	  //todo: make it multithreading
 	  //todo: it may be different types of Data and Duration for the some strategies
 
 	  for (const auto& i : indicator_labels_) {
 		  if (auto p = indicators_->getByLabel()->Find(i); p != indicators_->getByLabel()->end()) {
 			  const auto& trading_contract = p->second->getTradingContract();
-			  auto market_data = DataProcessor_::getNewMarketData<
+			  auto market_data = data_processor_ptr->getNewMarketData<
 					  types::Value,
 					  time_::Seconds>(trading_contract);
 			  std::cout << "new data for ticker: " << market_data.first << "; " << market_data.second << '\n';

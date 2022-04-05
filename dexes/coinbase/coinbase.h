@@ -24,18 +24,23 @@ namespace algo {
 	  template<typename ...Fields>
 	  void Print(const std::vector<CurrencyData>& data_coinbase, std::ostream& os, Fields ...fields);
 
-	  Json::Document getListOfCurrencies(bool debug_output = false, std::ostream& os = std::cerr);
+	  Json::Document getListOfCurrencies(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output = false, std::ostream& os = std::cerr);
 
 	  template <typename Input>
 	  std::vector<CurrencyData> processListOfCurrencies(Input input);
 
-	  Json::Document getSingleCurrency(const types::String& ticker, bool debug_output = false,
-			  std::ostream& os = std::cerr);
+	  Json::Document getSingleCurrency(const types::String& ticker,
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output = false, std::ostream& os = std::cerr);
 
 	  template <typename Input>
 	  CurrencyData processSingleCurrency(Input input);
 
-	  Json::Document getSingleTradeData(const types::String& ticker1, const types::String& ticker2,
+	  Json::Document getSingleTradeData(
+			  const types::String& ticker1, const types::String& ticker2,
+			  curl_client::Response& response, curl_client::Request& request,
 			  bool debug_output = false, std::ostream& os = std::cerr);
 
 	  template <typename Input>

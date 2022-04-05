@@ -35,8 +35,29 @@ namespace algo {
 
 	struct TradeType final : public types::ObjectType<TradeTypeBase> {};
 
-	types::String TradeTypeToString (const TradeType &type );
-	TradeType StringToTradeType (const types::String& type);
+	[[maybe_unused]]
+	inline
+	types::String TradeTypeToString (const TradeType &type ) {
+		if      (type.TryAs<trade_type::Enter>()) return "Enter";
+		else if (type.TryAs<trade_type::Exit>()) return "Exit";
+		else if (type.TryAs<trade_type::StopLoss>()) return "StopLoss";
+		else if (type.TryAs<trade_type::TakeProfit>()) return "TakeProfit";
+		else if (type.TryAs<trade_type::Chaining>()) return "Chaining";
+		else if (type.TryAs<trade_type::Forced>()) return "Forced";
+		else return "";
+	}
+
+	[[maybe_unused]]
+	inline
+	TradeType StringToTradeType (const types::String& type)   {
+		if      (type == "Enter")return TradeType{trade_type::Enter{}};
+		else if (type == "Exit") return TradeType{trade_type::Exit{}};
+		else if (type == "StopLoss") return TradeType{trade_type::StopLoss{}};
+		else if (type == "TakeProfit") return TradeType{trade_type::TakeProfit{}};
+		else if (type == "Chaining") return TradeType{trade_type::Chaining{}};
+		else if (type == "Forced") return TradeType{trade_type::Forced{}};
+		else return TradeType{};
+	}
 
 	namespace order_type {
 	  struct Limited {};
@@ -54,8 +75,23 @@ namespace algo {
 
 	struct OrderType final : public types::ObjectType<OrderTypeBase> {};
 
-	types::String OrderTypeToString (const OrderType &type );
-	OrderType StringToOrderType (const types::String& type);
+	[[maybe_unused]]
+	inline
+	types::String OrderTypeToString (const OrderType &type ) {
+		if      (type.TryAs<order_type::Limited>()) return "Limited";
+		else if (type.TryAs<order_type::Market>()) return "Market";
+		else if (type.TryAs<order_type::FillOrKill>()) return "FillOrKill";
+		else return "";
+	}
+
+	[[maybe_unused]]
+	inline
+	OrderType StringToOrderType (const types::String& type)   {
+		if      (type == "Limited")return OrderType{order_type::Limited{}};
+		else if (type == "Market") return OrderType{order_type::Market{}};
+		else if (type == "FillOrKill") return OrderType{order_type::FillOrKill{}};
+		else return OrderType{};
+	}
 
 	using OrderQuantity = types::Value;
 	using Slippage = types::Value;
@@ -72,11 +108,15 @@ namespace algo {
 //	  		const PositionSide &side,
 //	  		const trade_base::TradeType &trade_type,
 //	  		const trade_base::OrderType &order_type
-	  );
+	  )
+			  : trading_contract_(trading_contract)
+			  , quantity_(quantity)
+			  , slippage_(slippage)
+	  {}
 
-	  const TradingContract& getTradingContract () const;
-	  const trade_base::OrderQuantity& getQuantity() const;
-	  const trade_base::Slippage& getSlippage() const;
+	  const TradingContract& getTradingContract() const {return trading_contract_;}
+	  const trade_base::OrderQuantity& getQuantity() const {return quantity_;}
+	  const trade_base::Slippage& getSlippage() const {return slippage_;}
 //	  const Quote& getExecutedPrice() const;
 //	  const PositionSide& getSide() const;
 //	  const trade_base::TradeType& getTradeType() const;

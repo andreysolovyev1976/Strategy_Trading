@@ -14,6 +14,8 @@
 #include "trade.h"
 #include "threads_engine.h"
 #include "bot_config.h"
+#include "data_processor.h"
+
 
 #ifndef STRATEGY_TRADING_STRATEGY_ENGINE_H
 #define STRATEGY_TRADING_STRATEGY_ENGINE_H
@@ -35,6 +37,7 @@ namespace algo {
 
   private:
 	  TgBot::Bot* bot;
+	  DataProcessorPtr data_processor_ptr;
 	  Indicators indicators;
 	  Modifiers<types::Value> modifiers; //todo make it available for other QuoteTypes
 	  Signals signals;

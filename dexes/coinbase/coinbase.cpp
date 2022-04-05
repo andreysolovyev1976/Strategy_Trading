@@ -34,17 +34,14 @@ namespace algo {
 		  return os;
 	  }
 
-	  Json::Document getListOfCurrencies(bool debug_output, std::ostream& os)
+	  Json::Document getListOfCurrencies(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os)
 	  {
-		  using namespace curl_client;
-
-		  Response response;
-		  Request request;
-
 		  //get currencies
 		  response = request.
 									pathSetNew("https://api.exchange.coinbase.com/currencies")->
-									Implement(Method::Get);
+									Implement(curl_client::Method::Get);
 
 		  DEBUG_OUTPUT("currencies: ", true)
 
@@ -53,20 +50,17 @@ namespace algo {
 		  else return Json::Document(Json::Node(nullptr));
 	  }
 
-	  Json::Document getSingleCurrency(const types::String& ticker, bool debug_output, std::ostream& os)
+	  Json::Document getSingleCurrency(const types::String& ticker,
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os)
 	  {
-		  using namespace curl_client;
-
-		  Response response;
-		  Request request;
-
 		  types::String path_new = "https://api.exchange.coinbase.com/currencies/";
 		  path_new += ticker;
 
 		  //get currency
 		  response = request.
 									pathSetNew(std::move(path_new))->
-									Implement(Method::Get);
+									Implement(curl_client::Method::Get);
 
 		  DEBUG_OUTPUT("currency ID: ", true)
 
@@ -75,14 +69,11 @@ namespace algo {
 		  else return Json::Document(Json::Node(nullptr));
 	  }
 
-	  Json::Document getSingleTradeData(const types::String& ticker1, const types::String& ticker2, bool debug_output,
-			  std::ostream& os)
+	  Json::Document getSingleTradeData(
+			  const types::String& ticker1, const types::String& ticker2,
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os)
 	  {
-		  using namespace curl_client;
-
-		  Response response;
-		  Request request;
-
 		  types::String path_new = "https://api.exchange.coinbase.com/products/";
 		  path_new += ticker1;
 		  path_new += '-';
@@ -93,7 +84,7 @@ namespace algo {
 		  //Gets snapshot information about the last trade (tick), best bid/ask and 24h volume.
 		  response = request.
 									pathSetNew(std::move(path_new))->
-									Implement(Method::Get);
+									Implement(curl_client::Method::Get);
 		  /// 0.359 ms is a round trip
 
 		  DEBUG_OUTPUT("ticker product: ", true)

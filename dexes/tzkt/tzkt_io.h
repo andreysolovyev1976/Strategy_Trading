@@ -39,10 +39,14 @@ namespace algo {
 		  Details initiator, sender, target;
 	  };
 
-	  Json::Document getContractData(bool debug_output, std::ostream& os);
+	  Json::Document getContractData(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os);
 
 
-	  Json::Document getTransactionData(bool debug_output = false, std::ostream& os = std::cerr);
+	  Json::Document getTransactionData(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output = false, std::ostream& os = std::cerr);
 	  TradeData processSingleTransactionData(Json::Document document);
 	  TradeData processSingleTransactionData(Json::Node node);
 

@@ -99,13 +99,10 @@ namespace algo {
   }
 
 
-	  Json::Document getContractData(bool debug_output, std::ostream& os)
+	  Json::Document getContractData(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os)
 	  {
-		  using namespace curl_client;
-
-		  Response response;
-		  Request request;
-
 
 //useful thing
 //		  pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/interface")->
@@ -115,7 +112,7 @@ namespace algo {
 		  response = request.
 //									pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/views")->
 									pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/bigmaps/token_to_exchange/keys/KT1Nbc9cmx19qFrYYFpkiDoojVYL8UZJYVcj")->
-									Implement(Method::Get);
+									Implement(curl_client::Method::Get);
 		  /// 0.359 ms is a round trip
 
 		  DEBUG_OUTPUT("contracts: ", true)
@@ -126,20 +123,17 @@ namespace algo {
 	  }
 
 
-	  Json::Document getTransactionData(bool debug_output, std::ostream& os)
+	  Json::Document getTransactionData(
+			  curl_client::Response& response, curl_client::Request& request,
+			  bool debug_output, std::ostream& os)
 	  {
-		  using namespace curl_client;
-
-		  Response response;
-		  Request request;
-
 
 //		  надо проверить предыдущую реализацию бота
 		  //Gets transactions
 		  response = request.
 //									pathSetNew("https://api.tzkt.io/v1/operations/transactions/?timestamp.ge=2021-12-08T23:00:00Z&limit=10000")->
 //									pathSetNew("https://api.tzkt.io/v1/operations/transactions/oo2cCmVijU2bwiPTyLh8KU1wsWYJKuctRURBBzYnJDYEko2pZih")->
-									Implement(Method::Get);
+									Implement(curl_client::Method::Get);
 		  /// 0.359 ms is a round trip
 
 		  DEBUG_OUTPUT("txns: ", true)

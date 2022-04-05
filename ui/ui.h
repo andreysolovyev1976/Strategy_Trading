@@ -50,6 +50,7 @@ namespace user_interface {
 	  TgBot::Bot bot;
 	  Commands commands;
 	  [[maybe_unused]] Keyboards keyboards;
+	  std::optional<int64_t> chat_id;
 
 	  algo::config::RobotConfig& robot_config;
 

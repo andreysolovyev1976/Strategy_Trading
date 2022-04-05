@@ -106,7 +106,7 @@ namespace user_interface {
 	  const std::vector<types::String> rule_types {"Entry", "Exit", "Risk", "Order", "Rebalance"};
 	  types::String rule_type;
 	  types::String signal_label;
-	  const std::vector<types::String> signal_values {"True", "False", "Zero", "Value"};
+	  const std::vector<types::String> signal_values {"True", "False" /*,  "Zero", "Value" */};
 	  types::String signal_value;
 	  const std::vector<types::String> position_sides {"Neutral", "Long", "Short"};
 	  types::String position_side;

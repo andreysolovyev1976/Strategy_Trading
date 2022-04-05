@@ -34,6 +34,7 @@ namespace user_interface {
 	  if (not is_ui_initialized) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
+	  while(true) {
 		  try {
 			  bot.getApi().deleteWebhook();
 
@@ -43,9 +44,12 @@ namespace user_interface {
 			  }
 		  }
 		  catch (std::exception& e) {
-			  bot.getApi().sendMessage(442233888, EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
+			  if (chat_id.has_value())
+				  bot.getApi().sendMessage(chat_id.value(), EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
+			  else std::cerr << e.what() << '\n';
 //		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
 		  }
+	  }
   }
 
   const std::unordered_map<
@@ -84,11 +88,13 @@ namespace user_interface {
   }
   void UI::initHelp(){
 	  bot.getEvents().onCommand("help", [this](Message::Ptr message) {
+		chat_id = message->chat->id;
 		bot.getApi().sendMessage(message->chat->id, processEvent(Event::help));
 	  });
   }
   void UI::initAddIndicator(){
 	  bot.getEvents().onCommand("add_indicator", [this](Message::Ptr message) {
+		chat_id = message->chat->id;
 		ForceReply::Ptr keyboard_reply(new ForceReply);
 		bot.getApi().sendMessage(message->chat->id,
 				"Label new Indicator", false, 0, keyboard_reply);
@@ -264,7 +270,7 @@ namespace user_interface {
 				keyboard_select->inlineKeyboard.push_back(std::move(row));
 
 				auto _ = bot.getApi().sendMessage(message->chat->id,
-						"Select the Indicator(s) to include", false, 0, keyboard_select);
+						"Select exactly two Indicators to include", false, 0, keyboard_select);
 				current_message_id = _->messageId;
 				user_activity[message->chat->username] = Event::addSignal;
 			}

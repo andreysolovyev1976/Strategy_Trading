@@ -16,7 +16,7 @@ namespace algo {
 			}
 
 			types::String command;
-			command += const_values::TS_NODE_FILENAME;
+			command += const_values::TS_NODE_COMMAND;
 			if (auto p1 =
 						t_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>();
 					p1) {

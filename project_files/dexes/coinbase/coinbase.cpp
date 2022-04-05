@@ -45,8 +45,13 @@ namespace algo {
 
 		  DEBUG_OUTPUT("currencies: ", true)
 
-		  if (std::holds_alternative<Json::Document>(response.get()->body))
+		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
 			  return std::get<Json::Document>(response.get()->body);
+		  }
+		  else if (std::holds_alternative<std::string>(response.get()->body)) {
+			  std::stringstream ss(std::get<std::string>(response.get()->body));
+			  return Json::Load(ss);
+		  }
 		  else return Json::Document(Json::Node(nullptr));
 	  }
 
@@ -64,8 +69,13 @@ namespace algo {
 
 		  DEBUG_OUTPUT("currency ID: ", true)
 
-		  if (std::holds_alternative<Json::Document>(response.get()->body))
+		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
 			  return std::get<Json::Document>(response.get()->body);
+		  }
+		  else if (std::holds_alternative<std::string>(response.get()->body)) {
+			  std::stringstream ss(std::get<std::string>(response.get()->body));
+			  return Json::Load(ss);
+		  }
 		  else return Json::Document(Json::Node(nullptr));
 	  }
 
@@ -89,8 +99,13 @@ namespace algo {
 
 		  DEBUG_OUTPUT("ticker product: ", true)
 
-		  if (std::holds_alternative<Json::Document>(response.get()->body))
+		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
 			  return std::get<Json::Document>(response.get()->body);
+		  }
+		  else if (std::holds_alternative<std::string>(response.get()->body)) {
+		  	std::stringstream ss(std::get<std::string>(response.get()->body));
+		  	return Json::Load(ss);
+		  }
 		  else return Json::Document(Json::Node(nullptr));
 	  }
 

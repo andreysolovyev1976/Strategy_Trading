@@ -42,6 +42,9 @@ namespace algo {
 			  else if (not found->second.IsDict()) return std::nullopt;
 			  else return std::optional{found->second.AsDict()};
 		  }
+		  else {
+		  	return std::nullopt;
+		  }
 #endif
 	  }//!func
 

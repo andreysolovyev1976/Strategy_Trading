@@ -827,7 +827,7 @@ namespace user_interface {
 		  init_indicator.clear();
 	  }
 	  else {
-		  //todo: type deduction must aligned with Indicator type - amend it later
+		  //todo: type deduction must aligned with Indicator type - ammend it later
 		  Modifier<types::Value> modifier (init_indicator.label);
 		  modifier.setModifierValue(std::move(init_indicator.modifier_value));
 

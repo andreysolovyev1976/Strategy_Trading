@@ -29,8 +29,8 @@ namespace user_interface {
 	  const std::vector<types::String> trade_sides = {
 			  /// see signals.h for full list of types
 			  /// can be automated as well once ready
-			  "From Token to Tez",
-			  "From Tez to Token",
+			  "from Token to Tez",
+			  "from Tez to Token",
 	  };
 	  types::String trade_side;
 	  const std::vector<types::String> modifiers = {

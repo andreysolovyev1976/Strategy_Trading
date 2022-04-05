@@ -41,8 +41,8 @@ add_executable(${PROJECT_NAME_TEST}
         tests_value_container.cpp
         tests_indicator.cpp
         )
-add_subdirectory(../primitives ${CMAKE_CURRENT_BINARY_DIR}_primitives)
-add_subdirectory(../strategy ${CMAKE_CURRENT_BINARY_DIR}_strategy)
+add_subdirectory(../project_files/primitives ${CMAKE_CURRENT_BINARY_DIR}_primitives)
+add_subdirectory(../project_files/strategy ${CMAKE_CURRENT_BINARY_DIR}_strategy)
 
 target_link_libraries(${PROJECT_NAME_TEST}
         ${GTEST_LIBRARIES} pthread

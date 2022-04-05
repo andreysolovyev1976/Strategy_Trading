@@ -10,17 +10,17 @@ namespace algo {
 	namespace quipuswap {
 
 	  std::optional<Json::Dict> getStorage (const types::String &contract_address) {
-		  using namespace algo::tezos::tzkt_io;
-		  QueryFactory qf;
-		  curl_client::Response response;
-		  curl_client::Request request;
-		  auto handle = qf.getStorageQuery(contract_address);
-		  response = request.
-									pathSetNew(std::move(handle))->
-									Implement(curl_client::Method::Get);
-
 		  std::optional<Json::Dict> output;
 		  try {
+			  using namespace algo::tezos::tzkt_io;
+			  QueryFactory qf;
+			  curl_client::Response response;
+			  curl_client::Request request;
+			  auto handle = qf.getStorageQuery(contract_address);
+			  response = request.
+										pathSetNew(std::move(handle))->
+										Implement(curl_client::Method::Get);
+
 			  output =
 					  std::visit(utils::overloaded{
 							  []([[maybe_unused]] std::monostate arg) -> std::optional<Json::Dict> { return std::nullopt; },
@@ -45,8 +45,6 @@ namespace algo {
 		  }
 		  return output;
 	  }//!func
-
-
 	}//!namespace
   }//!namespace
 }//!namespace

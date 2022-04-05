@@ -80,10 +80,11 @@ namespace algo {
 	  else if (value_.Is<types::Value>()) {
 		  return value_.As<types::Value>();
 	  }
-	  else throw std::runtime_error(EXCEPTION_MSG("wrong Quote type; "));
+	  else throw std::runtime_error(EXCEPTION_MSG("Value is not yet initialized; "));
   }
 
 
+  //todo: this is strange implementation, should be able to assign a new value, why throw?
   template <typename QuoteType, typename Duration>
   types::Value& Quote<QuoteType, Duration>::value () {
 	  if (value_.Is<SingleQuote>()) {
@@ -92,7 +93,7 @@ namespace algo {
 	  else if (value_.Is<types::Value>()) {
 		  return const_cast<types::Value&>(value_.As<types::Value>());
 	  }
-	  else throw std::runtime_error(EXCEPTION_MSG("wrong Quote type; "));
+	  else throw std::runtime_error(EXCEPTION_MSG("Value is not yet initialized; "));
   }
 
 

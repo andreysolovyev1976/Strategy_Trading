@@ -9,12 +9,5 @@ endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
         maps.cpp
-        timestamp.cpp
         value.cpp
-
-        user_defined_exceptions.h
-        object_type.h
-        operators.h
-        relations.h
-        types_declarations.h
         )

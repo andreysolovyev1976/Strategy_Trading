@@ -18,7 +18,7 @@ namespace algo {
 		  response = request.
 									pathSetNew(std::move(handle))->
 									Implement(curl_client::Method::Get);
-
+#if defined(__APPLE__)
 		  return
 				  std::visit(utils::overloaded {
 						  []([[maybe_unused]] std::monostate arg) -> std::optional<Json::Dict> { return std::nullopt; },
@@ -30,7 +30,20 @@ namespace algo {
 							else return std::optional{found->second.AsDict()};
 						  }
 				  }, response->body);
-	  }
+
+#endif
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+
+		  if (std::holds_alternative<std::monostate>(response->body)) {return std::nullopt;}
+		  else if (std::holds_alternative<std::string>(response->body)) {return std::nullopt;}
+		  else if (std::holds_alternative<Json::Document>(response->body)) {
+			  const auto& r = std::get<Json::Document>(response->body).GetRoot().AsDict();
+			  if (auto found = r.find("storage"); found == r.end()) return std::nullopt;
+			  else if (not found->second.IsDict()) return std::nullopt;
+			  else return std::optional{found->second.AsDict()};
+		  }
+#endif
+	  }//!func
 
 
 	}//!namespace

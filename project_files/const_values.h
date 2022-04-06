@@ -57,7 +57,7 @@ static const types::String NO_NAME ("NO_NAME");
   static const types::String TS_NODE_COMMAND ("ts-node ../setup_transacton_ts_script/");
 #endif
 #if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
-  static const types::String TS_NODE_COMMAND ("cd ../../setup_transacton_ts_script/ && ts-node ");
+  static const types::String TS_NODE_COMMAND ("ts-node ../../setup_transacton_ts_script/ ");
 #endif
 
 

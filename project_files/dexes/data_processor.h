@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "curl_client/curl_client.h"
 #include "curl_client/utils.h"
 #include "types_declarations.h"
 #include "maps.h"
@@ -17,17 +18,23 @@
 #include <vector>
 #include <mutex>
 #include <memory>
+#include <optional>
 
 #ifndef STRATEGY_TRADING_DATA_PROCESSOR_H
 #define STRATEGY_TRADING_DATA_PROCESSOR_H
 
 namespace algo {
 
-  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
+  template <typename QuoteType = types::Value, typename Duration = time_::Seconds>
   using MarketData = std::pair<Ticker, Quote<QuoteType, Duration>>;
 
-  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
+  template <typename QuoteType = types::Value, typename Duration = time_::Seconds>
   using MarketDataBatch = std::map<Ticker, Quote<QuoteType, Duration>>;
+
+  namespace {
+	template<typename QuoteType = types::Value, typename Duration = time_::Seconds>
+	using OptData = std::optional<MarketData<QuoteType, Duration>>;
+  }
 
   struct DataProcessor {
 	  curl_client::Response response;
@@ -42,26 +49,30 @@ namespace algo {
 	  // should be organized differently
 	  // will work poorly in multithreading
 	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
-	  MarketData<QuoteType, Duration> getNewMarketData (const TradingContract& trading_contract) {
+	  OptData<QuoteType, Duration> getNewMarketData (const TradingContract& trading_contract) {
 #if defined(__APPLE__)
 		  return
 				  std::visit(utils::overloaded {
-						  []([[maybe_unused]] std::monostate arg) -> MarketData<QuoteType, Duration> {
+						  []([[maybe_unused]] std::monostate arg) -> OptData<QuoteType, Duration> {
 							throw InvalidArgumentError(EXCEPTION_MSG("Unexpected Trading Contract - no Dex associated; "));
 						  },
 						  [this, &trading_contract](
-								  [[maybe_unused]] trading_contract_base::dex_source::Coinbase arg) -> MarketData<QuoteType, Duration> {
+								  [[maybe_unused]] trading_contract_base::dex_source::Coinbase arg) -> OptData<QuoteType, Duration> {
 							using namespace data::coinbase;
 							Quote<QuoteType, Duration> quote;
 							auto tickers = utils::splitIntoWords(trading_contract.ticker, '-');
 							assert (tickers.size()==2);
 							auto new_trade_data = processSingleTradeData(getSingleTradeData(tickers[0], tickers[1], response, request));
-							quote.timestamp = getTimestamp<Duration>(std::move(new_trade_data.time));
-							quote.value_ = types::Value(new_trade_data.price, 6); //todo:: get precision from a ticker data
-							return MarketData<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
+							if (not new_trade_data.empty) {
+								quote.timestamp = getTimestamp<Duration>(std::move(new_trade_data.time));
+								quote.value_ = types::Value(new_trade_data.price,
+										6); //todo:: get precision from a ticker data
+								return MarketData<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
+							}
+							else return std::nullopt;
 						  },
 						  [this, &trading_contract](
-								  [[maybe_unused]] trading_contract_base::dex_source::Quipuswap arg) -> MarketData<QuoteType, Duration> {
+								  [[maybe_unused]] trading_contract_base::dex_source::Quipuswap arg) -> OptData<QuoteType, Duration> {
 							Quote<QuoteType, Duration> quote;
 							std::visit(utils::overloaded {
 									[]([[maybe_unused]] std::monostate arg) {
@@ -93,9 +104,13 @@ namespace algo {
 			  auto tickers = utils::splitIntoWords(trading_contract.ticker, '-');
 			  assert (tickers.size()==2);
 			  auto new_trade_data = processSingleTradeData(getSingleTradeData(tickers[0], tickers[1], response, request));
+			  							if (not new_trade_data.empty) {
 			  quote.timestamp = getTimestamp<Duration>(std::move(new_trade_data.time));
 			  quote.value_ = types::Value(new_trade_data.price, 6); //todo:: get precision from a ticker data
 			  return MarketData<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
+			  }
+			  else return std::nullopt;
+
 		  }
 		  else if (trading_contract.dex.TryAs<trading_contract_base::dex_source::Quipuswap>()) {
 		  	if (trading_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>()) {

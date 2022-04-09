@@ -3,9 +3,21 @@
 //
 
 #include <gtest/gtest.h>
-#include "signal.h"
-#include <iostream>
+#include "data_processor.h"
 
-TEST(DataProcessor, Primitives) {
+
+TEST(DataProcessor, GetMarketDataCoinBaseOk) {
+
+}
+
+TEST(DataProcessor, GetMarketDataCoinBaseNotOk) {
+
+}
+
+TEST(DataProcessor, GetMarketDataQuipuswapOk) {
+
+}
+
+TEST(DataProcessor, GetMarketDataQuipuswapNotOk) {
 
 }

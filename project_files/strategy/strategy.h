@@ -58,9 +58,6 @@ namespace algo {
   public:
 	  using Objects<Strategy>::Objects;
 
-	  ByTicker& getByTicker () = delete;
-	  const ByTicker& getByTicker () const = delete;
-
 	  void addStrategy (Strategy strategy);
 	  void removeStrategy (const types::String &label);
   };

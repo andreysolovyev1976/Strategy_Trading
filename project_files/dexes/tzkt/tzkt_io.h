@@ -16,23 +16,18 @@ namespace algo {
   namespace tezos {
 	namespace tzkt_io {
 
-	  class QueryFactory {
-	  public:
-		  types::String getContractQuery (const types::String& contract_address) const;
-		  types::String getStorageQuery (const types::String& contract_address) const;
-		  types::String getBigMapsQuery (const types::String& contract_address) const;
-		  types::String getBigMapQuery (const types::String& contract_address, const types::String& bigmap_name) const;
-		  types::String getBigMapKeysQuery (const types::String& contract_address, const types::String& bigmap_name) const;
-		  types::String getBigMapValueQuery (const types::String& contract_address, const types::String& bigmap_name, const types::String& key) const;
-	  private:
-	  	const types::String base_address {"https://api.tzkt.io/v1/"};
-	  };
+	  types::String getContractQuery (const types::String& contract_address);
+	  types::String getStorageQuery (const types::String& contract_address);
+	  types::String getBigMapsQuery (const types::String& contract_address);
+	  types::String getBigMapQuery (const types::String& contract_address, const types::String& bigmap_name);
+	  types::String getBigMapKeysQuery (const types::String& contract_address, const types::String& bigmap_name);
+	  types::String getBigMapValueQuery (const types::String& contract_address, const types::String& bigmap_name, const types::String& key);
 
 
 	  struct TradeData {
-	  	struct Details {
-	  		types::String address, alias;
-	  	};
+		  struct Details {
+			  types::String address, alias;
+		  };
 		  bool empty = true;
 		  types::String type, timestamp, status;
 		  types::UInt id, level, amount;

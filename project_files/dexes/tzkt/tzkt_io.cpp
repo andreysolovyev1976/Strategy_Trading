@@ -12,19 +12,20 @@ namespace algo {
 
 	  using const_values::STRING_SIZE;
 
-	  types::String QueryFactory::getContractQuery (const types::String& contract_address) const {
+	  types::String getContractQuery (const types::String& contract_address) {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
 		  return output;
 	  }
-	  types::String QueryFactory::getStorageQuery (const types::String& contract_address) const {
+
+	  types::String getStorageQuery (const types::String& contract_address) {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
@@ -32,10 +33,10 @@ namespace algo {
 		  output += "storage";
 		  return output;
 	  }
-	  types::String QueryFactory::getBigMapsQuery (const types::String& contract_address) const {
+	  types::String getBigMapsQuery (const types::String& contract_address) {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
@@ -44,10 +45,10 @@ namespace algo {
 		  return output;
 
 	  }
-	  types::String QueryFactory::getBigMapQuery (const types::String& contract_address, const types::String& bigmap_name) const {
+	  types::String getBigMapQuery (const types::String& contract_address, const types::String& bigmap_name) {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
@@ -57,10 +58,10 @@ namespace algo {
 		  output += bigmap_name;
 		  return output;
 	  }
-	  types::String QueryFactory::getBigMapKeysQuery (const types::String& contract_address, const types::String& bigmap_name) const {
+	  types::String getBigMapKeysQuery (const types::String& contract_address, const types::String& bigmap_name) {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
@@ -72,10 +73,10 @@ namespace algo {
 		  output += "keys";
 		  return output;
 	  }
-	  types::String QueryFactory::getBigMapValueQuery (const types::String& contract_address, const types::String& bigmap_name, const types::String& key) const {
+	  types::String getBigMapValueQuery (const types::String& contract_address, const types::String& bigmap_name, const types::String& key)  {
 		  types::String output;
 		  output.reserve(STRING_SIZE);
-		  output += base_address;
+		  output += const_values::TZKT_BASE_ADDRESS;
 		  output += "contracts";
 		  output += '/';
 		  output += contract_address;
@@ -107,13 +108,14 @@ namespace algo {
 //useful thing
 //		  pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/interface")->
 
+//		pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/bigmaps/token_to_exchange/keys/KT1Nbc9cmx19qFrYYFpkiDoojVYL8UZJYVcj")->
+
 //		  token_to_exchange
 		  //Gets contract data
 		  response = request.
 //									pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/views")->
-									pathSetNew("https://api.tzkt.io/v1/contracts/KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ/bigmaps/token_to_exchange/keys/KT1Nbc9cmx19qFrYYFpkiDoojVYL8UZJYVcj")->
+									pathSetNew("see line 110 for details")->
 									Implement(curl_client::Method::Get);
-		  /// 0.359 ms is a round trip
 
 		  DEBUG_OUTPUT("contracts: ", true)
 
@@ -142,84 +144,6 @@ namespace algo {
 			  return std::get<Json::Document>(response.get()->body);
 		  else return Json::Document(Json::Node(nullptr));
 	  }
-
-
-#if 0
-	  TradeData processSingleTransactionData(Json::Document document)
-	  {
-		  TradeData data_tzkt_io;
-		  if (not document.GetRoot().IsDict()) return data_tzkt_io;
-		  auto& trade = const_cast<Json::Dict&>(document.GetRoot().AsDict());
-		  data_tzkt_io.empty = false;
-		  if (auto found = trade.find("ask");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.ask = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("bid");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.bid = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("price");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.price = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("size");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.size = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("time");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.time = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("trade_id");
-				  found!=trade.end() && found->second.IsInt()) {
-			  data_tzkt_io.trade_id = found->second.AsInt();
-		  }
-		  if (auto found = trade.find("volume");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.volume = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  return data_tzkt_io;
-	  }
-#endif
-#if 0
-	  TradeData processSingleTransactionData(Json::Node node)
-	  {
-		  TradeData data_tzkt_io;
-		  if (not node.IsDict()) return data_tzkt_io;
-		  auto& trade = const_cast<Json::Dict&>(node.AsDict());
-		  data_tzkt_io.empty = false;
-		  if (auto found = trade.find("ask");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.ask = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("bid");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.bid = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("price");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.price = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("size");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.size = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("time");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.time = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  if (auto found = trade.find("trade_id");
-				  found!=trade.end() && found->second.IsInt()) {
-			  data_tzkt_io.trade_id = found->second.AsInt();
-		  }
-		  if (auto found = trade.find("volume");
-				  found!=trade.end() && found->second.IsString()) {
-			  data_tzkt_io.volume = std::move(const_cast<std::string&>(found->second.AsString()));
-		  }
-		  return data_tzkt_io;
-	  }
-#endif
 
 #undef DEBUG_OUTPUT
 

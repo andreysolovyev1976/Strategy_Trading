@@ -15,12 +15,12 @@ namespace algo {
   using namespace algo::tezos::quipuswap::transaction;
 
   Engine::Engine (TgBot::Bot* b)
-  : bot (b)
-  , data_processor_ptr(std::make_shared<DataProcessor>())
+		  : bot (b)
+		  , data_processor_ptr(std::make_shared<DataProcessor>())
   {}
 
   void Engine::activateStrategy(const types::String& label) {
-	  if (auto found = strategies.getPtr(label); found) {
+	  if (strategies.objectExists(label)) {
 		  active_strategies.insert(label);
 		  threads::Thread _ (&Engine::runStrategy, this, label);
 		  threads_engine.addThread(label, std::move(_));
@@ -30,7 +30,7 @@ namespace algo {
 	  }
   }
   void Engine::deactivateStrategy(const types::String& label) {
-	  if (auto found = strategies.getPtr(label); found) {
+	  if (strategies.objectExists(label)) {
 		  active_strategies.erase(label);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
 	  }
@@ -54,7 +54,8 @@ namespace algo {
   }
 
   void Engine::runStrategy (const types::String& label) {
-	  if (auto strategy = strategies.getPtr(label); strategy) {
+	  if (strategies.objectExists(label)) {
+		  auto strategy = strategies.getSafePtr(label);
 		  types::String result;
 		  while (isStrategyActive(label)) {
 			  auto generated_trades = strategy->processRules(data_processor_ptr);
@@ -76,7 +77,6 @@ namespace algo {
 			  std::this_thread::sleep_for(20s);
 		  }
 	  }
-
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));
 	  }

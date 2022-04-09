@@ -24,6 +24,8 @@ namespace algo {
 	  template<typename ...Fields>
 	  void Print(const std::vector<CurrencyData>& data_coinbase, std::ostream& os, Fields ...fields);
 
+	  Json::Document processAPIResponse (curl_client::Response&& response);
+
 	  Json::Document getListOfCurrencies(
 			  curl_client::Response& response, curl_client::Request& request,
 			  bool debug_output = false, std::ostream& os = std::cerr);
@@ -46,8 +48,6 @@ namespace algo {
 	  template <typename Input>
 	  TradeData processSingleTradeData(Input input);
 
-
-
 	  ///Definitions
 
 	  template<typename ...Fields>
@@ -63,8 +63,6 @@ namespace algo {
 			  os << '\n';
 		  }
 	  }
-
-
 	  template <typename Input>
 	  std::vector<CurrencyData> processListOfCurrencies(Input input)
 	  {
@@ -86,7 +84,6 @@ namespace algo {
 		  return data_coinbase;
 	  }
 
-
 	  template <typename Input>
 	  CurrencyData processSingleCurrency(Input input)
 	  {
@@ -99,7 +96,7 @@ namespace algo {
 
 		  if (not node->IsDict()) return data_coinbase;
 		  auto& currency = const_cast<Json::Dict&>(node->AsDict());
-		  data_coinbase.empty = false;
+
 		  if (auto details = currency.find("details"); details!=currency.end()) {
 			  if (details->second.IsDict()) {
 				  auto& details_dict = const_cast<Json::Dict&>(details->second.AsDict());
@@ -155,7 +152,6 @@ namespace algo {
 		  return data_coinbase;
 	  }
 
-
 	  template <typename Input>
 	  TradeData processSingleTradeData(Input input)
 	  {
@@ -168,7 +164,10 @@ namespace algo {
 
 		  if (not node->IsDict()) return data_coinbase;
 		  auto& trade = const_cast<Json::Dict&>(node->AsDict());
-		  data_coinbase.empty = false;
+
+		  //todo: inconsistent with the previous func
+		  bool is_some_data_presented = false;
+
 		  if (auto found = trade.find("ask");
 				  found!=trade.end() && found->second.IsString()) {
 			  data_coinbase.ask = std::move(const_cast<std::string&>(found->second.AsString()));
@@ -180,6 +179,7 @@ namespace algo {
 		  if (auto found = trade.find("price");
 				  found!=trade.end() && found->second.IsString()) {
 			  data_coinbase.price = std::move(const_cast<std::string&>(found->second.AsString()));
+			  is_some_data_presented = true;
 		  }
 		  if (auto found = trade.find("size");
 				  found!=trade.end() && found->second.IsString()) {
@@ -188,6 +188,7 @@ namespace algo {
 		  if (auto found = trade.find("time");
 				  found!=trade.end() && found->second.IsString()) {
 			  data_coinbase.time = std::move(const_cast<std::string&>(found->second.AsString()));
+			  is_some_data_presented = is_some_data_presented && true;
 		  }
 		  if (auto found = trade.find("trade_id");
 				  found!=trade.end() && found->second.IsInt()) {
@@ -197,6 +198,8 @@ namespace algo {
 				  found!=trade.end() && found->second.IsString()) {
 			  data_coinbase.volume = std::move(const_cast<std::string&>(found->second.AsString()));
 		  }
+
+		  if (is_some_data_presented) data_coinbase.empty = false;
 		  return data_coinbase;
 	  }
 

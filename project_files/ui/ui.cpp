@@ -104,23 +104,18 @@ namespace user_interface {
 		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
 				"Label new Indicator")) {
 			auto* indicators = engine.getPtr<Indicators>();
-			if (auto found = indicators->getPtr(message->text); found) {
+			if (indicators->objectExists(message->text)) {
 				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
 			}
 			else {
 				init_indicator.label = message->text;
 				init_indicator.is_label_initialized = true;
 
-				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 				robot_config.loadFromIni();
 				const auto& contracts = robot_config.getContracts();
-				for (auto curr = contracts.operator->()->begin(),
-							 end = contracts.operator->()->end();
-					 curr!=end; ++curr) {
-					std::vector<InlineKeyboardButton::Ptr> row;
-					row.push_back(makeInlineCheckButton(curr->second.joint_name));
-					keyboard_select->inlineKeyboard.push_back(std::move(row));
-				}
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+						contracts.operator->()->begin(), contracts.operator->()->end() );
+
 				auto _ = bot.getApi().sendMessage(
 						message->chat->id, "Select the ticker for Indicator", false, 0, keyboard_select);
 				current_message_id = _->messageId;
@@ -138,12 +133,9 @@ namespace user_interface {
 					init_indicator.ticker = curr->second.ticker;
 					init_indicator.is_ticker_initialized = true;
 
-					InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-					for (const auto& t_side : init_indicator.trade_sides) {
-						std::vector<InlineKeyboardButton::Ptr> row;
-						row.push_back(makeInlineCheckButton(t_side));
-						keyboard_select->inlineKeyboard.push_back(std::move(row));
-					}
+					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+							init_indicator.trade_sides.begin(), init_indicator.trade_sides.end() );
+
 					auto _ = bot.getApi().sendMessage(
 							query->message->chat->id, "Select the Trade Side for Indicator (for CB click any)", false, 0, keyboard_select);
 					current_message_id = _->messageId;
@@ -167,12 +159,9 @@ namespace user_interface {
                 return;
             }
 
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto& mods : init_indicator.modifiers) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(mods));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+					init_indicator.modifiers.begin(), init_indicator.modifiers.end() );
+
 			auto _ = bot.getApi().sendMessage(
 					query->message->chat->id, "Select a modifier for the Indicator", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -209,16 +198,13 @@ namespace user_interface {
   void UI::initRemoveIndicator(){
 	  bot.getEvents().onCommand("remove_indicator", [this](Message::Ptr message) {
 		auto* indicators = engine.getPtr<Indicators>();
-		if (indicators->getByLabel()->Empty()) {
+		if (indicators->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No indicators yet to remove");
 		}
 		else {
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[_label, _] : *(indicators->getByLabel())) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(_label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					indicators->getByLabel()->begin(), indicators->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select the Indicator to remove", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -229,7 +215,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::removeIndicator) {
 			auto* indicators = engine.getPtr<Indicators>();
-			if (auto found = indicators->getPtr(query->data); found) {
+			if (indicators->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id,
 						processEvent(Event::removeIndicator, query->data));
 			}
@@ -251,7 +237,7 @@ namespace user_interface {
 		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
 				"Label new Signal")) {
 			auto* signals = engine.getPtr<Signals>();
-			if (auto found = signals->getPtr(message->text); found) {
+			if (signals->objectExists(message->text)) {
 				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
 			}
 			else {
@@ -260,12 +246,10 @@ namespace user_interface {
 				init_signal.is_label_initialized = true;
 
 				auto* indicators = engine.getPtr<Indicators>();
-				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-				for (const auto&[_label, _] : *indicators->getByLabel()) {
-					std::vector<InlineKeyboardButton::Ptr> row;
-					row.push_back(makeInlineCheckButton(_label));
-					keyboard_select->inlineKeyboard.push_back(std::move(row));
-				}
+
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+						indicators->getByLabel()->begin(), indicators->getByLabel()->end() );
+
 				std::vector<InlineKeyboardButton::Ptr> row;
 				row.push_back(makeInlineCheckButton("finished"));
 				keyboard_select->inlineKeyboard.push_back(std::move(row));
@@ -283,19 +267,16 @@ namespace user_interface {
 
 			//todo: add there should be two only or extend the logic
 			if (query->data!="finished") {
-				if (auto found = indicators->getPtr(query->data); found) {
+				if (indicators->objectExists(query->data)) {
 					init_signal.indicator_labels.push_back(query->data); //todo: can be changed for pointers
 				}
 			}
 			else {
 				init_signal.is_indicator_labels_initialized = true;
 
-				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-				for (const auto& s_type : init_signal.signal_types) {
-					std::vector<InlineKeyboardButton::Ptr> row;
-					row.push_back(makeInlineCheckButton(s_type));
-					keyboard_select->inlineKeyboard.push_back(std::move(row));
-				}
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+						init_signal.signal_types.begin(), init_signal.signal_types.end() );
+
 				auto _ = bot.getApi().sendMessage(query->message->chat->id,
 						"Select Signal type", false, 0, keyboard_select);
 				current_message_id = _->messageId;
@@ -309,12 +290,9 @@ namespace user_interface {
 					init_signal.signal_type = query->data;
 					init_signal.is_signal_type_initialized = true;
 
-					InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-					for (const auto& r : relations::relation_names) {
-						std::vector<InlineKeyboardButton::Ptr> row;
-						row.push_back(makeInlineCheckButton(r));
-						keyboard_select->inlineKeyboard.push_back(std::move(row));
-					}
+					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+							relations::relation_names.begin(), relations::relation_names.end() );
+
 					auto _ = bot.getApi().sendMessage(query->message->chat->id,
 							"Select relation", false, 0, keyboard_select);
 					current_message_id = _->messageId;
@@ -339,17 +317,14 @@ namespace user_interface {
   void UI::initRemoveSignal(){
 	  bot.getEvents().onCommand("remove_signal", [this](Message::Ptr message) {
 		auto* signals = engine.getPtr<Signals>();
-		if (signals->getByLabel()->Empty()) {
+		if (signals->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No signals yet to remove");
 		}
 		else {
 
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[_label, _] : *(signals->getByLabel()) ) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(_label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					signals->getByLabel()->begin(), signals->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select the Signal to remove", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -360,7 +335,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::removeSignal) {
 			auto* signals = engine.getPtr<Signals>();
-			if (auto found = signals->getPtr(query->data); found) {
+			if (signals->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id,
 						processEvent(Event::removeSignal, query->data));
 			}
@@ -383,7 +358,7 @@ namespace user_interface {
 		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
 				"Label new Strategy")) {
 			auto* strategies = engine.getPtr<Strategies>();
-			if (auto found = strategies->getPtr(message->text); found) {
+			if (strategies->objectExists(message->text)) {
 				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
 			}
 			else {
@@ -392,12 +367,10 @@ namespace user_interface {
 				init_strategy.is_label_initialized = true;
 
 				auto* rules = engine.getPtr<Rules>();
-				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-				for (const auto&[_label, _] : *(rules->getByLabel())) {
-					std::vector<InlineKeyboardButton::Ptr> row;
-					row.push_back(makeInlineCheckButton(_label));
-					keyboard_select->inlineKeyboard.push_back(std::move(row));
-				}
+
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+						rules->getByLabel()->begin(), rules->getByLabel()->end() );
+
 				std::vector<InlineKeyboardButton::Ptr> row;
 				row.push_back(makeInlineCheckButton("finished"));
 				keyboard_select->inlineKeyboard.push_back(std::move(row));
@@ -414,7 +387,7 @@ namespace user_interface {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::addStrategy) {
 			auto* rules = engine.getPtr<Rules>();
 			if (query->data!="finished") {
-				if (auto found = rules->getPtr(query->data); found) {
+				if (rules->objectExists(query->data)) {
 					init_strategy.rules_labels.push_back(query->data); //todo: can be changed for pointers
 				}
 			}
@@ -429,16 +402,13 @@ namespace user_interface {
   void UI::initRemoveStrategy() {
 	  bot.getEvents().onCommand("remove_strategy", [this](Message::Ptr message) {
 		auto* strategies = engine.getPtr<Strategies>();
-		if (strategies->getByLabel()->Empty()) {
+		if (strategies->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No strategies yet to remove");
 		}
 		else {
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[_label, _] : *(strategies->getByLabel())) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(_label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					strategies->getByLabel()->begin(), strategies->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select the Strategy to remove", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -449,7 +419,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::removeStrategy) {
 			auto* strategies = engine.getPtr<Strategies>();
-			if (auto found = strategies->getPtr(query->data); found) {
+			if (strategies->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id,
 						processEvent(Event::removeStrategy, query->data));
 			}
@@ -467,7 +437,7 @@ namespace user_interface {
 		if (message->replyToMessage && StringTools::startsWith(message->replyToMessage->text,
 				"Label new Rule")) {
 			auto* rules = engine.getPtr<Rules>();
-			if (auto found = rules->getPtr(message->text); found) {
+			if (rules->objectExists(message->text)) {
 				bot.getApi().sendMessage(message->chat->id, "This Label already exists");
 			}
 			else {
@@ -504,12 +474,8 @@ namespace user_interface {
 					init_rule.ticker = curr->second.ticker;
 					init_rule.is_ticker_initialized = true;
 
-					InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-					for (const auto& t_side : init_rule.trade_sides) {
-						std::vector<InlineKeyboardButton::Ptr> row;
-						row.push_back(makeInlineCheckButton(t_side));
-						keyboard_select->inlineKeyboard.push_back(std::move(row));
-					}
+					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+							init_rule.trade_sides.begin(), init_rule.trade_sides.end() );
 
 					auto _ = bot.getApi().sendMessage(
 							query->message->chat->id, "Select the Trade Side for Ticker to trade (for CB click any)", false, 0,keyboard_select);
@@ -534,13 +500,10 @@ namespace user_interface {
 			else {
 				return;
 			}
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 			auto* signals = engine.getPtr<Signals>();
-			for (const auto& [label, _] : *(signals->getByLabel()) ) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					signals->getByLabel()->begin(), signals->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(query->message->chat->id,
 					"Select Signal", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -551,16 +514,13 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::addRule_SignalLabel) {
 			auto* signals = engine.getPtr<Signals>();
-			if (auto found = signals->getPtr(query->data); found) {
+			if (signals->objectExists(query->data)) {
 				init_rule.signal_label = query->data;
 				init_rule.is_signal_label_initialized = true;
 
-				InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-				for (const auto& s_value : init_rule.signal_values) {
-					std::vector<InlineKeyboardButton::Ptr> row;
-					row.push_back(makeInlineCheckButton(s_value));
-					keyboard_select->inlineKeyboard.push_back(std::move(row));
-				}
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},
+						init_rule.signal_values.begin(), init_rule.signal_values.end() );
+
 				auto _ = bot.getApi().sendMessage(query->message->chat->id,
 						"Please provide required signal value", false, 0, keyboard_select);
 				current_message_id = _->messageId;
@@ -598,16 +558,13 @@ namespace user_interface {
   void UI::initRemoveRule(){
 	  bot.getEvents().onCommand("remove_rule", [this](Message::Ptr message) {
 		auto* rules = engine.getPtr<Rules>();
-		if (rules->getByLabel()->Empty()) {
+		if (rules->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No rules yet to remove");
 		}
 		else {
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[_label, _] : *(rules->getByLabel())) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(_label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					rules->getByLabel()->begin(), rules->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select the Rule to remove", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -618,7 +575,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::removeRule) {
 			auto* rules = engine.getPtr<Rules>();
-			if (auto found = rules->getPtr(query->data); found) {
+			if (rules->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id,
 						processEvent(Event::removeRule, query->data));
 			}
@@ -634,16 +591,14 @@ namespace user_interface {
   void UI::initStopStrategy(){
 	  bot.getEvents().onCommand("stop_strategy", [this](Message::Ptr message) {
 		auto* strategies = engine.getPtr<Strategies>();
-		if (strategies->getByLabel()->Empty()) {
+		if (strategies->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No Strategy to stop");
 		}
 		else {
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[label, _] : *(strategies->getByLabel())) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					strategies->getByLabel()->begin(), strategies->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select Strategy to stop", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -654,7 +609,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::stopStrategy) {
 			auto* strategies = engine.getPtr<Strategies>();
-			if (auto found = strategies->getPtr(query->data); found) {
+			if (strategies->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::stopStrategy, query->data));
 			}
 		}
@@ -663,16 +618,14 @@ namespace user_interface {
   void UI::initStartStrategy(){
 	  bot.getEvents().onCommand("start_strategy", [this](Message::Ptr message) {
 		auto* strategies = engine.getPtr<Strategies>();
-		if (strategies->getByLabel()->Empty()) {
+		if (strategies->getByLabel()->empty()) {
 			bot.getApi().sendMessage(message->chat->id, "No Strategy to start");
 		}
 		else {
-			InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
-			for (const auto&[label, _] : *(strategies->getByLabel())) {
-				std::vector<InlineKeyboardButton::Ptr> row;
-				row.push_back(makeInlineCheckButton(label));
-				keyboard_select->inlineKeyboard.push_back(std::move(row));
-			}
+
+			InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{},
+					strategies->getByLabel()->begin(), strategies->getByLabel()->end() );
+
 			auto _ = bot.getApi().sendMessage(message->chat->id,
 					"Select Strategy to start", false, 0, keyboard_select);
 			current_message_id = _->messageId;
@@ -684,7 +637,7 @@ namespace user_interface {
 	  bot.getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (query->message->messageId == current_message_id && user_activity[query->message->chat->username] == Event::startStrategy) {
 			auto* strategies = engine.getPtr<Strategies>();
-			if (auto found = strategies->getPtr(query->data); found) {
+			if (strategies->objectExists(query->data)) {
 				bot.getApi().sendMessage(query->message->chat->id, processEvent(Event::startStrategy, query->data));
 			}
 		}
@@ -850,10 +803,12 @@ namespace user_interface {
   }
   String UI::getIndicators([[maybe_unused]] const types::String& input){
 	  auto* indicators = engine.getPtr<Indicators>();
-	  if (indicators->getByLabel()->Empty()) return "No indicators yet"s;
+	  if (indicators->getByLabel()->empty()) return "No indicators yet"s;
 	  String result;
 	  result.reserve(100); //todo: update for a const value
-	  for (const auto& [label, owner] : *(indicators->getByLabel()) ) {
+
+	  for (auto curr = indicators->getByLabel()->begin(), e = indicators->getByLabel()->end(); curr != e; ++curr) {
+		  const auto& [label, owner] = *curr;
 		  result += "Label: ";
 		  result += label;
 		  result += "; Ticker: ";
@@ -881,10 +836,12 @@ namespace user_interface {
   }
   String UI::getSignals([[maybe_unused]] const types::String& input){
 	  auto* signals = engine.getPtr<Signals>();
-	  if (signals->getByLabel()->Empty()) return "No signals yet"s;
+	  if (signals->getByLabel()->empty()) return "No signals yet"s;
 	  String result;
 	  result.reserve(100); //todo: update for a const value
-	  for (const auto& [label, owner] : *(signals->getByLabel()) ) {
+
+	  for (auto curr = signals->getByLabel()->begin(), e = signals->getByLabel()->end(); curr != e; ++curr) {
+		  const auto& [label, owner] = *curr;
 		  result += "Label: ";
 		  result += label;
 		  result += "; Signal type: ";
@@ -904,7 +861,7 @@ namespace user_interface {
 	  );
 	  auto* rules = engine.getPtr<Rules>();
 	  for (const auto& rule_label : init_strategy.rules_labels) {
-		  if (auto found = rules->getPtr(rule_label); found) {
+		  if (rules->objectExists(rule_label)) {
 			  strategy.addRule(rule_label);
 		  }
 	  }
@@ -944,10 +901,11 @@ namespace user_interface {
   }
   String UI::getRules([[maybe_unused]] const types::String& input){
 	  auto* rules = engine.getPtr<Rules>();
-	  if (rules->getByLabel()->Empty()) return "No rules yet"s;
+	  if (rules->getByLabel()->empty()) return "No rules yet"s;
 	  String result;
 	  result.reserve(100); //todo: update for a const value
-	  for (const auto& [label, owner] : *(rules->getByLabel()) ) {
+	  for (auto curr = rules->getByLabel()->begin(), e = rules->getByLabel()->end(); curr != e; ++curr) {
+		  const auto& [label, owner] = *curr;
 		  result += "Label: ";
 		  result += label;
 		  result += "; Trading ticker: ";
@@ -1035,18 +993,14 @@ namespace user_interface {
   }
   void UI::getCommands () {
 	  auto vectCmd = bot.getApi().getMyCommands();
-
 	  for(auto it_b = vectCmd.begin(), it_e = vectCmd.end(); it_b != it_e; ++it_b) {
 		  std::cerr << (*it_b)->command << ": " << (*it_b)->description << '\n';
 	  }
   }
   void UI::executeCommand (String name) {
 	  if (auto command = commands.find(name); command != commands.end()) {
-
 	  } else {
-
 	  }
-
   }
 
   TgBot::InlineKeyboardButton::Ptr UI::makeInlineCheckButton (const types::String& name) const {
@@ -1055,6 +1009,4 @@ namespace user_interface {
 	  checkButton->callbackData = name;
 	  return checkButton;
   }
-
-
 }//!namespace

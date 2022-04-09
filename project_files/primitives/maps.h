@@ -32,30 +32,30 @@ namespace types {
 	  MapLimitedSize() = default;
 	  MapLimitedSize(std::map<K, V> new_container) : data(std::move(new_container)) {}
 
-	  size_t Size() const {
+	  size_t size() const {
 	  	return data.size();
 	  }
-	  bool Empty() const {
+	  bool empty() const {
 		  return data.empty();
 	  }
-	  ConstIterator Find(K key) const {
+	  ConstIterator find(K key) const {
 		  return data.find(key);
 	  }
-	  Iterator Find(K key) {
+	  Iterator find(K key) {
 		  return data.find(key);
 	  }
 
 	  V& operator [] (K key) = delete;
 	  V& operator [] (const K &key) = delete;
 
-	  V& At(K key) {
+	  V& at(K key) {
 	  	if (auto found = data.find(key); found == data.end()) {
 			throw std::invalid_argument(EXCEPTION_MSG("No such Key in Map; "));
 		}
 		  else return found->second;
 	  }
 
-	  InsertResult Insert (K key, V value) {
+	  InsertResult insert (K key, V value) {
 		  while (data.size() >= max_size) {
 			  data.erase(data->begin());
 		  }
@@ -63,7 +63,7 @@ namespace types {
 		  return InsertResult {.iter = res.first, .result = res.second};
 	  }
 
-	  InsertResult Insert (Pair pair) {
+	  InsertResult insert (Pair pair) {
 		  while (data.size() >= max_size) {
 			  data.erase(data.begin());
 		  }
@@ -71,37 +71,31 @@ namespace types {
 		  return InsertResult {.iter = res.first, .result = res.second};
 	  }
 
-	  void Erase (K key) {
+	  void erase (K key) {
 	  	data.erase(key);
 	  }
 
-	  void Erase (Iterator it) {
+	  void erase (Iterator it) {
 		  data.erase(it);
 	  }
-	  void Erase (ReverseIterator it) {
+	  void erase (ReverseIterator it) {
 		  data.erase(it);
 	  }
 
-	  Iterator Begin () {
-		  return data.begin();
-	  }
-	  Iterator begin () { //todo: stupid as I need this for range-based for. Change this.
+	  Iterator begin () {
 		  return data.begin();
 	  }
 	  ConstIterator begin () const { //todo: stupid as I need this for range-based for. Change this.
 		  return data.begin();
 	  }
-	  ConstIterator CBegin () const {
+	  ConstIterator cbegin () const {
 		  return data.begin();
 	  }
-	  ReverseIterator RBegin () {
+	  ReverseIterator rbegin () {
 		  return data.rbegin();
 	  }
-	  ConstReverseIterator CRBegin () const {
+	  ConstReverseIterator crbegin () const {
 		  return data.crbegin();
-	  }
-	  Iterator End () {
-		  return data.end();
 	  }
 	  Iterator end () { //todo: stupid as I need this for range-based for. Change this.
 		  return data.end();
@@ -109,13 +103,13 @@ namespace types {
 	  ConstIterator end () const { //todo: stupid as I need this for range-based for. Change this.
 		  return data.end();
 	  }
-	  ConstIterator CEnd () const {
+	  ConstIterator cend () const {
 		  return data.end();
 	  }
-	  ReverseIterator REnd () {
+	  ReverseIterator rend () {
 		  return data.rend();
 	  }
-	  ConstReverseIterator CREnd () const {
+	  ConstReverseIterator crend () const {
 		  return data.crend();
 	  }
   private:

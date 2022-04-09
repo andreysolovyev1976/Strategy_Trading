@@ -91,8 +91,7 @@ namespace algo {
 	  trade_base::OrderType order_type_;
 
 	  //links to the other strategy objects
-	  Signals* signals_;
-	  Signal* signal_;
+	  Ptr<Signal> signal_;
 	  const std::set<types::String> indicator_labels_;
 
 	  std::optional<Trade> ProcessSignal ();

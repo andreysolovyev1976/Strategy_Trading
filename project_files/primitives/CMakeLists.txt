@@ -8,6 +8,5 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        maps.cpp
         value.cpp
         )

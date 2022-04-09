@@ -53,31 +53,31 @@ namespace algo {
   const TradingContract& Indicator::getTradingContract () const {return trading_contract_;}
 
   bool Indicator::Empty () const {
-	  if (not modifier) return input_value_->Empty();
-	  else return input_value_->Empty() && output_value_->Empty();
+	  if (not modifier) return input_value_->empty();
+	  else return input_value_->empty() && output_value_->empty();
   }
 
   size_t Indicator::Size() const {return size_;}
 
   void Indicator::ProcessIndicator () {
-	  if (input_value_->Empty()) return;
-	  auto first_to_use = input_value_->Begin();
-	  if (not output_value_->Empty()) {
-		  auto last_updated = prev(output_value_->End());
+	  if (input_value_->empty()) return;
+	  auto first_to_use = input_value_->begin();
+	  if (not output_value_->empty()) {
+		  auto last_updated = prev(output_value_->end());
 		  //todo: check if next is ok here
-		  if (auto found = input_value_->Find(last_updated->first); found != input_value_->End()) {
+		  if (auto found = input_value_->find(last_updated->first); found != input_value_->end()) {
 			  first_to_use = found;
 		  }
 	  }
 	  if (modifier) {
-		  for (auto it = first_to_use, ite = input_value_->End(); it != ite; ++it) {
+		  for (auto it = first_to_use, ite = input_value_->end(); it != ite; ++it) {
 			  it->second.value() = modifier(it->second.value());
-			  output_value_->Insert({it->first, it->second});
+			  output_value_->insert({it->first, it->second});
 		  }
 	  }
 	  else {
-		  for (auto it = first_to_use, ite = input_value_->End(); it != ite; ++it) {
-			  output_value_->Insert({it->first, it->second});
+		  for (auto it = first_to_use, ite = input_value_->end(); it != ite; ++it) {
+			  output_value_->insert({it->first, it->second});
 		  }
 	  }
   }
@@ -95,10 +95,8 @@ namespace algo {
 
   void Indicators::addIndicator (Indicator indicator) {
 	  auto label = indicator.getLabel();
-	  auto new_indicator = std::make_unique<Indicator>(std::move(indicator));
-	  this->getByLabel()->Insert({new_indicator->getLabel(), std::move(new_indicator)});
-	  auto placed_indicator = shareObject(label);
-	  this->getByTicker()->insert({placed_indicator->getTicker(), placed_indicator});
+	  auto new_indicator = Ptr<Indicator>(std::move(indicator));
+	  this->getByLabel()->insert({new_indicator->getLabel(), std::move(new_indicator)});
   }
 
 }//!namespace

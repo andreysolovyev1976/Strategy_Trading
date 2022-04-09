@@ -9,8 +9,9 @@ set(CMAKE_CXX_STANDARD 20)
 if (APPLE)
     set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wreturn-std-move -Wno-c99-extensions -Wno-missing-field-initializers -o")
 else()
-    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-c99-extensions -Wno-missing-field-initializers -o")
+    set(CMAKE_CXX_FLAGS " -Wall -Wextra -Wpedantic -Werror -Wno-missing-field-initializers -Wno-attributes")
 endif()
+
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=undefined -g")
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=address -g -fno-omit-frame-pointer -fno-optimize-sibling-calls")
 set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=thread -g")
@@ -31,22 +32,49 @@ endif (APPLE)
 
 add_executable(${PROJECT_NAME_TEST}
         tests_all.cpp
-        tests_coinbase_api.cpp
+        tests_safe_ptr.cpp
+        tests_api_coinbase.cpp
+        tests_api_tzkt.cpp
         tests_data_processor.cpp
         tests_signal.cpp
         tests_trade.cpp
         tests_rule.cpp
         tests_portfolio.cpp
         tests_value.cpp
-        tests_value_container.cpp
+        tests_trading_contract.cpp
         tests_indicator.cpp
+        tests_indicator_modifier.cpp
         )
+add_subdirectory(../project_files/curl_client ${CMAKE_CURRENT_BINARY_DIR}_curl_client)
+add_subdirectory(../project_files/dexes ${CMAKE_CURRENT_BINARY_DIR}_dexes)
+add_subdirectory(../project_files/json ${CMAKE_CURRENT_BINARY_DIR}_json)
+add_subdirectory(../project_files/pipe ${CMAKE_CURRENT_BINARY_DIR}_pipe)
 add_subdirectory(../project_files/primitives ${CMAKE_CURRENT_BINARY_DIR}_primitives)
+add_subdirectory(../project_files/robot_config ${CMAKE_CURRENT_BINARY_DIR}_robot_config)
 add_subdirectory(../project_files/strategy ${CMAKE_CURRENT_BINARY_DIR}_strategy)
+add_subdirectory(../project_files/ui ${CMAKE_CURRENT_BINARY_DIR}_ui)
 
+if (APPLE)
+    message(STATUS "Loading APPLE HOME COMPUTER Configuration...")
 target_link_libraries(${PROJECT_NAME_TEST}
         ${GTEST_LIBRARIES} pthread
+        /Users/elenasolovyeva/Documents/Cpp/Projects/StrategyTrading/third_part/tgbot/libTgBot.a
+        /usr/local/Cellar/openssl@3/3.0.0/lib/libssl.dylib
+        /usr/local/Cellar/openssl@3/3.0.0/lib/libcrypto.dylib
+        fmt::fmt
+        ${Boost_LIBRARIES}
+        ${CURL_LIBRARY}
         )
+else()
+    message(STATUS "Loading DEBIAN REMOTE COMPUTER Configuration...")
+    target_link_libraries(${PROJECT_NAME_TEST}
+            libTgBot.a
+            OpenSSL::SSL
+            OpenSSL::Crypto
+            ${Boost_LIBRARIES}
+            ${CURL_LIBRARY}
+            )
+endif()
 
 # This is so you can do 'make test' to see all your tests run, instead of
 # manually running the executable runUnitTests to see those specific tests.

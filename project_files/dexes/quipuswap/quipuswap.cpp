@@ -13,9 +13,8 @@ namespace algo {
 			  curl_client::Response& response, curl_client::Request& request
 	  ) {
 		  using namespace algo::tezos::tzkt_io;
-		  QueryFactory qf;
 
-		  auto handle = qf.getStorageQuery(contract_address);
+		  auto handle = getStorageQuery(contract_address);
 		  response = request.
 									pathSetNew(std::move(handle))->
 									Implement(curl_client::Method::Get);

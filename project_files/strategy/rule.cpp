@@ -4,6 +4,8 @@
 
 #include "rule.h"
 
+#include <utility>
+
 namespace algo {
   using namespace std::string_literals;
 
@@ -43,7 +45,7 @@ namespace algo {
 //		  types::String order_type,
 		  Signals* signals)
 		  : label_(std::move(rule_label))
-		  , trading_contract_(ticker, quipuswap_trade_side)
+		  , trading_contract_(ticker, std::move(quipuswap_trade_side))
 		  , rule_type_(rule_base::StringToRuleType("Entry"s))
 		  , signal_label_(std::move(signal_label))
 		  , signal_value_(signal_base::StringToSignalValue(signal_value))
@@ -51,8 +53,7 @@ namespace algo {
 		  , order_quantity_(std::move(order_quantity))
 		  , trade_type_(trade_base::StringToTradeType("Enter"s))
 		  , order_type_(trade_base::StringToOrderType("Market"))
-		  , signals_(signals)
-		  , signal_(signals_->getPtr(signal_label_))
+		  , signal_(signals->getSafePtr(signal_label_))
 		  , indicator_labels_ ({signal_->getIndicatorsLabels().begin(), signal_->getIndicatorsLabels().end()})
   {}
 
@@ -61,13 +62,13 @@ namespace algo {
   }
 
   std::optional<Trade> Rule::ProcessSignal () {
-	  if (not signal_) throw RuntimeError(EXCEPTION_MSG("No signal?!? "));
+
 	  const auto &signal_data = signal_->getSignalData ();
 
 	  //todo: implement visitor
 	  const auto type_ = signal_->getSignalType();
 	  if (type_.TryAs<signal_base::signal_type::Comparison>()) {
-		  if (not signal_data->Empty() && std::prev(signal_data->end())->second == signal_value_){
+		  if (not signal_data->empty() && std::prev(signal_data->end())->second == signal_value_){
 			  return Trade (trading_contract_, order_quantity_, types::Value(0.005, 3));
 		  }
 		  else return std::nullopt;
@@ -100,24 +101,21 @@ namespace algo {
   void Rules::addRule (Rule rule) {
 	  const auto label = rule.getLabel();
 
-	  if (auto found = this->getByLabel()->Find(label); found != this->getByLabel()->end()){
+	  if (auto found = this->getByLabel()->find(label); found != this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Rule already exists; "));
 	  }
-	  auto new_rule = std::make_unique<Rule>(std::move(rule));
-	  this->getByLabel()->Insert({new_rule->getLabel(), std::move(new_rule)});
-
-	  auto shared = shareObject(label);
-	  this->getByTicker()->insert({shared->getTicker(), shared});
+	  auto new_rule = Ptr<Rule>(std::move(rule));
+	  this->getByLabel()->insert({new_rule->getLabel(), std::move(new_rule)});
   }
 
 
   void Rules::removeRule (const types::String &label) {
-	  auto found = this->getByLabel()->Find(label);
+	  auto found = this->getByLabel()->find(label);
 	  if (found == this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Rule is not found; "));
 	  }
 	  else {
-		  this->getByLabel()->Erase(found);
+		  this->getByLabel()->erase(found);
 	  }
   }
 

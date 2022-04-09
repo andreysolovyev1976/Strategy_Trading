@@ -58,7 +58,7 @@ namespace algo {
 //	  const ByTicker& getByTicker () const = delete;
 
 	  void updateModifier (const types::String& label, const QuoteType& quote) {
-		  if (auto found = this->getByLabel()->Find(label); found == this->getByLabel()->end()){
+		  if (auto found = this->getByLabel()->find(label); found == this->getByLabel()->end()){
 			  throw InvalidArgumentError(EXCEPTION_MSG("No Modifier found; "));
 		  } else {
 			  found->second->setModifierValue(quote);
@@ -67,11 +67,11 @@ namespace algo {
 
 	  void addModifier (Modifier<QuoteType> modifier) {
 		  auto label = modifier.getLabel();
-		  if (auto found = this->getByLabel()->Find(label); found != this->getByLabel()->end()){
+		  if (auto found = this->getByLabel()->find(label); found != this->getByLabel()->end()){
 			  throw InvalidArgumentError(EXCEPTION_MSG("Modifier already exists with this Label; "));
 		  }
-		  auto new_modifier_ptr = std::make_unique<Modifier<QuoteType>>(std::move(modifier));
-		  this->getByLabel()->Insert({new_modifier_ptr->getLabel(), std::move(new_modifier_ptr)});
+		  auto new_modifier_ptr = Ptr<Modifier<QuoteType>>(std::move(modifier));
+		  this->getByLabel()->insert({new_modifier_ptr->getLabel(), std::move(new_modifier_ptr)});
 	  }
   };
 

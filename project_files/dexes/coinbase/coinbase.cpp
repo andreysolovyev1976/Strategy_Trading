@@ -34,83 +34,74 @@ namespace algo {
 		  return os;
 	  }
 
-	  Json::Document getListOfCurrencies(
-			  curl_client::Response& response, curl_client::Request& request,
-			  bool debug_output, std::ostream& os)
-	  {
-		  //get currencies
-		  response = request.
-									pathSetNew("https://api.exchange.coinbase.com/currencies")->
-									Implement(curl_client::Method::Get);
-
-		  DEBUG_OUTPUT("currencies: ", true)
-
+	  Json::Document processAPIResponse (curl_client::Response&& response) {
+		  //todo: add to logging errors received
 		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
-			  return std::get<Json::Document>(response.get()->body);
+			  return std::move(std::get<Json::Document>(response.get()->body));
 		  }
 		  else if (std::holds_alternative<std::string>(response.get()->body)) {
 			  std::stringstream ss(std::get<std::string>(response.get()->body));
-			  return Json::Load(ss);
+			  auto doc = Json::Load(ss);
+			  return doc;
 		  }
-		  else return Json::Document(Json::Node(nullptr));
-	  }
+	  return Json::Document(Json::Node(nullptr));
+	}//!func
 
-	  Json::Document getSingleCurrency(const types::String& ticker,
-			  curl_client::Response& response, curl_client::Request& request,
-			  bool debug_output, std::ostream& os)
-	  {
-		  types::String path_new = "https://api.exchange.coinbase.com/currencies/";
-		  path_new += ticker;
+	Json::Document getListOfCurrencies(
+			curl_client::Response& response, curl_client::Request& request,
+			bool debug_output, std::ostream& os)
+	{
 
-		  //get currency
-		  response = request.
-									pathSetNew(std::move(path_new))->
-									Implement(curl_client::Method::Get);
+		types::String path_new = const_values::COINBASE_API_CURRENCIES; //todo: unnecessary copy
+		//get currencies
+		response = request.
+								  pathSetNew(std::move(path_new))->
+								  Implement(curl_client::Method::Get);
 
-		  DEBUG_OUTPUT("currency ID: ", true)
+		DEBUG_OUTPUT("currencies: ", true)
+		return processAPIResponse(std::move(response));
+	}
 
-		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
-			  return std::get<Json::Document>(response.get()->body);
-		  }
-		  else if (std::holds_alternative<std::string>(response.get()->body)) {
-			  std::stringstream ss(std::get<std::string>(response.get()->body));
-			  return Json::Load(ss);
-		  }
-		  else return Json::Document(Json::Node(nullptr));
-	  }
+	Json::Document getSingleCurrency(const types::String& ticker,
+			curl_client::Response& response, curl_client::Request& request,
+			bool debug_output, std::ostream& os)
+	{
+		types::String path_new = const_values::COINBASE_API_CURRENCIES; //todo: unnecessary copy
+		path_new += ticker;
 
-	  Json::Document getSingleTradeData(
-			  const types::String& ticker1, const types::String& ticker2,
-			  curl_client::Response& response, curl_client::Request& request,
-			  bool debug_output, std::ostream& os)
-	  {
-		  types::String path_new = "https://api.exchange.coinbase.com/products/";
-		  path_new += ticker1;
-		  path_new += '-';
-		  path_new += ticker2;
-		  path_new += "/ticker";
+		//get currency
+		response = request.
+								  pathSetNew(std::move(path_new))->
+								  Implement(curl_client::Method::Get);
 
-		  //get ticker
-		  //Gets snapshot information about the last trade (tick), best bid/ask and 24h volume.
-		  response = request.
-									pathSetNew(std::move(path_new))->
-									Implement(curl_client::Method::Get);
-		  /// 0.359 ms is a round trip
+		DEBUG_OUTPUT("currency ID: ", true)
+		return processAPIResponse(std::move(response));
+	}
 
-		  DEBUG_OUTPUT("ticker product: ", true)
+	Json::Document getSingleTradeData(
+			const types::String& ticker1, const types::String& ticker2,
+			curl_client::Response& response, curl_client::Request& request,
+			bool debug_output, std::ostream& os)
+	{
+		types::String path_new = const_values::COINBASE_API_PRODUCTS; //todo: unnecessary copy
+		path_new += ticker1;
+		path_new += '-';
+		path_new += ticker2;
+		path_new += "/ticker";
 
-		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
-			  return std::get<Json::Document>(response.get()->body);
-		  }
-		  else if (std::holds_alternative<std::string>(response.get()->body)) {
-		  	std::stringstream ss(std::get<std::string>(response.get()->body));
-		  	return Json::Load(ss);
-		  }
-		  else return Json::Document(Json::Node(nullptr));
-	  }
+		//get ticker
+		//Gets snapshot information about the last trade (tick), best bid/ask and 24h volume.
+		response = request.
+								  pathSetNew(std::move(path_new))->
+								  Implement(curl_client::Method::Get);
+		/// 0.359 ms is a round trip
+
+		DEBUG_OUTPUT("ticker product: ", true)
+		return processAPIResponse(std::move(response));
+	}
 
 #undef DEBUG_OUTPUT
 
-	}//!namespace
   }//!namespace
+}//!namespace
 }//!namespace

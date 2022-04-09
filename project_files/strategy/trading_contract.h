@@ -55,8 +55,8 @@ namespace algo {
 
 
   struct TradingContract final {
-	  Ticker ticker;
-	  trading_contract_base::Dex dex;
+	  const Ticker ticker;
+	  const trading_contract_base::Dex dex;
 	  trading_contract_base::QiupuswapTradeSide quipuswap_trade_side;
 
 	  explicit TradingContract (Ticker t);

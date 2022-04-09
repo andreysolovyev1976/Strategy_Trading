@@ -6,6 +6,7 @@
 
 #include "tgbot/tgbot.h"
 
+#include "base_objects_container.h"
 #include "indicator.h"
 #include "modifiers.h"
 #include "signals.h"
@@ -15,7 +16,6 @@
 #include "threads_engine.h"
 #include "bot_config.h"
 #include "data_processor.h"
-
 
 #ifndef STRATEGY_TRADING_STRATEGY_ENGINE_H
 #define STRATEGY_TRADING_STRATEGY_ENGINE_H

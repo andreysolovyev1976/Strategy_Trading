@@ -92,18 +92,18 @@ namespace algo {
 
 	  assert(indicator_labels_.size() == 2);
 
-	  const auto &ind1 = indicators_->getObject(indicator_labels_[0]).getOutputValues();
-	  const auto &ind2 = indicators_->getObject(indicator_labels_[1]).getOutputValues();
+	  const auto &ind1 = indicators_->getSafePtr(indicator_labels_[0])->getOutputValues();
+	  const auto &ind2 = indicators_->getSafePtr(indicator_labels_[1])->getOutputValues();
 
 	  for (auto it1 = ind1->begin(), e1 = ind1->end(); it1 != e1; ++it1){
 		  const auto &[tstamp1, quote1] = *it1;
 
-		  if (auto found_at_second = ind2->Find(tstamp1); found_at_second != ind2->end()) {
+		  if (auto found_at_second = ind2->find(tstamp1); found_at_second != ind2->end()) {
 			  const auto &[tstamp2, quote2] = *found_at_second;
 			  bool rel = relations::RelationImpl(quote1, quote2, relation_);
 
-			  if (auto found_at_signal = signal_->Find(tstamp1); found_at_signal == signal_->end()){
-				  signal_->Insert({tstamp1, signal_base::BoolToSignalValue(rel)});
+			  if (auto found_at_signal = signal_->find(tstamp1); found_at_signal == signal_->end()){
+				  signal_->insert({tstamp1, signal_base::BoolToSignalValue(rel)});
 
 				  //todo: IMPORTANT!!! this doesn't work
 /*
@@ -126,7 +126,7 @@ namespace algo {
 		  }
 		  else {
 			  //todo: update indicators when there is no data
-			  signal_->Insert({tstamp1, signal_base::SignalValue{}});
+			  signal_->insert({tstamp1, signal_base::SignalValue{}});
 		  }
 	  }
   }
@@ -136,20 +136,20 @@ namespace algo {
   	//todo: add check that indicator labels exist
 	  const auto label = signal.getLabel();
 
-	  if (auto found = this->getByLabel()->Find(label); found != this->getByLabel()->end()){
+	  if (this->objectExists(label)){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal already exists; "));
 	  }
-	  auto new_signal = std::make_unique<Signal>(std::move(signal));
-	  this->getByLabel()->Insert({new_signal->getLabel(), std::move(new_signal)});
+	  auto new_signal = Ptr<Signal>(std::move(signal));
+	  this->getByLabel()->insert({new_signal->getLabel(), std::move(new_signal)});
 }
 
   void Signals::removeSignal (const types::String &label) {
-	  auto found = this->getByLabel()->Find(label);
+	  auto found = this->getByLabel()->find(label);
 	  if (found == this->getByLabel()->end()){
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal is not found; "));
 	  }
 	  else {
-		  this->getByLabel()->Erase(found);
+		  this->getByLabel()->erase(found);
 	  }
   }
 

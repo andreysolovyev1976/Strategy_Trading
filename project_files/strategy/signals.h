@@ -133,9 +133,6 @@ namespace algo {
   public:
 	  using Objects<Signal>::Objects;
 
-	  ByTicker& getByTicker () = delete;
-	  const ByTicker& getByTicker () const = delete;
-
 	  void addSignal (Signal signal);
 	  void removeSignal (const types::String &label);
   };

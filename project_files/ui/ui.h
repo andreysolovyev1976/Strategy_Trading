@@ -33,7 +33,6 @@ namespace user_interface {
 
   class UI final {
 	  using Commands = std::map<types::String, TgBot::BotCommand::Ptr>;
-	  using Keyboards = std::map<types::String, TgBot::GenericReply::Ptr>;
   public:
 	  UI();
 	  void run();
@@ -49,8 +48,15 @@ namespace user_interface {
 	  const types::String token_;
 	  TgBot::Bot bot;
 	  Commands commands;
-	  [[maybe_unused]] Keyboards keyboards;
 	  std::optional<int64_t> chat_id;
+
+	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
+
+	  template <typename ConstIter, typename Type>
+	  TgBot::InlineKeyboardMarkup::Ptr makeInlineKeyboard (Type type, ConstIter b, ConstIter e) const;
+
+	  struct Map { };
+	  struct Vec { };
 
 	  algo::config::RobotConfig& robot_config;
 
@@ -117,11 +123,30 @@ namespace user_interface {
 	  types::String stopUI(const types::String& input);
 	  types::String addContract(const types::String& input);
 	  types::String getContracts(const types::String& input);
+  };
 
-	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
- };
+  template <typename Iter>
+  using VecIter = std::enable_if_t<std::is_same_v<Iter, typename std::vector<types::String>::iterator>, bool>;
 
-
+  template <typename ConstIter, typename Type>
+  TgBot::InlineKeyboardMarkup::Ptr UI::makeInlineKeyboard ([[maybe_unused]] Type type, ConstIter b, ConstIter e) const {
+	  TgBot::InlineKeyboardMarkup::Ptr keyboard_select(new TgBot::InlineKeyboardMarkup);
+	  if constexpr (std::is_same_v<Type, UI::Vec>) {
+		  for (auto curr = b; curr!=e; ++curr) {
+			  std::vector<TgBot::InlineKeyboardButton::Ptr> row;
+			  row.push_back(makeInlineCheckButton(*curr));
+			  keyboard_select->inlineKeyboard.push_back(std::move(row));
+		  }
+	  }
+	  else if constexpr (std::is_same_v<Type, UI::Map>) {
+		  for (auto curr = b; curr!=e; ++curr) {
+			  std::vector<TgBot::InlineKeyboardButton::Ptr> row;
+			  row.push_back(makeInlineCheckButton(curr->first));
+			  keyboard_select->inlineKeyboard.push_back(std::move(row));
+		  }
+	  }
+	  return keyboard_select;
+  }
 
 }//!namespace
 #endif //STRATEGY_TRADING_TG_BOT_UI_H

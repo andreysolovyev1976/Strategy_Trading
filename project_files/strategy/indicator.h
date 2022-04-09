@@ -36,7 +36,7 @@ namespace algo {
 	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
 	  void updateIndicator (const MarketData<QuoteType, Duration> &market_data) {
 		  auto quote = market_data.second;
-		  input_value_->Insert({quote.timestamp, std::move(quote)});
+		  input_value_->insert({quote.timestamp, std::move(quote)});
 		  this->ProcessIndicator();
 	  }
 
@@ -67,15 +67,16 @@ namespace algo {
   public:
 	  using Objects<Indicator>::Objects;
 
-	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
-	  void updateIndicators (const MarketData<QuoteType, Duration> &market_data) {
-		  if (const auto [first, last] = this->getByTicker()->equal_range(market_data.first);
-				  first != this->getByTicker()->end()) {
-			  for (auto it = first, ite = last; it != ite; ++it) {
-				  it->second->updateIndicator(market_data);
-			  }
-		  }
+	  template <typename QuoteType = types::Value, typename Duration = time_::Seconds>
+	  void updateIndicator (Ptr<Indicator> ptr, const MarketData<QuoteType, Duration> &market_data) {
+	  	ptr->updateIndicator(market_data);
 	  }
+
+	  template <typename QuoteType = types::Value, typename Duration = time_::Seconds>
+	  void updateIndicator (const types::String& label, const MarketData<QuoteType, Duration> &market_data) {
+	  	getSafePtr(label)->updateIndicator(market_data);
+	  }
+
 	  void addIndicator (Indicator indicator);
   };
 

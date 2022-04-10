@@ -11,20 +11,21 @@
 TEST(Value, Ctors) {
 	using namespace std::literals;
 
-	[[maybe_unused]] types::Value i (42);
-	[[maybe_unused]] types::Value iu (42u);
-	[[maybe_unused]] types::Value d1 (42.0, 2);
-	[[maybe_unused]] types::Value d2 (42.);
-	[[maybe_unused]] types::Value F (types::Float (42.));
-	[[maybe_unused]] types::Value bi (types::BigInt(42));
-	[[maybe_unused]] types::Value bu (types::BigUInt(42));
+	ASSERT_NO_THROW(types::Value i (42));
+	ASSERT_NO_THROW(types::Value iu (42u));
+	ASSERT_NO_THROW(types::Value d1 (42.0, 2));
+	ASSERT_NO_THROW(types::Value d2 (42.));
+	ASSERT_NO_THROW(types::Value F (types::Float (42.)));
+	ASSERT_NO_THROW(types::Value bi (types::BigInt(42)));
+	ASSERT_NO_THROW(types::Value bu (types::BigUInt(42)));
+	ASSERT_NO_THROW(types::Value s2 ("42"s));
+	ASSERT_NO_THROW(types::Value s3 ("42.5"s));
 
-	[[maybe_unused]] types::Value s2 ("42"s);
-	ASSERT_THROW(types::Value s1 ("fuck"s), std::exception);
+	ASSERT_ANY_THROW(types::Value s4 ("42,5"s));
+	ASSERT_ANY_THROW(types::Value s1 ("fuck"s));
 
 	//todo: add Json::Node ctors
 
-	ASSERT_TRUE(true);
 }
 
 TEST(Value, ComparisonOperators) {

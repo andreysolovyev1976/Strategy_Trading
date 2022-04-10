@@ -208,6 +208,13 @@ namespace user_interface {
 	  }
   };
 
+  struct ObjectsCtorsData {
+	  InitIndicator init_indicator;
+	  InitSignal init_signal;
+	  InitRule init_rule;
+	  InitStrategy init_strategy;
+	  InitContract init_contract;
+  };
 
 }
 #endif //STRATEGY_TRADING_INIT_DATA_H

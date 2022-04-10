@@ -34,7 +34,7 @@ safe_ptr<std::map<std::string, std::pair<std::string, int> >> safe_map_strings_g
 
 
 namespace const_values {
-  size_t iter_count = 1e4;
+  size_t iter_count = 1e5;
   size_t thread_count = 10;
 }
 
@@ -69,7 +69,9 @@ TEST(SafePtr, BasicUsage){
 
 	std::vector<std::thread> vec_thread(thread_count);
 	for (auto &i : vec_thread) i = std::thread(func, safe_map_strings_global);
-	for (auto &i : vec_thread) i.join();
+	for (auto &i : vec_thread) i.detach();
+
+	std::this_thread::sleep_for(30s);
 
 	auto const readonly_safe_map_string = safe_map_strings_global;
 	ASSERT_EQ(readonly_safe_map_string->at("potato").second, iter_count * thread_count);

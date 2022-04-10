@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(Value, Ctors){
+TEST(IndicatorModifier, Ctors){
 
 	using namespace std::literals;
 }

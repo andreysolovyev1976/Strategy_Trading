@@ -52,7 +52,7 @@ add_subdirectory(../project_files/pipe ${CMAKE_CURRENT_BINARY_DIR}_pipe)
 add_subdirectory(../project_files/primitives ${CMAKE_CURRENT_BINARY_DIR}_primitives)
 add_subdirectory(../project_files/robot_config ${CMAKE_CURRENT_BINARY_DIR}_robot_config)
 add_subdirectory(../project_files/strategy ${CMAKE_CURRENT_BINARY_DIR}_strategy)
-add_subdirectory(../project_files/ui ${CMAKE_CURRENT_BINARY_DIR}_ui)
+add_subdirectory(../project_files/app_controller ${CMAKE_CURRENT_BINARY_DIR}_app_controller)
 
 if (APPLE)
     message(STATUS "Loading APPLE HOME COMPUTER Configuration...")

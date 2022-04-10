@@ -15,7 +15,7 @@ namespace algo {
   using namespace algo::tezos::quipuswap::transaction;
 
   Engine::Engine (TgBot::Bot* b)
-		  : bot (b)
+		  : bot (std::shared_ptr<TgBot::Bot>(b, [](auto*){ /* empty deleter */ }))
 		  , data_processor_ptr(std::make_shared<DataProcessor>())
   {}
 

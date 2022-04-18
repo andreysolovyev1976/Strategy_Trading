@@ -66,29 +66,24 @@ namespace user_interface {
 		  {Event::setup_Indicators, &UI::initIndicatorMenu},
 		  {Event::addIndicator, &UI::initAddIndicator},
 		  {Event::removeIndicator, &UI::initRemoveIndicator},
-//		  {Event::getIndicators, &UI::initGetIndicators},
 
 		  {Event::setup_Signals, &UI::initSignalMenu},
 		  {Event::addSignal, &UI::initAddSignal},
 		  {Event::removeSignal, &UI::initRemoveSignal},
-//		  {Event::getSignals, &UI::initGetSignals},
 
 		  {Event::setup_Strategies, &UI::initStrategyMenu},
 		  {Event::addStrategy, &UI::initAddStrategy},
 		  {Event::removeStrategy, &UI::initRemoveStrategy},
-//		  {Event::getStrategies, &UI::initGetStrategies},
 		  {Event::stopStrategy, &UI::initStopStrategy},
 		  {Event::startStrategy, &UI::initStartStrategy},
 
 		  {Event::setup_Rules, &UI::initRuleMenu},
 		  {Event::addRule, &UI::initAddRule},
 		  {Event::removeRule, &UI::initRemoveRule},
-//		  {Event::getRules, &UI::initGetRules},
 
 		  {Event::setup_Contracts, &UI::initContractMenu},
 		  {Event::addContract, &UI::initAddContract},
 		  {Event::removeContract, &UI::initRemoveContract},
-//		  {Event::getContracts, &UI::initGetContracts},
 
 		  {Event::startOperations, &UI::initStartOperations},
 		  {Event::stopOperations, &UI::initStopOperations},
@@ -111,7 +106,7 @@ namespace user_interface {
   }
   template <typename C>
   void UI<C>::initMainMenu() {
-	  bot->getEvents().onCommand("menu", [this](Message::Ptr message) {
+	  bot->getEvents().onCommand("dashboard", [this](Message::Ptr message) {
 		InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 
 		size_t size = main_menu.size();
@@ -150,6 +145,8 @@ namespace user_interface {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (checkQueryForEvent(query, Event::setup_Indicators)) {
 			hideInlineKeyboard(query);
+			auto* indicators = engine.getPtr<Indicators>();
+
 			if (query->data == "Add") {
 				appendMessage(query->message, ": Adding...");
 				ForceReply::Ptr keyboard_reply(new ForceReply);
@@ -157,13 +154,17 @@ namespace user_interface {
 			}
 			else if (query->data == "List") {
 				appendMessage(query->message, ": Listing...");
-				bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getIndicators));
+				if (indicators->getByLabel()->empty()) {
+					bot->getApi().sendMessage(query->message->chat->id, "No Indicators yet to list"s);
+				}
+				else {
+					bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getIndicators));
+				}
 			}
 			else if (query->data == "Remove") {
 				appendMessage(query->message, ": Removing...");
-				auto* indicators = engine.getPtr<Indicators>();
 				if (indicators->getByLabel()->empty()) {
-					bot->getApi().sendMessage(query->message->chat->id, "No indicators yet to remove");
+					bot->getApi().sendMessage(query->message->chat->id, "No Indicators yet to remove");
 				}
 				else {
 					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{}, indicators->getByLabel()->begin(), indicators->getByLabel()->end() );
@@ -245,7 +246,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, "Type in a new Modifier value", Event::addIndicator_ModifierValue)) {
+		if (checkMessageForEvent(message, Event::addIndicator_ModifierValue)) {
 			ctors.init_indicator.modifier_value = types::Value(message->text);
 			ctors.init_indicator.is_modifier_initialized = true;
 			bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::addIndicator));
@@ -269,6 +270,7 @@ namespace user_interface {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (checkQueryForEvent(query, Event::setup_Signals)) {
 			hideInlineKeyboard(query);
+			auto* signals = engine.getPtr<Signals>();
 			if (query->data == "Add") {
 				appendMessage(query->message, ": Adding...");
 				ForceReply::Ptr keyboard_reply(new ForceReply);
@@ -276,12 +278,15 @@ namespace user_interface {
 			}
 			else if (query->data == "List") {
 				appendMessage(query->message, ": Listing...");
-				bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getSignals));
-
+				if (signals->getByLabel()->empty()) {
+					bot->getApi().sendMessage(query->message->chat->id, "No Signals yet to list"s);
+				}
+				else {
+					bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getSignals));
+				}
 			}
 			else if (query->data == "Remove") {
 				appendMessage(query->message, ": Removing...");
-				auto* signals = engine.getPtr<Signals>();
 				if (signals->getByLabel()->empty()) {
 					bot->getApi().sendMessage(query->message->chat->id, "No signals yet to remove");
 				}
@@ -317,13 +322,12 @@ namespace user_interface {
 				std::vector<InlineKeyboardButton::Ptr> row;
 				row.push_back(makeInlineCheckButton("finished"));
 				keyboard_select->inlineKeyboard.push_back(std::move(row));
-				sendRequestForInput (message->chat, keyboard_select, "Select exactly two Indicators to include", Event::addSignal);
+				sendRequestForInput (message->chat, keyboard_select, "Select exactly two Indicators to include", Event::addSignal_Indicators);
 			}
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal)) {
-			updateKeyboard(query);
+		if (checkQueryForEvent(query, Event::addSignal_Indicators)) {
 			auto* indicators = engine.getPtr<Indicators>();
 			//todo: add there should be two only or extend the logic
 			if (query->data!="finished") {
@@ -332,28 +336,29 @@ namespace user_interface {
 				}
 			}
 			else {
+				updateKeyboard(query);
 				ctors.init_signal.is_indicator_labels_initialized = true;
 				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{}, ctors.init_signal.signal_types.begin(), ctors.init_signal.signal_types.end() );
-				sendRequestForInput (query->message->chat, keyboard_select, "Select Signal type", Event::addSignal);
+				sendRequestForInput (query->message->chat, keyboard_select, "Select Signal type", Event::addSignal_SignalType);
 			}
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal)) {
+		if (checkQueryForEvent(query, Event::addSignal_SignalType)) {
 			updateKeyboard(query);
 			for (const auto& s_type : ctors.init_signal.signal_types) {
 				if (query->data==s_type) {
 					ctors.init_signal.signal_type = query->data;
 					ctors.init_signal.is_signal_type_initialized = true;
 					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{}, relations::relation_names.begin(), relations::relation_names.end() );
-					sendRequestForInput (query->message->chat, keyboard_select, "Select relation", Event::addSignal);
+					sendRequestForInput (query->message->chat, keyboard_select, "Select relation", Event::addSignal_Relation);
 					break;
 				}
 			}
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal)) {
+		if (checkQueryForEvent(query, Event::addSignal_Relation)) {
 			updateKeyboard(query);
 			for (const auto& r : relations::relation_names) {
 				if (query->data==r) {
@@ -383,6 +388,8 @@ namespace user_interface {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (checkQueryForEvent(query, Event::setup_Strategies)) {
 			hideInlineKeyboard(query);
+			auto* strategies = engine.getPtr<Strategies>();
+
 			if (query->data == "Add") {
 				appendMessage(query->message, ": Adding...");
 				ForceReply::Ptr keyboard_reply(new ForceReply);
@@ -390,13 +397,16 @@ namespace user_interface {
 			}
 			else if (query->data == "List") {
 				appendMessage(query->message, ": Listing...");
-				bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getStrategies));
+				if (strategies->getByLabel()->empty())  {
+					bot->getApi().sendMessage(query->message->chat->id, "No Strategies yet to list"s);
+				} else {
+					bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getStrategies));
+				}
 			}
 			else if (query->data == "Remove") {
 				appendMessage(query->message, ": Removing...");
-				auto* strategies = engine.getPtr<Strategies>();
 				if (strategies->getByLabel()->empty()) {
-					bot->getApi().sendMessage(query->message->chat->id, "No strategies yet to remove");
+					bot->getApi().sendMessage(query->message->chat->id, "No Strategies yet to remove");
 				}
 				else {
 					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{}, strategies->getByLabel()->begin(), strategies->getByLabel()->end() );
@@ -405,7 +415,6 @@ namespace user_interface {
 			}
 			else if (query->data == "Start") {
 				appendMessage(query->message, ": Selecting target...");
-				auto* strategies = engine.getPtr<Strategies>();
 				if (strategies->getByLabel()->empty()) {
 					bot->getApi().sendMessage(query->message->chat->id, "No Strategy to start");
 				}
@@ -416,7 +425,6 @@ namespace user_interface {
 			}
 			else if (query->data == "Stop") {
 				appendMessage(query->message, ": Selecting target...");
-				auto* strategies = engine.getPtr<Strategies>();
 				if (strategies->getByLabel()->empty()) {
 					bot->getApi().sendMessage(query->message->chat->id, "No Strategy to stop");
 				}
@@ -513,6 +521,7 @@ namespace user_interface {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
 		if (checkQueryForEvent(query, Event::setup_Rules)) {
 			hideInlineKeyboard(query);
+			auto* rules = engine.getPtr<Rules>();
 			if (query->data == "Add") {
 				appendMessage(query->message, ": Adding...");
 				ForceReply::Ptr keyboard_reply(new ForceReply);
@@ -520,13 +529,17 @@ namespace user_interface {
 			}
 			else if (query->data == "List") {
 				appendMessage(query->message, ": Listing...");
-				bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getRules));
+				if (rules->getByLabel()->empty()) {
+					bot->getApi().sendMessage(query->message->chat->id, "No Rules yet to list"s);
+				}
+				else {
+					bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getRules));
+				}
 			}
 			else if (query->data == "Remove") {
 				appendMessage(query->message, ": Removing...");
-				auto* rules = engine.getPtr<Rules>();
 				if (rules->getByLabel()->empty()) {
-					bot->getApi().sendMessage(query->message->chat->id, "No rules yet to remove");
+					bot->getApi().sendMessage(query->message->chat->id, "No Rules yet to remove");
 				}
 				else {
 					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Map{}, rules->getByLabel()->begin(), rules->getByLabel()->end() );
@@ -579,7 +592,7 @@ namespace user_interface {
 					ctors.init_rule.ticker = curr->second.ticker;
 					ctors.init_rule.is_ticker_initialized = true;
 					InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{},ctors.init_rule.trade_sides.begin(), ctors.init_rule.trade_sides.end() );
-					sendRequestForInput (query->message->chat, keyboard_select, "Select the Trade Side for Ticker to trade (for CB click any)", Event::addRule_TradeSide);
+					sendRequestForInput (query->message->chat, keyboard_select, "Select the Trade Side for Ticker to trade", Event::addRule_TradeSide);
 					break;
 				}
 			}
@@ -628,20 +641,18 @@ namespace user_interface {
 			sendRequestForInput(query->message->chat, keyboard_reply, "Enter single trade volume", Event::addRule_OrderQuantity);
 		}
 	  });
-	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_OrderQuantity)) {
-			updateKeyboard(query);
-			ctors.init_rule.order_quantity = query->data;
+	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (checkMessageForEvent(message,  Event::addRule_OrderQuantity)) {
+			ctors.init_rule.order_quantity = message->text;
 			ctors.init_rule.is_order_quantity_initialized = true;
 			ForceReply::Ptr keyboard_reply(new ForceReply);
-			sendRequestForInput(query->message->chat, keyboard_reply, "Enter slippage for a single trade", Event::addRule_Slippage);
+			sendRequestForInput(message->chat, keyboard_reply, "Enter slippage for a single trade", Event::addRule_Slippage);
 		}
 	  });
-	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_Slippage)) {
-			updateKeyboard(query);
+	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (checkMessageForEvent(message, Event::addRule_Slippage)) {
 
-			ctors.init_rule.slippage = query->data;
+			ctors.init_rule.slippage = message->text;
 			ctors.init_rule.is_slippage_initialized = true;
 
 			ctors.init_rule.rule_type = ctors.init_rule.rule_type[0]; //todo: CHANGE THIS!!!
@@ -656,7 +667,7 @@ namespace user_interface {
 			ctors.init_rule.order_type = ctors.init_rule.order_types[0]; //todo: CHANGE THIS!!!
 			ctors.init_rule.is_order_type_initialized = true;
 
-			bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::addRule));
+			bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::addRule));
 		}
 	  });
   }
@@ -715,7 +726,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, "Type in ticker at Quipuswap", Event::addContract_TickerQS)) {
+		if (checkMessageForEvent(message,  Event::addContract_TickerQS)) {
 			ctors.init_contract.ticker_qs = message->text;
 			ctors.init_contract.is_ticker_qs_initialized = true;
 
@@ -724,7 +735,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, "Type in ticker at Coinbase", Event::addContract_TickerCB)) {
+		if (checkMessageForEvent(message, Event::addContract_TickerCB)) {
 			ctors.init_contract.ticker_cb = message->text;
 			ctors.init_contract.is_ticker_cb_initialized = true;
 			bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::addContract));
@@ -842,19 +853,20 @@ namespace user_interface {
 	  }
   }
   template <typename C>
-  bool UI<C>::checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event) {
+  bool UI<C>::checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event) const {
 	  return
-			  query->message->messageId == current_message_id[query->message->chat->username] &&
-					  user_activity[query->message->chat->username] == event;
+			  query->message->messageId == current_message_id.at(query->message->chat->username) &&
+					  user_activity.at(query->message->chat->username) == event;
   }
   template <typename C>
-  bool UI<C>::checkMessageForEvent (TgBot::Message::Ptr message, types::String msg, Event event) {
+  bool UI<C>::checkMessageForEvent (TgBot::Message::Ptr message, Event event) const {
 	  return
 			  message->replyToMessage &&
-					  message->replyToMessage->messageId == current_message_id[message->chat->username] &&
-					  StringTools::startsWith(message->replyToMessage->text, msg) &&
-					  user_activity[message->chat->username] == event;
+					  message->replyToMessage->messageId == current_message_id.at(message->chat->username) &&
+					  user_activity.at(message->chat->username) == event;
   }
+
+
   template <typename C>
   bool UI<C>::checkMessageForResponse (TgBot::Message::Ptr message, types::String msg) {
 	  return

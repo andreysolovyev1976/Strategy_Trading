@@ -36,6 +36,27 @@ namespace user_interface {
 		  {"Contracts", Event::setup_Contracts},
   };
 
+
+  namespace trading_object_menu {
+
+	template<Event event>
+	types::String getMessageForLabeling() {
+		types::String output{"Label new "};
+		if constexpr (event == Event::setup_Indicators) output += "Indicator";
+		else if constexpr (event == Event::setup_Signals) output += "Signal";
+		else if constexpr (event == Event::setup_Rules) output += "Rule";
+		else if constexpr (event == Event::setup_Strategies) output += "Strategy";
+		else throw InvalidArgumentError(EXCEPTION_MSG("Unknown Trading Object type"));
+		return output;
+	}
+
+	template<Event event>
+	types::String getMessageForRemoveFail() { }
+	template<Event event>
+	types::String getMessageForRemoveOk() { }
+
+  }//!namespace
+
 }//!namespace
 
 #endif //STRATEGY_TRADING_UI_MAIN_MENU_H

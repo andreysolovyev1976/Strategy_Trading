@@ -129,6 +129,10 @@ namespace algo {
   };
 
 
+  template<typename T>
+  using IsSignal = std::enable_if_t<std::is_same_v<T, Signal>, bool>;
+
+
   class Signals final : public Objects <Signal>{
   public:
 	  using Objects<Signal>::Objects;

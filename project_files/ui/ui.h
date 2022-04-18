@@ -9,7 +9,7 @@
 #include "strategy_engine.h"
 #include "ui_events.h"
 #include "ui_init_data.h"
-#include "ui_main_menu.h"
+#include "ui_dashboard.h"
 
 #include <map>
 #include <vector>
@@ -54,8 +54,9 @@ namespace user_interface {
 	  void appendMessage (TgBot::Message::Ptr message, types::String msg) const;
 	  void updateKeyboard (TgBot::CallbackQuery::Ptr query);
 
-	  bool checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event);
-	  bool checkMessageForEvent (TgBot::Message::Ptr message, types::String msg, Event event);
+	  bool checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event) const;
+	  bool checkMessageForEvent (TgBot::Message::Ptr message, Event event) const;
+
 	  bool checkMessageForResponse (TgBot::Message::Ptr message, types::String msg);
 
 	  template <typename Keyboard>
@@ -76,21 +77,17 @@ namespace user_interface {
 	  void initIndicatorMenu();
 	  void initAddIndicator();
 	  void initRemoveIndicator();
-	  void initGetIndicators();
 	  void initSignalMenu();
 	  void initAddSignal();
 	  void initRemoveSignal();
-	  void initGetSignals();
 	  void initStrategyMenu();
 	  void initAddStrategy();
 	  void initRemoveStrategy();
-	  void initGetStrategies();
 	  void initStopStrategy();
 	  void initStartStrategy();
 	  void initRuleMenu();
 	  void initAddRule();
 	  void initRemoveRule();
-	  void initGetRules();
 	  void initContractMenu();
 	  void initAddContract();
 	  void initRemoveContract();

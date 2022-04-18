@@ -24,6 +24,10 @@ namespace user_interface {
 	  getIndicators,
 
 	  addSignal,
+	  addSignal_Indicators,
+	  addSignal_SignalType,
+	  addSignal_Relation,
+	  addSignal_SignalValue,
 	  removeSignal,
 	  getSignals,
 

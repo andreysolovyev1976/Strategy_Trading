@@ -131,7 +131,6 @@ String Controller::removeIndicator([[maybe_unused]] const types::String& input){
 }
 String Controller::getIndicators([[maybe_unused]] const types::String& input){
 	auto* indicators = engine.getPtr<Indicators>();
-	if (indicators->getByLabel()->empty()) return "No indicators yet"s;
 	String result;
 	result.reserve(100); //todo: update for a const value
 

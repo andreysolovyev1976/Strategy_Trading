@@ -99,6 +99,9 @@ namespace algo {
 	  std::optional<Trade> ProcessSignal ();
   };
 
+  template<typename T>
+  using IsRule = std::enable_if_t<std::is_same_v<T, Rule>, bool>;
+
 
   class Rules final : public Objects<Rule> {
   public:

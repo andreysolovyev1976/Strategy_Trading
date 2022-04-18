@@ -54,6 +54,10 @@ namespace algo {
 	  void getMarketData(DataProcessorPtr data_processor_ptr);
   };
 
+  template<typename T>
+  using IsStrategy = std::enable_if_t<std::is_same_v<T, Strategy>, bool>;
+
+
   class Strategies final : public Objects <Strategy>{
   public:
 	  using Objects<Strategy>::Objects;

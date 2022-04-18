@@ -62,6 +62,9 @@ namespace algo {
 
   std::ostream& operator<<(std::ostream& os, const Indicator &indicator);
 
+  template<typename T>
+  using IsIndicator = std::enable_if_t<std::is_same_v<T, Indicator>, bool>;
+
 
   class Indicators : public Objects<Indicator> {
   public:

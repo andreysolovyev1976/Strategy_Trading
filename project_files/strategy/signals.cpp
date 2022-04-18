@@ -29,7 +29,6 @@ namespace algo {
 		else return SignalType{};
 	}
 
-
 	types::String SignalValueToString (const SignalValue &value ) {
 		if (value.TryAs<signal_value::True>()) return "True";
 		else if (value.TryAs<signal_value::False>()) return "False";

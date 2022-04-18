@@ -65,6 +65,7 @@ namespace algo {
 			  types::String signal_value,
 //			  types::String position_side,
 			  trade_base::OrderQuantity order_quantity,
+			  trade_base::Slippage slippage,
 //			  types::String trade_type,
 //			  types::String order_type,
 			  Signals* signals);
@@ -87,6 +88,7 @@ namespace algo {
 	  ///result of applying the rule over signal
 	  PositionSide required_position_side_;
 	  trade_base::OrderQuantity order_quantity_;
+	  trade_base::Slippage slippage_;
 	  trade_base::TradeType trade_type_;
 	  trade_base::OrderType order_type_;
 

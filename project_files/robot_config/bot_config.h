@@ -31,10 +31,7 @@ namespace algo {
 				ticker_cb, 	 					// ticker1
 				ticker_qs;  					// ticker2
 		types::Int
-				price_diff = const_values::PRICE_DIFF,
-				timeframe  = const_values::TIMEFRAME,
-				trade_size = const_values::TRADE_SIZE,
-				slippage   = const_values::SLIPPAGE;
+				timeframe  = const_values::TIMEFRAME;
 	};
 	const static ContractInfo EMPTY_CONTRACT;
 	std::ostream& operator << (std::ostream &os, const ContractInfo& ci);

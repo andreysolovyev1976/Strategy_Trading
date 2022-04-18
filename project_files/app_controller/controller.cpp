@@ -11,10 +11,10 @@ using namespace user_interface;
 
 
 Controller::Controller ()
-: robot_config(config::RobotConfig::getInstance(const_values::CONFIG_FILENAME))
-, bot (std::make_unique<TgBot::Bot>(const_values::TG_BOT_TOKEN))
-, engine (bot.get())
- {}
+		: robot_config(config::RobotConfig::getInstance(const_values::CONFIG_FILENAME))
+		, bot (std::make_unique<TgBot::Bot>(const_values::TG_BOT_TOKEN))
+		, engine (bot.get())
+{}
 
 void Controller::init(){
 	robot_config.loadFromIni();
@@ -24,7 +24,7 @@ void Controller::init(){
 
 void Controller::run() {
 	if (is_initialized)
-	ui->run(); //todo make it a separate thread
+		ui->run(); //todo make it a separate thread
 }
 
 TgBot::Bot* Controller::getBotPtr() {
@@ -43,7 +43,6 @@ user_interface::ObjectsCtorsData& Controller::getCtors() {
 	return ctors;
 }
 
-
 const std::unordered_map<
 		Event,
 		String (Controller::*)(const types::String&)
@@ -56,18 +55,20 @@ const std::unordered_map<
 		{Event::removeSignal, &Controller::removeSignal},
 		{Event::getSignals, &Controller::getSignals},
 		{Event::addStrategy, &Controller::addStrategy},
+		{Event::removeStrategy, &Controller::removeStrategy},
+		{Event::getStrategies, &Controller::getStrategies},
+		{Event::stopStrategy, &Controller::stopStrategy},
+		{Event::startStrategy, &Controller::startStrategy},
 		{Event::addRule, &Controller::addRule},
 		{Event::removeRule, &Controller::removeRule},
 		{Event::getRules, &Controller::getRules},
-		{Event::removeStrategy, &Controller::removeStrategy},
-		{Event::stopStrategy, &Controller::stopStrategy},
-		{Event::startStrategy, &Controller::startStrategy},
+		{Event::addContract, &Controller::addContract},
+		{Event::removeContract, &Controller::removeContract},
+		{Event::getContracts, &Controller::getContracts},
 		{Event::startOperations, &Controller::startOperations},
 		{Event::stopOperations, &Controller::stopOperations},
 		{Event::startUI, &Controller::startUI},
 		{Event::stopUI, &Controller::stopUI},
-		{Event::addContract, &Controller::addContract},
-		{Event::getContracts, &Controller::getContracts},
 };
 
 String Controller::processEvent (Event event, const types::String& input) {
@@ -104,7 +105,7 @@ String Controller::addIndicator([[maybe_unused]] const types::String& input){
 	else {
 		//todo: type deduction must aligned with Indicator type - ammend it later
 		Modifier<types::Value> modifier (ctors.init_indicator.label);
-		modifier.setModifierValue(std::move(ctors.init_indicator.modifier_value));
+		modifier.setModifierValue(types::Value(ctors.init_indicator.modifier_value));
 
 		Indicator indicator (
 				ctors.init_indicator.label,
@@ -120,7 +121,13 @@ String Controller::addIndicator([[maybe_unused]] const types::String& input){
 	return "Indicator successfully added"s;
 }
 String Controller::removeIndicator([[maybe_unused]] const types::String& input){
-	return "WIP - Removing Indicator";
+	auto* indicators = engine.getPtr<Indicators>();
+	if (auto found = indicators->getByLabel()->find(input); found==indicators->getByLabel()->end()) {
+		return "No such Indicator"s;
+	}else {
+		indicators->getByLabel()->erase(found);
+	}
+	return "Indicator removed"s;
 }
 String Controller::getIndicators([[maybe_unused]] const types::String& input){
 	auto* indicators = engine.getPtr<Indicators>();
@@ -152,8 +159,14 @@ String Controller::addSignal([[maybe_unused]] const types::String& input){
 	ctors.init_signal.clear();
 	return "Signal successfully added"s;
 }
-String Controller::removeSignal([[maybe_unused]] const types::String& input){
-	return "WIP - Removing Signal";
+String Controller::removeSignal([[maybe_unused]] const types::String& input) {
+	auto* signals = engine.getPtr<Signals>();
+	if (auto found = signals->getByLabel()->find(input); found==signals->getByLabel()->end()) {
+		return "No such Signal"s;
+	} else {
+		signals->getByLabel()->erase(found);
+	}
+	return "Signal removed"s;
 }
 String Controller::getSignals([[maybe_unused]] const types::String& input){
 	auto* signals = engine.getPtr<Signals>();
@@ -194,43 +207,31 @@ String Controller::addStrategy([[maybe_unused]] const types::String& input){
 	return "Strategy successfully added"s;
 }
 String Controller::removeStrategy([[maybe_unused]] const types::String& input){
-	return "WIP - Removing Strategy"s;
+	auto* strategies = engine.getPtr<Strategies>();
+	types::String output;
+	if (auto found = strategies->getByLabel()->find(input); found == strategies->getByLabel()->end()) {
+		output = "No such Strategy";
+	} else {
+		if (engine.isStrategyActive(input)) {
+			engine.deactivateStrategy(input);
+			output += "Strategy stopped. ";
+		}
+		strategies->getByLabel()->erase(found);
+		output += "Strategy removed";
+	}
+	return output;
 }
-String Controller::addRule([[maybe_unused]] const types::String& input){
-	if (not ctors.init_rule.isInitialized()) return "Rule is not initialized"s;
+String Controller::getStrategies([[maybe_unused]] const types::String& input){
+	auto* strategies = engine.getPtr<Strategies>();
+	if (strategies->getByLabel()->empty()) return "No strategies yet"s;
 
-	Rule rule (
-			ctors.init_rule.label,
-			ctors.init_rule.ticker,
-			ctors.init_rule.quipuswap_trade_side,
-//			  ctors.init_rule.rule_type,
-			ctors.init_rule.signal_label,
-			ctors.init_rule.signal_value,
-//			  ctors.init_rule.position_side,
-			ctors.init_rule.order_quantity,
-//			  ctors.init_rule.trade_type,
-//			  ctors.init_rule.order_type,
-			engine.getPtr<Signals>()
-	);
-
-	engine.addTradingObject<Rule>(std::move(rule));
-	ctors.init_strategy.clear();
-	return "Rule successfully added"s;
-}
-String Controller::removeRule([[maybe_unused]] const types::String& input){
-	return "WIP - Removing Rule";
-}
-String Controller::getRules([[maybe_unused]] const types::String& input){
-	auto* rules = engine.getPtr<Rules>();
-	if (rules->getByLabel()->empty()) return "No rules yet"s;
-	String result;
+	types::String result;
 	result.reserve(100); //todo: update for a const value
-	for (auto curr = rules->getByLabel()->begin(), e = rules->getByLabel()->end(); curr != e; ++curr) {
+
+	for (auto curr = strategies->getByLabel()->begin(), e = strategies->getByLabel()->end(); curr != e; ++curr) {
 		const auto& [label, owner] = *curr;
 		result += "Label: ";
 		result += label;
-		result += "; Trading ticker: ";
-		result += owner->getTicker();
 		result += "\n";
 	}
 	return result;
@@ -251,17 +252,53 @@ String Controller::startStrategy([[maybe_unused]] const types::String& input){
 	result += " is online";
 	return result;
 }
-String Controller::startOperations([[maybe_unused]] const types::String& input){
-	return "WIP - Starting the Operations";
+String Controller::addRule([[maybe_unused]] const types::String& input){
+	if (not ctors.init_rule.isInitialized()) return "Rule is not initialized"s;
+
+	Rule rule (
+			ctors.init_rule.label,
+			ctors.init_rule.ticker,
+			ctors.init_rule.quipuswap_trade_side,
+//			  ctors.init_rule.rule_type,
+			ctors.init_rule.signal_label,
+			ctors.init_rule.signal_value,
+//			  ctors.init_rule.position_side,
+			ctors.init_rule.order_quantity,
+			ctors.init_rule.slippage,
+//			  ctors.init_rule.trade_type,
+//			  ctors.init_rule.order_type,
+			engine.getPtr<Signals>()
+	);
+
+	engine.addTradingObject<Rule>(std::move(rule));
+	ctors.init_strategy.clear();
+	return "Rule successfully added"s;
 }
-String Controller::stopOperations([[maybe_unused]] const types::String& input){
-	return "WIP - Stopping the Operations";
+String Controller::removeRule([[maybe_unused]] const types::String& input) {
+	auto* rules = engine.getPtr<Rules>();
+	types::String output;
+	if (auto found = rules->getByLabel()->find(input); found==rules->getByLabel()->end()) {
+		output = "No such Rule";
+	} else {
+		rules->getByLabel()->erase(found);
+		output = "Rule removed";
+	}
+	return output;
 }
-String Controller::startUI([[maybe_unused]] const types::String& input){
-	return "WIP - Start the UI";
-}
-String Controller::stopUI([[maybe_unused]] const types::String& input){
-	return "WIP - Stop the UI";
+String Controller::getRules([[maybe_unused]] const types::String& input){
+	auto* rules = engine.getPtr<Rules>();
+	if (rules->getByLabel()->empty()) return "No rules yet"s;
+	String result;
+	result.reserve(100); //todo: update for a const value
+	for (auto curr = rules->getByLabel()->begin(), e = rules->getByLabel()->end(); curr != e; ++curr) {
+		const auto& [label, owner] = *curr;
+		result += "Label: ";
+		result += label;
+		result += "; Trading ticker: ";
+		result += owner->getTicker();
+		result += "\n";
+	}
+	return result;
 }
 String Controller::addContract([[maybe_unused]] const types::String& input){
 	if (not ctors.init_contract.isInitialized()) return "Contract is not initialized"s;
@@ -274,6 +311,9 @@ String Controller::addContract([[maybe_unused]] const types::String& input){
 	robot_config.updateIni(std::move(ci));
 	ctors.init_contract.clear();
 	return "Contract list was updated"s;
+}
+String Controller::removeContract([[maybe_unused]] const types::String& input) {
+	return "";
 }
 String Controller::getContracts([[maybe_unused]] const types::String& input){
 	std::stringstream ss;
@@ -301,4 +341,16 @@ String Controller::getContracts([[maybe_unused]] const types::String& input){
 	  auto fuck = config.getContractInfo("fuck");
 	  std::cerr << fuck << '\n';
 	  */
+}
+String Controller::startOperations([[maybe_unused]] const types::String& input){
+	return "WIP - Starting the Operations";
+}
+String Controller::stopOperations([[maybe_unused]] const types::String& input){
+	return "WIP - Stopping the Operations";
+}
+String Controller::startUI([[maybe_unused]] const types::String& input){
+	return "WIP - Start the UI";
+}
+String Controller::stopUI([[maybe_unused]] const types::String& input){
+	return "WIP - Stop the UI";
 }

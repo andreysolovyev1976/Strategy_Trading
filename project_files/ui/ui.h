@@ -9,6 +9,7 @@
 #include "strategy_engine.h"
 #include "ui_events.h"
 #include "ui_init_data.h"
+#include "ui_main_menu.h"
 
 #include <map>
 #include <vector>
@@ -33,10 +34,8 @@ namespace user_interface {
   template <typename C>
   class UI final {
   public:
-
 	  explicit UI(C* controller);
 	  void run();
-
   private:
 	  std::shared_ptr<C> c_ptr;
 	  std::shared_ptr<TgBot::Bot> bot;
@@ -51,6 +50,9 @@ namespace user_interface {
 	  struct Vec { };
 	  template <typename ConstIter, typename Type>
 	  TgBot::InlineKeyboardMarkup::Ptr makeInlineKeyboard (Type type, ConstIter b, ConstIter e) const;
+	  void hideInlineKeyboard (TgBot::CallbackQuery::Ptr query);
+	  void appendMessage (TgBot::Message::Ptr message, types::String msg) const;
+	  void updateKeyboard (TgBot::CallbackQuery::Ptr query);
 
 	  bool checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event);
 	  bool checkMessageForEvent (TgBot::Message::Ptr message, types::String msg, Event event);
@@ -70,25 +72,58 @@ namespace user_interface {
 	  > INIT;
 	  void initCommand (Event event);
 	  void initHelp();
+	  void initMainMenu();
+	  void initIndicatorMenu();
 	  void initAddIndicator();
 	  void initRemoveIndicator();
 	  void initGetIndicators();
+	  void initSignalMenu();
 	  void initAddSignal();
 	  void initRemoveSignal();
 	  void initGetSignals();
+	  void initStrategyMenu();
 	  void initAddStrategy();
 	  void initRemoveStrategy();
+	  void initGetStrategies();
+	  void initStopStrategy();
+	  void initStartStrategy();
+	  void initRuleMenu();
 	  void initAddRule();
 	  void initRemoveRule();
 	  void initGetRules();
-	  void initStopStrategy();
-	  void initStartStrategy();
+	  void initContractMenu();
+	  void initAddContract();
+	  void initRemoveContract();
+	  void initGetContracts();
 	  void initStartOperations();
 	  void initStopOperations();
 	  void initStartUI();
 	  void initStopUI();
-	  void initAddContract();
-	  void initGetContracts();
+
+	  /*
+	  static const std::unordered_map<
+			  types::String,
+			  void (UI::*)()
+	  > INDICATOR_MENU;
+	  template <typename Obj>
+	  void Add ();
+	  template <typename Obj>
+	  void List ();
+	  template <typename Obj>
+	  void Remove ();
+	  static const std::unordered_map<
+			  types::String,
+			  void (UI::*)()
+	  > SIGNAL_MENU;
+	  static const std::unordered_map<
+			  types::String,
+			  void (UI::*)()
+	  > RULE_MENU;
+	  static const std::unordered_map<
+			  types::String,
+			  void (UI::*)()
+	  > STRATEGY_MENU;
+*/
   };
 
 }//!namespace

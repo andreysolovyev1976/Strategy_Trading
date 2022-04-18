@@ -29,28 +29,40 @@ namespace user_interface {
 
 	  addStrategy,
 	  removeStrategy,
+	  getStrategies,
+	  stopStrategy,
+	  startStrategy,
 
 	  addRule,
 	  addRule_TradingTicker,
 	  addRule_TradeSide,
 	  addRule_SignalLabel,
 	  addRule_SignalValue,
+	  addRule_OrderQuantity,
+	  addRule_Slippage,
 	  removeRule,
 	  getRules,
 
-	  stopStrategy,
-	  startStrategy,
+	  addContract,
+	  addContract_Label,
+	  addContract_TickerQS,
+	  addContract_TickerCB,
+	  removeContract,
+	  getContracts,
+
+	  setup,
+	  setup_selectTradingObject,
+	  setup_Indicators,
+	  setup_Signals,
+	  setup_Rules,
+	  setup_Strategies,
+	  setup_Contracts,
 
 	  startOperations,
 	  stopOperations,
 	  startUI,
 	  stopUI,
 
-	  addContract,
-	  addContract_Label,
-	  addContract_TickerQS,
-	  addContract_TickerCB,
-	  getContracts,
 
 	  end,
   };

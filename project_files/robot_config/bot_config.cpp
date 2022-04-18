@@ -23,10 +23,7 @@ namespace algo {
 				<< '[' << ci.name << ']' << '\n'
 				<< "ticker CB: " << ci.ticker_cb << '\n'
 				<< "ticker QS: " << ci.ticker_qs << '\n'
-				<< "price difference: " << ci.price_diff << '\n'
-				<< "timeframe: " << ci.timeframe << '\n'
-				<< "trade size: " << ci.trade_size << '\n'
-				<< "slippage: "<< ci.slippage << '\n';
+				<< "timeframe: " << ci.timeframe << '\n';
 
 		return os;
 	}
@@ -53,10 +50,7 @@ namespace algo {
 		ptree elem;
 		elem.put("ticker_cb", contract_info.ticker_cb);
 		elem.put("ticker_qs", contract_info.ticker_qs);
-		elem.put("price_diff", contract_info.price_diff);
 		elem.put("timeframe", contract_info.timeframe);
-		elem.put("trade_size", contract_info.trade_size);
-		elem.put("slippage", contract_info.slippage);
 
 		conf.put_child(contract_info.name, std::move(elem));
 		contracts_data_from_ini->operator[](contract_info.name) = std::move(contract_info);
@@ -121,10 +115,7 @@ namespace algo {
 		contract.name = contract_name;
 		loadContractDataField<String>(contract_name, "ticker_cb", contract.ticker_cb);
 		loadContractDataField<String>(contract_name, "ticker_qs", contract.ticker_qs);
-		loadContractDataField<Int>(contract_name, "price_diff", contract.price_diff);
 		loadContractDataField<Int>(contract_name, "timeframe", contract.timeframe);
-		loadContractDataField<Int>(contract_name, "trade_size", contract.trade_size);
-		loadContractDataField<Int>(contract_name, "slippage", contract.slippage);
 
 		TradingContract qs (contract_name, contract.ticker_qs);
 		contracts_by_name.operator->()->insert(std::make_pair(qs.joint_name, std::move(qs)));

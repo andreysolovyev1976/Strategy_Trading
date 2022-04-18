@@ -41,7 +41,7 @@ namespace algo {
 			command += " --slippageTolerance=";
 			command += trade.getSlippage().ToString();
 
-//			std::cerr << command << '\n';
+			std::cerr << command << '\n';
 
 			return command;
 		}//!func

@@ -41,6 +41,7 @@ namespace algo {
 		  types::String signal_value,
 //		  types::String position_side,
 		  trade_base::OrderQuantity order_quantity,
+		  trade_base::Slippage slippage,
 //		  types::String trade_type,
 //		  types::String order_type,
 		  Signals* signals)
@@ -51,7 +52,8 @@ namespace algo {
 		  , signal_value_(signal_base::StringToSignalValue(signal_value))
 		  , required_position_side_(StringToPositionSide("Neutral"s))
 		  , order_quantity_(std::move(order_quantity))
-		  , trade_type_(trade_base::StringToTradeType("Enter"s))
+		  , slippage_(std::move(slippage))
+  		  , trade_type_(trade_base::StringToTradeType("Enter"s))
 		  , order_type_(trade_base::StringToOrderType("Market"))
 		  , signal_(signals->getSafePtr(signal_label_))
 		  , indicator_labels_ ({signal_->getIndicatorsLabels().begin(), signal_->getIndicatorsLabels().end()})
@@ -69,7 +71,7 @@ namespace algo {
 	  const auto type_ = signal_->getSignalType();
 	  if (type_.TryAs<signal_base::signal_type::Comparison>()) {
 		  if (not signal_data->empty() && std::prev(signal_data->end())->second == signal_value_){
-			  return Trade (trading_contract_, order_quantity_, types::Value(0.005, 3));
+			  return Trade (trading_contract_, order_quantity_, slippage_);
 		  }
 		  else return std::nullopt;
 	  }

@@ -26,6 +26,7 @@ namespace algo {
   class Engine final {
   public:
 	  explicit Engine (TgBot::Bot* b);
+	  bool isStrategyActive(const types::String& label) const;
 	  void activateStrategy(const types::String& label);
 	  void deactivateStrategy(const types::String& label);
 	  void getStrategies() const;
@@ -48,7 +49,6 @@ namespace algo {
 	  threads::Engine<types::String> threads_engine;
 
 	  std::set<types::String> active_strategies;
-	  bool isStrategyActive(const types::String& label) const;
 	  void runStrategy (const types::String& label);
   public:
 	  types::String implementTransaction (Trade trade) const;

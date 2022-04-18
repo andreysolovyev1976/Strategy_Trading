@@ -8,6 +8,7 @@
 #include "trading_contract.h"
 
 #include <vector>
+#include <cstdint>
 
 #ifndef STRATEGY_TRADING_INIT_DATA_H
 #define STRATEGY_TRADING_INIT_DATA_H
@@ -37,7 +38,7 @@ namespace user_interface {
 			  "none",
 			  "add",
 			  "subtract",
-			  "mutliply",
+			  "multiply",
 			  "divide",
 	  };
 	  types::String modifier;
@@ -100,7 +101,6 @@ namespace user_interface {
 						  is_indicator_labels_initialized;
 	  }
   };
-
   struct InitRule : public InitData {
 	  algo::Ticker ticker;
 	  const std::vector<types::String> rule_types {"Entry", "Exit", "Risk", "Order", "Rebalance"};
@@ -110,7 +110,8 @@ namespace user_interface {
 	  types::String signal_value;
 	  const std::vector<types::String> position_sides {"Neutral", "Long", "Short"};
 	  types::String position_side;
-	  int order_quantity;
+	  types::String order_quantity;
+	  types::String slippage;
 	  const std::vector<types::String> trade_types {"Enter","Exit","StopLoss","TakeProfit","Chaining","Forced",};
 	  types::String trade_type;
 	  const std::vector<types::String> order_types {"Market", "Limited", "FillOrKill",};
@@ -125,10 +126,10 @@ namespace user_interface {
 			  is_signal_value_initialized,
 			  is_position_side_initialized,
 			  is_order_quantity_initialized,
+			  is_slippage_initialized,
 			  is_trade_type_initialized,
 			  is_order_type_initialized,
 			  is_quipuswap_trade_side_initialized;
-
 
 	  void clear() override
 	  {
@@ -138,13 +139,12 @@ namespace user_interface {
 		  signal_label =
 		  signal_value =
 		  position_side =
+		  order_quantity =
+		  slippage =
 		  trade_type =
 		  order_type =
 		  quipuswap_trade_side =
 				  ""s;
-
-		  order_quantity =
-				  0;
 
 		  is_label_initialized =
 		  is_ticker_initialized =
@@ -153,6 +153,7 @@ namespace user_interface {
 		  is_signal_value_initialized =
 		  is_position_side_initialized =
 		  is_order_quantity_initialized =
+		  is_slippage_initialized =
 		  is_trade_type_initialized =
 		  is_order_type_initialized =
 		  is_quipuswap_trade_side_initialized =
@@ -168,12 +169,12 @@ namespace user_interface {
 						  is_signal_value_initialized &&
 						  is_position_side_initialized &&
 						  is_order_quantity_initialized &&
+						  is_slippage_initialized &&
 						  is_trade_type_initialized &&
 						  is_order_type_initialized &&
 						  is_quipuswap_trade_side_initialized;
 	  }
   };
-
   struct InitStrategy : public InitData {
 	  std::vector<types::String> rules_labels;
 	  bool is_rule_labels_initialized;
@@ -187,7 +188,6 @@ namespace user_interface {
 		  return is_label_initialized && is_rule_labels_initialized;
 	  }
   };
-
   struct InitContract : public InitData {
 	  bool is_ticker_qs_initialized, is_ticker_cb_initialized;
 	  types::String ticker_qs;

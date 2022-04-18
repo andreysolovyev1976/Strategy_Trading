@@ -50,17 +50,19 @@ private:
 	types::String getSignals(const types::String& input);
 	types::String addStrategy(const types::String& input);
 	types::String removeStrategy(const types::String& input);
+	types::String getStrategies(const types::String& input);
+	types::String stopStrategy(const types::String& input);
+	types::String startStrategy(const types::String& input);
 	types::String addRule(const types::String& input);
 	types::String removeRule(const types::String& input);
 	types::String getRules(const types::String& input);
-	types::String stopStrategy(const types::String& input);
-	types::String startStrategy(const types::String& input);
+	types::String addContract(const types::String& input);
+	types::String removeContract(const types::String& input);
+	types::String getContracts(const types::String& input);
 	types::String startOperations(const types::String& input);
 	types::String stopOperations(const types::String& input);
 	types::String startUI(const types::String& input);
 	types::String stopUI(const types::String& input);
-	types::String addContract(const types::String& input);
-	types::String getContracts(const types::String& input);
 
 };
 

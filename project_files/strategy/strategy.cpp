@@ -44,12 +44,12 @@ namespace algo {
   int64_t Strategy::getUserID() const {return user_id_;}
 
   std::optional<std::vector<Trade>> Strategy::processRules (DataProcessorPtr data_processor_ptr) {
-	  if (not isInitialized())
+	  if (not isInitialized()) {
 		  throw RuntimeError(EXCEPTION_MSG("No Rules selected; "));
-
+	  }
 	  getMarketData(data_processor_ptr);
-
 	  std::vector<Trade> trades;
+	  trades.reserve(rule_labels_.size());
 
 	  for (const auto& r : rule_labels_) {
 		  if (auto found = rules_->getByLabel()->find(r); found != rules_->getByLabel()->end()) {
@@ -59,7 +59,6 @@ namespace algo {
 			  }
 		  }
 	  }
-	  //todo: plugin implementation, priority of trades is required - select tickers!!!
 	  return trades.empty() ? std::nullopt : std::optional<std::vector<Trade>>{trades};
   }
 

@@ -91,7 +91,6 @@ namespace user_interface {
 	  void initContractMenu();
 	  void initAddContract();
 	  void initRemoveContract();
-	  void initGetContracts();
 	  void initStartOperations();
 	  void initStopOperations();
 	  void initStartUI();

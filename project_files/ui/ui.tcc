@@ -768,14 +768,7 @@ namespace user_interface {
 	  });
   }
   template <typename C>
-  void UI<C>::initStopUI(){
-/*
-	  bot->getEvents().onCommand("exit", [this]([[maybe_unused]] Message::Ptr message) {
-		//todo: here the strategy must be stopped, not the bot
-		controller_ptr->processEvent(Event::stopOperations);
-		bot->getApi().sendMessage(message->chat->id, "it was a stop for a strategy");
-	  });
-*/
+  void UI<C>::initStopUI() {
   }
 
   template <typename C>
@@ -785,7 +778,6 @@ namespace user_interface {
 	  checkButton->callbackData = name;
 	  return checkButton;
   }
-
   template <typename C>
   template <typename ConstIter, typename Type>
   TgBot::InlineKeyboardMarkup::Ptr UI<C>::makeInlineKeyboard ([[maybe_unused]] Type type, ConstIter b, ConstIter e) const {
@@ -806,8 +798,6 @@ namespace user_interface {
 	  }
 	  return keyboard_select;
   }
-
-
   template <typename C>
   void UI<C>::hideInlineKeyboard (TgBot::CallbackQuery::Ptr query) {
   	if (query) {
@@ -834,7 +824,6 @@ namespace user_interface {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Query Ptr is not valid; "));
 	  }
   }
-
   template <typename C>
   void UI<C>::updateKeyboard (TgBot::CallbackQuery::Ptr query) {
 	  hideInlineKeyboard(query);
@@ -842,7 +831,6 @@ namespace user_interface {
 	  amendment += query->data;
 	  appendMessage(query->message, amendment);
   }
-
   template <typename C>
   template <typename Keyboard>
   void UI<C>::sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, types::String msg, Event event) {
@@ -865,8 +853,6 @@ namespace user_interface {
 					  message->replyToMessage->messageId == current_message_id.at(message->chat->username) &&
 					  user_activity.at(message->chat->username) == event;
   }
-
-
   template <typename C>
   bool UI<C>::checkMessageForResponse (TgBot::Message::Ptr message, types::String msg) {
 	  return

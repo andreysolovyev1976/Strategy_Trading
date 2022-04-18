@@ -51,9 +51,9 @@ namespace user_interface {
 	}
 
 	template<Event event>
-	types::String getMessageForRemoveFail() { }
+	types::String getMessageForRemoveFail() { return types::String(); }
 	template<Event event>
-	types::String getMessageForRemoveOk() { }
+	types::String getMessageForRemoveOk() { return types::String(); }
 
   }//!namespace
 

@@ -10,9 +10,6 @@ namespace user_interface {
 
   enum class Event : int {
 	  begin,
-
-	  initRobot,
-
 	  help,
 
 	  addIndicator,
@@ -66,7 +63,6 @@ namespace user_interface {
 	  stopOperations,
 	  startUI,
 	  stopUI,
-
 
 	  end,
   };

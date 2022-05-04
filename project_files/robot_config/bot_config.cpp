@@ -37,7 +37,7 @@ namespace algo {
 
 	void RobotConfig::loadFromIni(){
 		try {
-  			ini_parser::read_ini(config_file_name, conf);
+  			ini_parser::read_ini(config_file_name, configuration);
 		}
 		catch (const ptree_error &e) {
 			throw LogicError(EXCEPTION_MSG("Error while loading: "s + config_file_name + " - " + e.what() + " "));
@@ -52,10 +52,19 @@ namespace algo {
 		elem.put("ticker_qs", contract_info.ticker_qs);
 		elem.put("timeframe", contract_info.timeframe);
 
-		conf.put_child(contract_info.name, std::move(elem));
+		configuration.put_child(contract_info.name, std::move(elem));
 		contracts_data_from_ini->operator[](contract_info.name) = std::move(contract_info);
 
-		ini_parser::write_ini(config_file_name, conf);
+		ini_parser::write_ini(config_file_name, configuration);
+	}
+
+	void RobotConfig::updateIni(types::String&& new_key) {
+		tpk = std::move(new_key);
+		ptree elem;
+		elem.put("pk", tpk);
+		configuration.put_child("tezos", std::move(elem));
+
+		ini_parser::write_ini(config_file_name, configuration);
 	}
 
 	const ContractInfo& RobotConfig::getContractInfo(const types::String& contract_name) const {
@@ -69,7 +78,7 @@ namespace algo {
 
 	void RobotConfig::printIniFile (std::ostream& os) const {
 		os << "Settings loaded from .ini file:\n" << '\n';
-		for (const auto& item : conf) {
+		for (const auto& item : configuration) {
 			os << "[" << item.first << "]\n";
 			for (const auto& value : item.second) {
 				os << value.first << " = " << value.second.data() << '\n';
@@ -80,7 +89,7 @@ namespace algo {
 
 	void RobotConfig::printSettings (std::ostream& os) const {
 		os << "Settings stored:\n" << '\n';
-		os << "Tg Bot secret key: " << tpk << '\n' << '\n'; //todo check if it is needed
+		os << "Tezos key: " << tpk << '\n' << '\n';
 		os << "Contract data\n";
 		for (auto b = contracts_data_from_ini->begin(), e = contracts_data_from_ini->end(); b != e; ++b) {
 			os << b->second;
@@ -91,13 +100,14 @@ namespace algo {
 	const Contracts RobotConfig::getContracts() const {
 		return contracts_by_name;
 	}
-
-
+	const types::String& RobotConfig::getKey() const {
+		return tpk;
+	}
 	void RobotConfig::loadSettingsFromConfig() {
 		try {
-			tpk = conf.get<String>("connection.pk");
-			for (const auto& item : conf) {
-				if (item.first != "connection") {
+			tpk = configuration.get<String>("tezos.pk");
+			for (const auto& item : configuration) {
+				if (item.first != "tezos") {
 					loadContractData(item.first);
 				}
 			}

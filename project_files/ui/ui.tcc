@@ -85,6 +85,9 @@ namespace user_interface {
 		  {Event::addContract, &UI::initAddContract},
 		  {Event::removeContract, &UI::initRemoveContract},
 
+		  {Event::setup_TezosPrivateKey, &UI::initTezosPrivateKeyMenu},
+		  {Event::replaceTezosPrivateKey, &UI::initReplaceTezosPrivateKey},
+
 		  {Event::startOperations, &UI::initStartOperations},
 		  {Event::stopOperations, &UI::initStopOperations},
 		  {Event::startUI, &UI::initStartUI},
@@ -115,21 +118,22 @@ namespace user_interface {
 			std::vector<InlineKeyboardButton::Ptr> row;
 			for (int j = 0; j != 2; ++j) {
 				if (curr == main_menu.end()) break;
-				const auto&[trading_object, _] = *curr;
-				row.push_back(makeInlineCheckButton(trading_object));
+				const auto&[menu_item, _] = *curr;
+				row.push_back(makeInlineCheckButton(menu_item));
 				curr = std::next(curr);
+				if (menu_item == "Strategies") break;
 			}
 			keyboard_select->inlineKeyboard.push_back(std::move(row));
 			if (curr == main_menu.end()) break;
 		}
-		sendRequestForInput (message->chat, keyboard_select, "Select Trading Object", Event::setup_selectTradingObject);
+		sendRequestForInput (message->chat, keyboard_select, "Please select: ", Event::setup_selectMenuGroup);
 	  });
 
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_selectTradingObject)) {
+		if (isQueryEventHandler(query, Event::setup_selectMenuGroup)) {
 			updateKeyboard(query);
-			if (auto trading_object = main_menu.find(query->data); trading_object!=main_menu.end()) {
-				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{}, trading_object->second.begin(), trading_object->second.end() );
+			if (auto menu_item = main_menu.find(query->data); menu_item!=main_menu.end()) {
+				InlineKeyboardMarkup::Ptr keyboard_select = makeInlineKeyboard(Vec{}, menu_item->second.begin(), menu_item->second.end() );
 				types::String msg = "Select action for ";
 				msg += query->data;
 				sendRequestForInput (query->message->chat, keyboard_select, std::move(msg), main_menu_events.at(query->data));
@@ -141,9 +145,38 @@ namespace user_interface {
 	  });
   }
   template <typename C>
+  void UI<C>::initTezosPrivateKeyMenu() {
+	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
+		if (isQueryEventHandler(query, Event::setup_TezosPrivateKey)) {
+			hideInlineKeyboard(query);
+			if (query->data == "Replace") {
+				appendMessage(query->message, ": Replacing...");
+				ForceReply::Ptr keyboard_reply(new ForceReply);
+				sendRequestForInput (query->message->chat, keyboard_reply, "Enter new key"s, Event::replaceTezosPrivateKey);
+			}
+			else if (query->data == "View") {
+				appendMessage(query->message, ": viewing...");
+				bot->getApi().sendMessage(query->message->chat->id, robot_config.getKey()); //todo: implement through a controller
+			}
+			else {
+				bot->getApi().sendMessage(query->message->chat->id, "Unexpected selection");
+			}
+		}
+	  });
+  }
+  template <typename C>
+  void UI<C>::initReplaceTezosPrivateKey(){
+	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (isMessageEventHandler(message, Event::replaceTezosPrivateKey)) {
+			robot_config.updateIni(std::move(message->text)); //todo: implement through a controller
+			changeMessage(message, "Changed successfully"s);
+		}
+	  });
+  }
+  template <typename C>
   void UI<C>::initIndicatorMenu() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_Indicators)) {
+		if (isQueryEventHandler(query, Event::setup_Indicators)) {
 			hideInlineKeyboard(query);
 			auto* indicators = engine.getPtr<Indicators>();
 
@@ -181,7 +214,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initAddIndicator(){
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForResponse(message, "Label new Indicator")) {
+		if (isMessageResponseFor(message, "Label new Indicator")) {
 			auto* indicators = engine.getPtr<Indicators>();
 			if (indicators->objectExists(message->text)) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
@@ -197,7 +230,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addIndicator_Ticker)) {
+		if (isQueryEventHandler(query, Event::addIndicator_Ticker)) {
 			updateKeyboard(query);
 			const auto& contracts = robot_config.getContracts();
 			for (auto curr = contracts.operator->()->begin(),
@@ -214,7 +247,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query,  Event::addIndicator_TradeSide)) {
+		if (isQueryEventHandler(query, Event::addIndicator_TradeSide)) {
 			updateKeyboard(query);
 			if (query->data == "from Tez to Token") {
 				ctors.init_indicator.trade_side = "SellXTZBuyToken";
@@ -232,7 +265,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addIndicator_ModifierType)) {
+		if (isQueryEventHandler(query, Event::addIndicator_ModifierType)) {
 			updateKeyboard(query);
 			ctors.init_indicator.modifier = query->data;
 			if (ctors.init_indicator.modifier != "none") {
@@ -246,7 +279,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, Event::addIndicator_ModifierValue)) {
+		if (isMessageEventHandler(message, Event::addIndicator_ModifierValue)) {
 			ctors.init_indicator.modifier_value = types::Value(message->text);
 			ctors.init_indicator.is_modifier_initialized = true;
 			bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::addIndicator));
@@ -256,7 +289,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRemoveIndicator(){
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::removeIndicator)) {
+		if (isQueryEventHandler(query, Event::removeIndicator)) {
 			auto* indicators = engine.getPtr<Indicators>();
 			if (indicators->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -268,7 +301,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initSignalMenu() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_Signals)) {
+		if (isQueryEventHandler(query, Event::setup_Signals)) {
 			hideInlineKeyboard(query);
 			auto* signals = engine.getPtr<Signals>();
 			if (query->data == "Add") {
@@ -305,7 +338,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initAddSignal(){
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForResponse(message, "Label new Signal")) {
+		if (isMessageResponseFor(message, "Label new Signal")) {
 			auto* signals = engine.getPtr<Signals>();
 			if (signals->objectExists(message->text)) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
@@ -327,7 +360,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal_Indicators)) {
+		if (isQueryEventHandler(query, Event::addSignal_Indicators)) {
 			auto* indicators = engine.getPtr<Indicators>();
 			//todo: add there should be two only or extend the logic
 			if (query->data!="finished") {
@@ -344,7 +377,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal_SignalType)) {
+		if (isQueryEventHandler(query, Event::addSignal_SignalType)) {
 			updateKeyboard(query);
 			for (const auto& s_type : ctors.init_signal.signal_types) {
 				if (query->data==s_type) {
@@ -358,7 +391,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addSignal_Relation)) {
+		if (isQueryEventHandler(query, Event::addSignal_Relation)) {
 			updateKeyboard(query);
 			for (const auto& r : relations::relation_names) {
 				if (query->data==r) {
@@ -374,7 +407,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRemoveSignal(){
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::removeSignal)) {
+		if (isQueryEventHandler(query, Event::removeSignal)) {
 			auto* signals = engine.getPtr<Signals>();
 			if (signals->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -386,7 +419,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initStrategyMenu() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_Strategies)) {
+		if (isQueryEventHandler(query, Event::setup_Strategies)) {
 			hideInlineKeyboard(query);
 			auto* strategies = engine.getPtr<Strategies>();
 
@@ -442,7 +475,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initAddStrategy() {
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForResponse(message, "Label new Strategy")) {
+		if (isMessageResponseFor(message, "Label new Strategy")) {
 			auto* strategies = engine.getPtr<Strategies>();
 			if (strategies->objectExists(message->text)) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
@@ -464,7 +497,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addStrategy)) {
+		if (isQueryEventHandler(query, Event::addStrategy)) {
 			auto* rules = engine.getPtr<Rules>();
 			if (query->data!="finished") {
 				if (rules->objectExists(query->data)) {
@@ -483,7 +516,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRemoveStrategy() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::removeStrategy)) {
+		if (isQueryEventHandler(query, Event::removeStrategy)) {
 			auto* strategies = engine.getPtr<Strategies>();
 			if (strategies->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -495,7 +528,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initStopStrategy(){
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::stopStrategy)) {
+		if (isQueryEventHandler(query, Event::stopStrategy)) {
 			auto* strategies = engine.getPtr<Strategies>();
 			if (strategies->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -507,7 +540,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initStartStrategy(){
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::startStrategy)) {
+		if (isQueryEventHandler(query, Event::startStrategy)) {
 			auto* strategies = engine.getPtr<Strategies>();
 			if (strategies->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -519,7 +552,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRuleMenu() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_Rules)) {
+		if (isQueryEventHandler(query, Event::setup_Rules)) {
 			hideInlineKeyboard(query);
 			auto* rules = engine.getPtr<Rules>();
 			if (query->data == "Add") {
@@ -556,7 +589,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initAddRule(){
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForResponse(message, "Label new Rule")) {
+		if (isMessageResponseFor(message, "Label new Rule")) {
 			auto* rules = engine.getPtr<Rules>();
 			if (rules->objectExists(message->text)) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
@@ -582,7 +615,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_TradingTicker)) {
+		if (isQueryEventHandler(query, Event::addRule_TradingTicker)) {
 			updateKeyboard(query);
 			const auto& contracts = robot_config.getContracts();
 			for (auto curr = contracts.operator->()->begin(),
@@ -599,7 +632,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_TradeSide)) {
+		if (isQueryEventHandler(query, Event::addRule_TradeSide)) {
 			updateKeyboard(query);
 			if (query->data == "from Tez to Token") {
 				ctors.init_rule.quipuswap_trade_side = "SellXTZBuyToken";
@@ -619,7 +652,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_SignalLabel)) {
+		if (isQueryEventHandler(query, Event::addRule_SignalLabel)) {
 			updateKeyboard(query);
 			auto* signals = engine.getPtr<Signals>();
 			if (signals->objectExists(query->data)) {
@@ -632,7 +665,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::addRule_SignalValue)) {
+		if (isQueryEventHandler(query, Event::addRule_SignalValue)) {
 			updateKeyboard(query);
 			ctors.init_rule.signal_value = query->data;
 			ctors.init_rule.is_signal_value_initialized = true;
@@ -642,7 +675,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message,  Event::addRule_OrderQuantity)) {
+		if (isMessageEventHandler(message, Event::addRule_OrderQuantity)) {
 			ctors.init_rule.order_quantity = message->text;
 			ctors.init_rule.is_order_quantity_initialized = true;
 			ForceReply::Ptr keyboard_reply(new ForceReply);
@@ -650,7 +683,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, Event::addRule_Slippage)) {
+		if (isMessageEventHandler(message, Event::addRule_Slippage)) {
 
 			ctors.init_rule.slippage = message->text;
 			ctors.init_rule.is_slippage_initialized = true;
@@ -674,7 +707,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRemoveRule(){
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::removeRule)) {
+		if (isQueryEventHandler(query, Event::removeRule)) {
 			auto* rules = engine.getPtr<Rules>();
 			if (rules->objectExists(query->data)) {
 				updateKeyboard(query);
@@ -686,7 +719,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initContractMenu() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::setup_Contracts)) {
+		if (isQueryEventHandler(query, Event::setup_Contracts)) {
 			hideInlineKeyboard(query);
 			if (query->data == "Add") {
 				appendMessage(query->message, ": Adding...");
@@ -712,7 +745,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initAddContract(){
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForResponse(message, "Label new Contract")) {
+		if (isMessageResponseFor(message, "Label new Contract")) {
 			auto contracts = robot_config.getContracts();
 			if (auto found = contracts->find(message->text); found!=contracts->end()) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
@@ -726,7 +759,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message,  Event::addContract_TickerQS)) {
+		if (isMessageEventHandler(message, Event::addContract_TickerQS)) {
 			ctors.init_contract.ticker_qs = message->text;
 			ctors.init_contract.is_ticker_qs_initialized = true;
 
@@ -735,7 +768,7 @@ namespace user_interface {
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
-		if (checkMessageForEvent(message, Event::addContract_TickerCB)) {
+		if (isMessageEventHandler(message, Event::addContract_TickerCB)) {
 			ctors.init_contract.ticker_cb = message->text;
 			ctors.init_contract.is_ticker_cb_initialized = true;
 			bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::addContract));
@@ -745,7 +778,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initRemoveContract() {
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
-		if (checkQueryForEvent(query, Event::removeContract)) {
+		if (isQueryEventHandler(query, Event::removeContract)) {
 		}
 	  });
   }
@@ -821,7 +854,20 @@ namespace user_interface {
 				  message->messageId);
 	  }
 	  else {
-		  throw InvalidArgumentError(EXCEPTION_MSG("Query Ptr is not valid; "));
+		  throw InvalidArgumentError(EXCEPTION_MSG("Message Ptr is not valid; "));
+	  }
+  }
+  template <typename C>
+  void UI<C>::changeMessage (TgBot::Message::Ptr message, types::String msg) const {
+	  if (message) {
+		  types::String new_text = std::move(msg);
+		  bot->getApi().editMessageText (
+				  new_text,
+				  message->chat->id,
+				  message->messageId);
+	  }
+	  else {
+		  throw InvalidArgumentError(EXCEPTION_MSG("Message Ptr is not valid; "));
 	  }
   }
   template <typename C>
@@ -841,20 +887,20 @@ namespace user_interface {
 	  }
   }
   template <typename C>
-  bool UI<C>::checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event) const {
+  bool UI<C>::isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const {
 	  return
 			  query->message->messageId == current_message_id.at(query->message->chat->username) &&
 					  user_activity.at(query->message->chat->username) == event;
   }
   template <typename C>
-  bool UI<C>::checkMessageForEvent (TgBot::Message::Ptr message, Event event) const {
+  bool UI<C>::isMessageEventHandler (TgBot::Message::Ptr message, Event event) const {
 	  return
 			  message->replyToMessage &&
 					  message->replyToMessage->messageId == current_message_id.at(message->chat->username) &&
 					  user_activity.at(message->chat->username) == event;
   }
   template <typename C>
-  bool UI<C>::checkMessageForResponse (TgBot::Message::Ptr message, types::String msg) {
+  bool UI<C>::isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) {
 	  return
 			  message->replyToMessage &&
 					  StringTools::startsWith(message->replyToMessage->text, msg);

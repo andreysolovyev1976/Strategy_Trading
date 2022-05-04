@@ -56,15 +56,17 @@ namespace algo {
 
 		void loadFromIni();
 		void updateIni(ContractInfo&& contract_info);
+		void updateIni(types::String&& new_key);
 		const ContractInfo& getContractInfo(const types::String& contract_name) const;
 
 		void printIniFile (std::ostream& os) const;
 		void printSettings (std::ostream& os) const;
 
 		const Contracts getContracts() const;
+		const types::String& getKey() const;
 
 	private:
-		boost::property_tree::ptree conf;
+		boost::property_tree::ptree configuration;
 		safe_ptr<std::map<types::String, ContractInfo>> contracts_data_from_ini;
 		Contracts contracts_by_name;
 
@@ -88,7 +90,7 @@ namespace algo {
 		full_field_name.reserve(contract_name.size() + field_name.size() + 1);
 		full_field_name = types::concatenateStrings('.', contract_name, field_name);
 
-		if (auto o = conf.get_optional<T>(full_field_name); o) {
+		if (auto o = configuration.get_optional<T>(full_field_name); o) {
 			value = std::move(o.value());
 		}
 	}//!func

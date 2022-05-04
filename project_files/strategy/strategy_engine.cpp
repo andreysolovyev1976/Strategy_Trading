@@ -19,19 +19,21 @@ namespace algo {
 		  , data_processor_ptr(std::make_shared<DataProcessor>())
   {}
 
-  void Engine::activateStrategy(const types::String& label) {
+  void Engine::activateStrategy(const ActiveStrategy& strategy) {
+  	const auto& [label, _] = strategy;
 	  if (strategies.objectExists(label)) {
-		  active_strategies.insert(label);
-		  threads::Thread _ (&Engine::runStrategy, this, label);
-		  threads_engine.addThread(label, std::move(_));
+		  active_strategies.insert(strategy);
+		  threads::Thread _ (&Engine::runStrategy, this, strategy);
+		  threads_engine.addThread(label, std::move(_)); //todo: should also be switched to pair <Label, Key>
 	  }
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));
 	  }
   }
-  void Engine::deactivateStrategy(const types::String& label) {
+  void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
+	  const auto& [label, _] = strategy;
 	  if (strategies.objectExists(label)) {
-		  active_strategies.erase(label);
+		  active_strategies.erase(strategy);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
 	  }
 	  else {
@@ -41,30 +43,31 @@ namespace algo {
 
   void Engine::getStrategies() const {}
 
-  types::String Engine::implementTransaction (Trade trade) const {
+  types::String Engine::implementTransaction (Trade trade, const TezosPrivateKey& key) const {
 	  types::String result;
 	  os::invokeCommandAndCaptureResult(
-			  makeCommand(std::move(trade)).c_str(),
+			  makeCommand(std::move(trade), key).c_str(),
 			  result);
 	  return result;
   }
 
-  bool Engine::isStrategyActive(const types::String& label) const {
-	  return active_strategies.find(label) != active_strategies.end();
+  bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
+	  return active_strategies.find(strategy) != active_strategies.end();
   }
 
-  void Engine::runStrategy (const types::String& label) {
+  void Engine::runStrategy (const ActiveStrategy& strategy) {
+	  const auto& [label, key] = strategy;
 	  if (strategies.objectExists(label)) {
-		  auto strategy = strategies.getSafePtr(label);
+		  auto ptr_strategy = strategies.getSafePtr(label);
 		  types::String result;
-		  while (isStrategyActive(label)) {
-			  auto generated_trades = strategy->processRules(data_processor_ptr);
+		  while (isStrategyActive(strategy)) {
+			  auto generated_trades = ptr_strategy->processRules(data_processor_ptr);
 			  result.clear();
 			  if (generated_trades.has_value()) {
 				  for (auto& trade : generated_trades.value()) {
-					  result = implementTransaction(std::move(trade));
+					  result = implementTransaction(std::move(trade), key);
 					  if (not result.empty()){
-						  bot->getApi().sendMessage(strategy->getUserID(), result);
+						  bot->getApi().sendMessage(ptr_strategy->getUserID(), result);
 						  std::cerr << "Strategy Label - " << label << "\n " << result << '\n';
 					  }
 				  }

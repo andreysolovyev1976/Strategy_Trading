@@ -51,13 +51,16 @@ namespace user_interface {
 	  removeContract,
 	  getContracts,
 
+	  replaceTezosPrivateKey,
+
 	  setup,
-	  setup_selectTradingObject,
+	  setup_selectMenuGroup,
 	  setup_Indicators,
 	  setup_Signals,
 	  setup_Rules,
 	  setup_Strategies,
 	  setup_Contracts,
+	  setup_TezosPrivateKey,
 
 	  startOperations,
 	  stopOperations,

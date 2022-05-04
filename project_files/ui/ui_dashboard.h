@@ -26,7 +26,7 @@ namespace user_interface {
 		  {"Rules", standard_menu_items},
 		  {"Strategies", {"Add", "List", "Remove", "Start", "Stop"}},
 		  {"Contracts", standard_menu_items},
-
+		  {"Tezos Key", {"Replace", "View"}},
   };
   static const MainMenuEvents main_menu_events {
 		  {"Indicators", Event::setup_Indicators},
@@ -34,6 +34,7 @@ namespace user_interface {
 		  {"Rules", Event::setup_Rules},
 		  {"Strategies", Event::setup_Strategies},
 		  {"Contracts", Event::setup_Contracts},
+		  {"Tezos Key", Event::setup_TezosPrivateKey},
   };
 
 

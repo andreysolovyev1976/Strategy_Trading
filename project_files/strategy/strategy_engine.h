@@ -24,11 +24,16 @@
 namespace algo {
 
   class Engine final {
+  	using StrategyLabel = types::String;
+  	using TezosPrivateKey = types::String;
+  	using ActiveStrategy = std::pair<StrategyLabel, TezosPrivateKey>;
+  	using ActiveStrategies = std::set<ActiveStrategy>;
+
   public:
 	  explicit Engine (TgBot::Bot* b);
-	  bool isStrategyActive(const types::String& label) const;
-	  void activateStrategy(const types::String& label);
-	  void deactivateStrategy(const types::String& label);
+	  bool isStrategyActive(const ActiveStrategy& strategy) const;
+	  void activateStrategy(const ActiveStrategy& strategy);
+	  void deactivateStrategy(const ActiveStrategy& strategy);
 	  void getStrategies() const;
 
 	  template <typename Object>
@@ -48,10 +53,10 @@ namespace algo {
 
 	  threads::Engine<types::String> threads_engine;
 
-	  std::set<types::String> active_strategies;
-	  void runStrategy (const types::String& label);
+	  ActiveStrategies active_strategies;
+	  void runStrategy (const ActiveStrategy& strategy);
   public:
-	  types::String implementTransaction (Trade trade) const;
+	  types::String implementTransaction (Trade trade, const TezosPrivateKey& key) const;
   };
 
   template <typename Object>

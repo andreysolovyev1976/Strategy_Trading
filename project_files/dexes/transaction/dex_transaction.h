@@ -15,7 +15,7 @@ namespace algo {
 	namespace quipuswap {
 	  namespace transaction {
 
-		types::String makeCommand (const Trade& trade);
+		types::String makeCommand (const Trade& trade, const types::String& key);
 
 	  }
 	}

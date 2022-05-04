@@ -52,12 +52,13 @@ namespace user_interface {
 	  TgBot::InlineKeyboardMarkup::Ptr makeInlineKeyboard (Type type, ConstIter b, ConstIter e) const;
 	  void hideInlineKeyboard (TgBot::CallbackQuery::Ptr query);
 	  void appendMessage (TgBot::Message::Ptr message, types::String msg) const;
+	  void changeMessage (TgBot::Message::Ptr message, types::String msg) const;
 	  void updateKeyboard (TgBot::CallbackQuery::Ptr query);
 
-	  bool checkQueryForEvent (TgBot::CallbackQuery::Ptr query, Event event) const;
-	  bool checkMessageForEvent (TgBot::Message::Ptr message, Event event) const;
+	  bool isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const;
+	  bool isMessageEventHandler (TgBot::Message::Ptr message, Event event) const;
 
-	  bool checkMessageForResponse (TgBot::Message::Ptr message, types::String msg);
+	  bool isMessageResponseFor (TgBot::Message::Ptr message, types::String msg);
 
 	  template <typename Keyboard>
 	  void sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, types::String msg, Event event = Event::begin);
@@ -74,6 +75,8 @@ namespace user_interface {
 	  void initCommand (Event event);
 	  void initHelp();
 	  void initMainMenu();
+	  void initTezosPrivateKeyMenu();
+	  void initReplaceTezosPrivateKey();
 	  void initIndicatorMenu();
 	  void initAddIndicator();
 	  void initRemoveIndicator();

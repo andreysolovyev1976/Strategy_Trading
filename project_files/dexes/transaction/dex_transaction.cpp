@@ -13,7 +13,7 @@ namespace algo {
 	namespace quipuswap {
 	  namespace transaction {
 
-		types::String makeCommand (const Trade& trade) {
+		types::String makeCommand (const Trade& trade, const types::String& key) {
 			const auto& t_contract = trade.getTradingContract();
 			if (auto dex = t_contract.dex.TryAs<trading_contract_base::dex_source::Quipuswap>(); not dex) {
 				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with Coinbase contract at Quipuswap; "));
@@ -36,7 +36,7 @@ namespace algo {
 			}
 
 			command += " --pk=";
-			command += const_values::TPK;
+			command += key;
 			command += " --someAsset=";
 			command += t_contract.ticker;
 			command += " --inputValue=";

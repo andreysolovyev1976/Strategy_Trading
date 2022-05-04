@@ -53,6 +53,7 @@ namespace user_interface {
 	  void hideInlineKeyboard (TgBot::CallbackQuery::Ptr query);
 	  void appendMessage (TgBot::Message::Ptr message, types::String msg) const;
 	  void changeMessage (TgBot::Message::Ptr message, types::String msg) const;
+	  void deleteMessage (TgBot::Message::Ptr message) const;
 	  void updateKeyboard (TgBot::CallbackQuery::Ptr query);
 
 	  bool isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const;

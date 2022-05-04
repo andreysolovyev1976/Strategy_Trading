@@ -48,6 +48,8 @@ const std::unordered_map<
 		String (Controller::*)(const types::String&)
 > Controller::EVENT_HANDLER = {
 		{Event::help, &Controller::help},
+		{Event::replaceTezosPrivateKey, &Controller::replaceTezosPrivateKey},
+		{Event::getTezosPrivateKey, &Controller::getTezosPrivateKey},
 		{Event::addIndicator, &Controller::addIndicator},
 		{Event::removeIndicator, &Controller::removeIndicator},
 		{Event::getIndicators, &Controller::getIndicators},
@@ -86,6 +88,18 @@ String Controller::help([[maybe_unused]] const types::String& input){
 5) Each strategy should be started separately. Each strategy can be either stopped or started.
 )";
 	return result;
+}
+String Controller::replaceTezosPrivateKey(const types::String& input){
+	if (not input.empty()) {
+		robot_config.updateIni(input);
+		return "Updated successfully"s;
+	}
+	else {
+		throw InvalidArgumentError(EXCEPTION_MSG("Can't proceed an empty key; "));
+	}
+}
+String Controller::getTezosPrivateKey([[maybe_unused]]const types::String& input){
+	return robot_config.getKey();
 }
 String Controller::addIndicator([[maybe_unused]] const types::String& input){
 	if (not ctors.init_indicator.isInitialized()) return "Indicator is not initialized"s;

@@ -126,7 +126,7 @@ namespace user_interface {
 			keyboard_select->inlineKeyboard.push_back(std::move(row));
 			if (curr == main_menu.end()) break;
 		}
-		sendRequestForInput (message->chat, keyboard_select, "Please select: ", Event::setup_selectMenuGroup);
+		sendRequestForInput (message->chat, keyboard_select, "Please select", Event::setup_selectMenuGroup);
 	  });
 
 	  bot->getEvents().onCallbackQuery([this](CallbackQuery::Ptr query) {
@@ -155,8 +155,15 @@ namespace user_interface {
 				sendRequestForInput (query->message->chat, keyboard_reply, "Enter new key"s, Event::replaceTezosPrivateKey);
 			}
 			else if (query->data == "View") {
-				appendMessage(query->message, ": viewing...");
-				bot->getApi().sendMessage(query->message->chat->id, robot_config.getKey()); //todo: implement through a controller
+				appendMessage(query->message, ": Displaying for 20 seconds...");
+
+				auto msg = bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getTezosPrivateKey));
+				auto remove_view = [this, msg](){
+				  std::this_thread::sleep_for(20s);
+				  changeMessage(msg, "View was hidden");
+				};
+				std::thread th(remove_view);
+				th.detach();
 			}
 			else {
 				bot->getApi().sendMessage(query->message->chat->id, "Unexpected selection");
@@ -168,8 +175,8 @@ namespace user_interface {
   void UI<C>::initReplaceTezosPrivateKey(){
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
 		if (isMessageEventHandler(message, Event::replaceTezosPrivateKey)) {
-			robot_config.updateIni(std::move(message->text)); //todo: implement through a controller
-			changeMessage(message, "Changed successfully"s);
+			auto response = c_ptr->processEvent(Event::replaceTezosPrivateKey, message->text);
+			deleteMessage(message);
 		}
 	  });
   }
@@ -833,14 +840,14 @@ namespace user_interface {
   }
   template <typename C>
   void UI<C>::hideInlineKeyboard (TgBot::CallbackQuery::Ptr query) {
-  	if (query) {
-  		bot->getApi().editMessageReplyMarkup(
-				query->message->chat->id,
-				query->message->messageId);
-	}
-  	else {
-  		throw InvalidArgumentError(EXCEPTION_MSG("Query Ptr is not valid; "));
-  	}
+	  if (query) {
+		  bot->getApi().editMessageReplyMarkup(
+				  query->message->chat->id,
+				  query->message->messageId);
+	  }
+	  else {
+		  throw InvalidArgumentError(EXCEPTION_MSG("Query Ptr is not valid; "));
+	  }
   }
   template <typename C>
   void UI<C>::appendMessage (TgBot::Message::Ptr message, types::String msg) const {
@@ -863,6 +870,17 @@ namespace user_interface {
 		  types::String new_text = std::move(msg);
 		  bot->getApi().editMessageText (
 				  new_text,
+				  message->chat->id,
+				  message->messageId);
+	  }
+	  else {
+		  throw InvalidArgumentError(EXCEPTION_MSG("Message Ptr is not valid; "));
+	  }
+  }
+  template <typename C>
+  void UI<C>::deleteMessage (TgBot::Message::Ptr message) const {
+	  if (message) {
+		  bot->getApi().deleteMessage (
 				  message->chat->id,
 				  message->messageId);
 	  }

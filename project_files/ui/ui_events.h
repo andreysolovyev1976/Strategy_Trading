@@ -52,6 +52,7 @@ namespace user_interface {
 	  getContracts,
 
 	  replaceTezosPrivateKey,
+	  getTezosPrivateKey,
 
 	  setup,
 	  setup_selectMenuGroup,

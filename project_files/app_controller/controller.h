@@ -42,6 +42,8 @@ private:
 	> EVENT_HANDLER;
 
 	types::String help(const types::String& input);
+	types::String replaceTezosPrivateKey(const types::String& input);
+	types::String getTezosPrivateKey(const types::String& input);
 	types::String addIndicator(const types::String& input);
 	types::String removeIndicator(const types::String& input);
 	types::String getIndicators(const types::String& input);

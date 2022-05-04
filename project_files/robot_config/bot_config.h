@@ -71,7 +71,6 @@ namespace algo {
 		boost::property_tree::ptree configuration;
 		safe_ptr<std::map<types::String, ContractInfo>> contracts_data_from_ini;
 		Contracts contracts_by_name;
-
 		types::String tpk;
 		const types::String config_file_name;
 

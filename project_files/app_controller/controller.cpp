@@ -334,29 +334,8 @@ String Controller::removeContract([[maybe_unused]] const types::String& input) {
 String Controller::getContracts([[maybe_unused]] const types::String& input){
 	std::stringstream ss;
 	robot_config.loadFromIni();
-	robot_config.printIniFile(ss);
+	robot_config.printContracts(ss);
 	return ss.str();
-/*
-	  config::ContractInfo ci;
-	  ci.name = "name5";
-	  ci.ticker_cb = "CB 5";
-	  ci.ticker_qs = "QS 5";
-	  ci.price_diff = 42;
-	  ci.timeframe = 42;
-	  ci.trade_size = 42;
-	  ci.slippage = 4;
-
-	  config.updateIni(std::move(ci));
-	  config.loadFromIni();
-	  config.printIniFile(std::cerr);
-	  config.printSettings(std::cerr);
-
-	  auto c5 = config.getContractInfo("name5");
-	  std::cerr << c5 << '\n';
-
-	  auto fuck = config.getContractInfo("fuck");
-	  std::cerr << fuck << '\n';
-	  */
 }
 String Controller::startOperations([[maybe_unused]] const types::String& input){
 	return "WIP - Starting the Operations";

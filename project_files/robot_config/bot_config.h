@@ -56,11 +56,13 @@ namespace algo {
 
 		void loadFromIni();
 		void updateIni(ContractInfo&& contract_info);
-		void updateIni(types::String&& new_key);
+		void updateIni(const types::String& new_key);
 		const ContractInfo& getContractInfo(const types::String& contract_name) const;
 
 		void printIniFile (std::ostream& os) const;
 		void printSettings (std::ostream& os) const;
+		void printKey (std::ostream& os) const;
+		void printContracts (std::ostream& os) const;
 
 		const Contracts getContracts() const;
 		const types::String& getKey() const;

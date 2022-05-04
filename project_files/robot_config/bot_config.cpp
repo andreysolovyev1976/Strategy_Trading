@@ -22,8 +22,7 @@ namespace algo {
 		os
 				<< '[' << ci.name << ']' << '\n'
 				<< "ticker CB: " << ci.ticker_cb << '\n'
-				<< "ticker QS: " << ci.ticker_qs << '\n'
-				<< "timeframe: " << ci.timeframe << '\n';
+				<< "ticker QS: " << ci.ticker_qs << '\n';
 
 		return os;
 	}
@@ -58,7 +57,7 @@ namespace algo {
 		ini_parser::write_ini(config_file_name, configuration);
 	}
 
-	void RobotConfig::updateIni(types::String&& new_key) {
+	void RobotConfig::updateIni(const types::String& new_key) {
 		tpk = std::move(new_key);
 		ptree elem;
 		elem.put("pk", tpk);
@@ -88,14 +87,21 @@ namespace algo {
 	} //!func
 
 	void RobotConfig::printSettings (std::ostream& os) const {
+		printKey(os);
+		printContracts(os);
+	}//!func
+	void RobotConfig::printKey (std::ostream& os) const {
 		os << "Settings stored:\n" << '\n';
 		os << "Tezos key: " << tpk << '\n' << '\n';
+	}//!func
+
+	void RobotConfig::printContracts (std::ostream& os) const {
 		os << "Contract data\n";
 		for (auto b = contracts_data_from_ini->begin(), e = contracts_data_from_ini->end(); b != e; ++b) {
-			os << b->second;
+			os << b->second << '\n';
 		}
-
 	}//!func
+
 
 	const Contracts RobotConfig::getContracts() const {
 		return contracts_by_name;

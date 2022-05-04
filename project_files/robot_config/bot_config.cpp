@@ -80,7 +80,7 @@ namespace algo {
 
 	void RobotConfig::printSettings (std::ostream& os) const {
 		os << "Settings stored:\n" << '\n';
-		os << "Tg Bot secret key: " << tg_bot_secret_key << '\n' << '\n';
+		os << "Tg Bot secret key: " << tpk << '\n' << '\n'; //todo check if it is needed
 		os << "Contract data\n";
 		for (auto b = contracts_data_from_ini->begin(), e = contracts_data_from_ini->end(); b != e; ++b) {
 			os << b->second;
@@ -95,7 +95,7 @@ namespace algo {
 
 	void RobotConfig::loadSettingsFromConfig() {
 		try {
-			tg_bot_secret_key = conf.get<String>("connection.tg_bot_id");
+			tpk = conf.get<String>("connection.pk");
 			for (const auto& item : conf) {
 				if (item.first != "connection") {
 					loadContractData(item.first);

@@ -46,7 +46,6 @@ namespace const_values {
   //tzkt API
   static const types::String TZKT_BASE_ADDRESS = "https://api.tzkt.io/v1/";
 
-
 }//!namespace
 
 #endif //TEZOSBOT_CONST_VALUES_H

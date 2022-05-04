@@ -68,7 +68,7 @@ namespace algo {
 		safe_ptr<std::map<types::String, ContractInfo>> contracts_data_from_ini;
 		Contracts contracts_by_name;
 
-		types::String tg_bot_secret_key;
+		types::String tpk;
 		const types::String config_file_name;
 
 		RobotConfig(const types::String& _);
@@ -99,20 +99,3 @@ namespace algo {
 
 #endif //STRATEGY_TRADING_BOT_CONFIG_H
 
-
-/*
- back up copy of a sample ini file
-[connection]
-# Parameters for connecting to IB Gateway
-tg_bot_id = localhost
-
-[name1]
-ticker_cb = "ETC"
-ticker_qs = "BTC"
-price_diff = 12
-timeframe = 60
-trade_size = 100
-slippage = 3
-
-
- */

@@ -3,6 +3,7 @@ import {UnitValue} from "@taquito/taquito";
 
 
 interface ICopyFilesArguments {
+    pk: string;
     someAsset: string;
     inputValue: number;
     slippageTolerance: number;
@@ -11,6 +12,7 @@ interface ICopyFilesArguments {
 
 export const args = parse<ICopyFilesArguments>(
     {
+        pk: String,
         someAsset: String,
         inputValue: Number,
         slippageTolerance: Number,

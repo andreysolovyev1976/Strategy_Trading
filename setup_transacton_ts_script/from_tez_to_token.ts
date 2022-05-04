@@ -12,9 +12,14 @@ const tezos = new TezosToolkit("https://hangzhounet.smartpy.io");
 // tezos.setSignerProvider(new ReadOnlySigner(publicKeyHash, publicKey));
 
 //it is a dummy empty account, don't bother
-const privateKey = "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz";
+// const privateKey = "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz";
+const privateKey =  {
+    contract: args.pk,
+    id: 0,
+};
+
 tezos.setProvider({
-    signer: new InMemorySigner(privateKey),
+    signer: new InMemorySigner(privateKey.contract),
 });
 
 const factories = {
@@ -28,19 +33,19 @@ const factories = {
         const fromAsset = "tez";
         const toAsset =  {
                 contract: args.someAsset,
-                id: 0,
+                id: 1,
             };
 
         // const inputValue = 1_000_000; // in mutez (without decimals)
         const inputValue = {
             contract:  args.inputValue,
-            id: 1,
+            id: 2,
         };
 
         // const slippageTolerance = 0.005; // 0.5%
         const slippageTolerance = {
             contract: args.slippageTolerance,
-            id: 2,
+            id: 3,
         };
 
         const swapParams = await swap(

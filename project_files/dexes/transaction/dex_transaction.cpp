@@ -3,6 +3,10 @@
 //
 
 #include "dex_transaction.h"
+#include "user_defined_exceptions.h"
+#include "os_pipe.h"
+#include "const_values.h"
+#include "tezos_data_structures.h"
 
 namespace algo {
   namespace tezos {
@@ -21,21 +25,20 @@ namespace algo {
 						t_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>();
 					p1) {
 				command += "from_tez_to_token.ts";
-				command += " --someAsset=";
-				command += t_contract.ticker;
 			}
 			else if (auto p2 =
 						t_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::BuyXTZSellToken>();
 					p2) {
-
 				command += "from_token_to_tez.ts";
-				command += " --someAsset=";
-				command += t_contract.ticker;
 			}
 			else {
 				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with undefined trade side - either from Tez or to Tez; "));
 			}
 
+			command += " --pk=";
+			command += const_values::TPK;
+			command += " --someAsset=";
+			command += t_contract.ticker;
 			command += " --inputValue=";
 			command += trade.getQuantity().ToString();
 			command += " --slippageTolerance=";

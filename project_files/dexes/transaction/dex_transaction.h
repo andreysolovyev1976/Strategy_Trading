@@ -5,8 +5,6 @@
 #pragma once
 
 #include "user_defined_strings.h"
-#include "user_defined_exceptions.h"
-#include "os_pipe.h"
 #include "trade.h"
 
 #ifndef STRATEGY_TRADING_DEX_TRANSACTION_H

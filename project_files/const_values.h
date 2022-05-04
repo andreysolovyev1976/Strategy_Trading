@@ -34,7 +34,7 @@ namespace const_values {
 
   //TG Bot
   static const size_t CHAT_ID = 442233888;
-  static const types::String TG_BOT_TOKEN = "5062134652:AAG_9ecP_tQxSClfwYjPTsm5SYCqf_Y0_s8";
+  static const types::String TG_BOT_TOKEN = "5062134652:AAGeSBm5sfECos5kFYDFUTWAid7q5mZgGs0";
 
   //TS_node file
   static const types::String TS_NODE_COMMAND ("ts-node ../setup_transacton_ts_script/");

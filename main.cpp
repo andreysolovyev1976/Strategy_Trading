@@ -1,17 +1,9 @@
 #include "controller.h"
 
 int main() {
-
-#if 1
-	//#define BOT_OVER_CERR
-#define CERR_OVER_BOT
 	Controller app;
 	app.init();
 	app.run();
-
-#endif
-
-
 
 	return 0;
 }

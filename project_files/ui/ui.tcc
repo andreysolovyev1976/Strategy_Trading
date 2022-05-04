@@ -8,6 +8,9 @@
 #include <vector>
 #include <sstream>
 
+//#define BOT_OVER_CERR
+#define CERR_OVER_BOT
+
 namespace user_interface {
 
   using namespace TgBot;
@@ -35,6 +38,7 @@ namespace user_interface {
 	  if (not is_ui_initialized) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
+#if 0
 	  try {
 		  bot->getApi().deleteWebhook();
 
@@ -51,8 +55,19 @@ namespace user_interface {
 #endif
 #ifdef BOT_OVER_CERR
 		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
-#endif
 	  }
+#endif
+#endif
+
+#if 1
+	  bot->getApi().deleteWebhook();
+
+	  TgLongPoll longPoll(*bot);
+	  while (true) {
+		  longPoll.start();
+	  }
+#endif
+
   }//!func
 
   template <typename C>
@@ -121,7 +136,6 @@ namespace user_interface {
 				const auto&[menu_item, _] = *curr;
 				row.push_back(makeInlineCheckButton(menu_item));
 				curr = std::next(curr);
-				if (menu_item == "Strategies") break;
 			}
 			keyboard_select->inlineKeyboard.push_back(std::move(row));
 			if (curr == main_menu.end()) break;
@@ -156,7 +170,6 @@ namespace user_interface {
 			}
 			else if (query->data == "View") {
 				appendMessage(query->message, ": Displaying for 20 seconds...");
-
 				auto msg = bot->getApi().sendMessage(query->message->chat->id, c_ptr->processEvent(Event::getTezosPrivateKey));
 				auto remove_view = [this, msg](){
 				  std::this_thread::sleep_for(20s);

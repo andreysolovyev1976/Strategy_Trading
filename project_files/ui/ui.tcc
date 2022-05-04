@@ -38,7 +38,7 @@ namespace user_interface {
 	  if (not is_ui_initialized) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
-#if 0
+
 	  try {
 		  bot->getApi().deleteWebhook();
 
@@ -55,19 +55,8 @@ namespace user_interface {
 #endif
 #ifdef BOT_OVER_CERR
 		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
+#endif
 	  }
-#endif
-#endif
-
-#if 1
-	  bot->getApi().deleteWebhook();
-
-	  TgLongPoll longPoll(*bot);
-	  while (true) {
-		  longPoll.start();
-	  }
-#endif
-
   }//!func
 
   template <typename C>
@@ -190,6 +179,7 @@ namespace user_interface {
 		if (isMessageEventHandler(message, Event::replaceTezosPrivateKey)) {
 			auto response = c_ptr->processEvent(Event::replaceTezosPrivateKey, message->text);
 			deleteMessage(message);
+			bot->getApi().sendMessage(message->chat->id, response);
 		}
 	  });
   }

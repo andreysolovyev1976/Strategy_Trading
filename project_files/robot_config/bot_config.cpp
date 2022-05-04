@@ -58,7 +58,7 @@ namespace algo {
 	}
 
 	void RobotConfig::updateIni(const types::String& new_key) {
-		tpk = std::move(new_key);
+		tpk = new_key;
 		ptree elem;
 		elem.put("pk", tpk);
 		configuration.put_child("tezos", std::move(elem));

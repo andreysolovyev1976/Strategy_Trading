@@ -108,7 +108,6 @@ namespace user_interface {
   void UI<C>::initHelp(){
 	  bot->getEvents().onCommand("help", [this](Message::Ptr message) {
 		chat_id = message->chat->id;
-		bot->getApi().sendMessage(message->chat->id, std::to_string(message->chat->id));
 		if (not isChatOk(message)) {
 			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use this bot. Please leave.");
 			return;
@@ -813,7 +812,7 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initStartUI(){
 	  bot->getEvents().onCommand("start", [this](Message::Ptr message) {
-		if (message->chat->id != const_values::CHAT_ID || message->chat->id != const_values::CHAT_ID) {
+		if (message->chat->id != const_values::DEVELOPER_CHAT_ID || message->chat->id != const_values::DEVELOPER_CHAT_ID) {
 			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use it");
 		}
 		c_ptr->processEvent(Event::startOperations);
@@ -922,7 +921,7 @@ namespace user_interface {
   }
   template <typename C>
   bool UI<C>::isChatOk (TgBot::Message::Ptr message) const {
-	  return message->chat->id == const_values::ALEX_CHAT || message->chat->id == const_values::CHAT_ID;
+	  return message->chat->id == const_values::ALEX_CHAT || message->chat->id == const_values::DEVELOPER_CHAT_ID;
   }
   template <typename C>
   bool UI<C>::isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const {

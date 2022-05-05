@@ -33,7 +33,7 @@ namespace const_values {
 
 
   //TG Bot
-  static const size_t CHAT_ID = 442233888;
+  static const size_t DEVELOPER_CHAT_ID = 442233888;
   static const size_t ALEX_CHAT = 1545167429;
   static const types::String TG_BOT_TOKEN = "5062134652:AAGeSBm5sfECos5kFYDFUTWAid7q5mZgGs0";
 

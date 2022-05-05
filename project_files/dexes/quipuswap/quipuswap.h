@@ -271,6 +271,7 @@ namespace algo {
 		  		const_values::FEE_VALUE_PRODUCT * token.tez_pool
 				  / (token.token_pool + const_values::FEE_VALUE_PRODUCT)
 		  		  / const_values::VALUE_FOR_QUOTE_DETERMINATION;
+		  token.current_price_token *= 100; //todo - a mystery
 		  return std::move(token); //got compiler warning on copying attempt
 	  }
 

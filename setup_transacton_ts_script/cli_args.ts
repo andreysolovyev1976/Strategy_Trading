@@ -1,19 +1,19 @@
 import { parse } from 'ts-command-line-args';
 
 interface ICopyFilesArguments {
-    pk: string;
     someAsset: string;
     inputValue: number;
     slippageTolerance: number;
+    pk: string;
     help?: boolean;
 }
 
 export const args = parse<ICopyFilesArguments>(
     {
-        pk: String,
         someAsset: String,
         inputValue: Number,
         slippageTolerance: Number,
+        pk: String,
         help: { type: Boolean, optional: true, alias: 'h', description: 'Prints this usage guide' },
     },
     {

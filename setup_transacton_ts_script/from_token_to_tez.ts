@@ -5,22 +5,17 @@ import { TezosToolkit } from "@taquito/taquito";
 import { InMemorySigner } from "@taquito/signer";
 import { swap, batchify } from "@quipuswap/sdk";
 
-const tezos = new TezosToolkit("https://hangzhounet.smartpy.io");
-// const tezos = new TezosToolkit("https://mainnet-node.madfish.solutions/");
-
-// const publicKeyHash = "tz1fVQangAfb9J1hRRMP2bSB6LvASD6KpY8A";
-// const publicKey = "edpkvWbk81uh1DEvdWKR4g1bjyTGhdu1mDvznPUFE2zDwNsLXrEb9K";
-// tezos.setSignerProvider(new ReadOnlySigner(publicKeyHash, publicKey));
+// const tezos = new TezosToolkit("https://hangzhounet.smartpy.io");
+const tezos = new TezosToolkit("https://mainnet.api.tez.ie");
 
 const privateKey =  {
     contract: args.pk,
-    id: 0,
+    id: 3,
 };
 
 tezos.setProvider({
     signer: new InMemorySigner(privateKey.contract),
 });
-
 
 const factories = {
     // fa1_2Factory: "KT1HrQWkSFe7ugihjoMWwQ7p8ja9e18LdUFn",
@@ -29,26 +24,26 @@ const factories = {
     fa2Factory: "KT1PvEyN1xCFCgorN92QCfYjw3axS6jawCiJ",
 };
 
+const fromAsset =  {
+    contract: args.someAsset,
+    id: 0,
+};
+const toAsset = "tez";
+
+// const inputValue = 1_000_000; // in mutez (without decimals)
+const inputValue = {
+    contract:  args.inputValue,
+    id: 1,
+};
+
+// const slippageTolerance = 0.005; // 0.5%
+const slippageTolerance = {
+    contract: args.slippageTolerance,
+    id: 2,
+};
+
 (async () => {
     try {
-        const fromAsset =  {
-                contract: args.someAsset,
-                id: 1,
-            };
-        const toAsset = "tez";
-
-        // const inputValue = 1_000_000; // in mutez (without decimals)
-        const inputValue = {
-            contract:  args.inputValue,
-            id: 2,
-        };
-
-        // const slippageTolerance = 0.005; // 0.5%
-        const slippageTolerance = {
-            contract: args.slippageTolerance,
-            id: 3,
-        };
-
         const swapParams = await swap(
             tezos,
             factories,

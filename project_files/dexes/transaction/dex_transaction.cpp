@@ -35,14 +35,14 @@ namespace algo {
 				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with undefined trade side - either from Tez or to Tez; "));
 			}
 
-			command += " --pk=";
-			command += key;
 			command += " --someAsset=";
 			command += t_contract.ticker;
 			command += " --inputValue=";
 			command += trade.getQuantity().ToString();
 			command += " --slippageTolerance=";
 			command += trade.getSlippage().ToString();
+			command += " --pk=";
+			command += key;
 
 			std::cerr << command << '\n';
 

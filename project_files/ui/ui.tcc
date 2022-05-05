@@ -922,7 +922,7 @@ namespace user_interface {
   }
   template <typename C>
   bool UI<C>::isChatOk (TgBot::Message::Ptr message) const {
-	  return message->chat->id == const_values::ALEX_CHAT;
+	  return message->chat->id == const_values::ALEX_CHAT || message->chat->id == const_values::CHAT_ID;
   }
   template <typename C>
   bool UI<C>::isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const {

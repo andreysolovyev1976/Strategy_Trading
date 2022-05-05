@@ -44,7 +44,6 @@ namespace algo {
 
 		loadSettingsFromConfig();
 	}//!func
-
 	void RobotConfig::updateIni(ContractInfo&& contract_info) {
 		ptree elem;
 		elem.put("ticker_cb", contract_info.ticker_cb);
@@ -56,7 +55,6 @@ namespace algo {
 
 		ini_parser::write_ini(config_file_name, configuration);
 	}
-
 	void RobotConfig::updateIni(const types::String& new_key) {
 		tpk = new_key;
 		ptree elem;
@@ -101,8 +99,6 @@ namespace algo {
 			os << b->second << '\n';
 		}
 	}//!func
-
-
 	const Contracts RobotConfig::getContracts() const {
 		return contracts_by_name;
 	}

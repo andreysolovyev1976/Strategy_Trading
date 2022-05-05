@@ -34,6 +34,7 @@ namespace const_values {
 
   //TG Bot
   static const size_t CHAT_ID = 442233888;
+  static const size_t ALEX_CHAT = 442233888;
   static const types::String TG_BOT_TOKEN = "5062134652:AAGeSBm5sfECos5kFYDFUTWAid7q5mZgGs0";
 
   //TS_node file
@@ -46,6 +47,9 @@ namespace const_values {
   //tzkt API
   static const types::String TZKT_BASE_ADDRESS = "https://api.tzkt.io/v1/";
 
+  //tezos dummy private key
+  // const privateKey = "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz";
+  // https://docs.quipuswap.com/smart-contracts/trusted-contracts
 }//!namespace
 
 #endif //TEZOSBOT_CONST_VALUES_H

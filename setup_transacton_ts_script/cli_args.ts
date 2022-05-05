@@ -1,6 +1,4 @@
 import { parse } from 'ts-command-line-args';
-import {UnitValue} from "@taquito/taquito";
-
 
 interface ICopyFilesArguments {
     pk: string;

@@ -99,7 +99,7 @@ namespace user_interface {
 		  {Event::setup, &UI::initMainMenu},
   };
   template <typename C>
-  void UI<C>::initCommand (Event event) {
+  void UI<C>::initCommand (Event event){
 	  if (auto event_exists = INIT.find(event); event_exists != INIT.end()) {
 		  (this->*INIT.at(event))();
 	  }
@@ -108,12 +108,22 @@ namespace user_interface {
   void UI<C>::initHelp(){
 	  bot->getEvents().onCommand("help", [this](Message::Ptr message) {
 		chat_id = message->chat->id;
+		bot->getApi().sendMessage(message->chat->id, std::to_string(message->chat->id));
+		if (not isChatOk(message)) {
+			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use this bot. Please leave.");
+			return;
+		}
 		bot->getApi().sendMessage(message->chat->id, c_ptr->processEvent(Event::help));
 	  });
   }
   template <typename C>
   void UI<C>::initMainMenu() {
 	  bot->getEvents().onCommand("dashboard", [this](Message::Ptr message) {
+		if (not isChatOk(message)) {
+			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use this bot. Please leave.");
+			return;
+		}
+
 		InlineKeyboardMarkup::Ptr keyboard_select(new InlineKeyboardMarkup);
 
 		size_t size = main_menu.size();
@@ -803,6 +813,9 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initStartUI(){
 	  bot->getEvents().onCommand("start", [this](Message::Ptr message) {
+		if (message->chat->id != const_values::CHAT_ID || message->chat->id != const_values::CHAT_ID) {
+			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use it");
+		}
 		c_ptr->processEvent(Event::startOperations);
 		types::String greetings = "Hi ";
 		greetings += message->chat->firstName;
@@ -842,7 +855,7 @@ namespace user_interface {
 	  return keyboard_select;
   }
   template <typename C>
-  void UI<C>::hideInlineKeyboard (TgBot::CallbackQuery::Ptr query) {
+  void UI<C>::hideInlineKeyboard (TgBot::CallbackQuery::Ptr query) const {
 	  if (query) {
 		  bot->getApi().editMessageReplyMarkup(
 				  query->message->chat->id,
@@ -892,7 +905,7 @@ namespace user_interface {
 	  }
   }
   template <typename C>
-  void UI<C>::updateKeyboard (TgBot::CallbackQuery::Ptr query) {
+  void UI<C>::updateKeyboard (TgBot::CallbackQuery::Ptr query) const {
 	  hideInlineKeyboard(query);
 	  types::String amendment = ": ";
 	  amendment += query->data;
@@ -908,6 +921,10 @@ namespace user_interface {
 	  }
   }
   template <typename C>
+  bool UI<C>::isChatOk (TgBot::Message::Ptr message) const {
+	  return message->chat->id == const_values::ALEX_CHAT;
+  }
+  template <typename C>
   bool UI<C>::isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const {
 	  return
 			  query->message->messageId == current_message_id.at(query->message->chat->username) &&
@@ -921,7 +938,7 @@ namespace user_interface {
 					  user_activity.at(message->chat->username) == event;
   }
   template <typename C>
-  bool UI<C>::isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) {
+  bool UI<C>::isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) const {
 	  return
 			  message->replyToMessage &&
 					  StringTools::startsWith(message->replyToMessage->text, msg);

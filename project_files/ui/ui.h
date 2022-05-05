@@ -44,30 +44,32 @@ namespace user_interface {
 	  algo::Engine& engine;
 	  ObjectsCtorsData& ctors;
 
+	  UserCurrentMessage current_message_id;
+	  UserActivity user_activity;
+	  UserChatId user_chat_id;
+	  std::optional<int64_t> chat_id;
+
 	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
 
 	  struct Map { };
 	  struct Vec { };
 	  template <typename ConstIter, typename Type>
 	  TgBot::InlineKeyboardMarkup::Ptr makeInlineKeyboard (Type type, ConstIter b, ConstIter e) const;
-	  void hideInlineKeyboard (TgBot::CallbackQuery::Ptr query);
+	  void hideInlineKeyboard (TgBot::CallbackQuery::Ptr query) const;
+	  void updateKeyboard (TgBot::CallbackQuery::Ptr query) const;
+
 	  void appendMessage (TgBot::Message::Ptr message, types::String msg) const;
 	  void changeMessage (TgBot::Message::Ptr message, types::String msg) const;
 	  void deleteMessage (TgBot::Message::Ptr message) const;
-	  void updateKeyboard (TgBot::CallbackQuery::Ptr query);
 
 	  bool isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const;
 	  bool isMessageEventHandler (TgBot::Message::Ptr message, Event event) const;
-
-	  bool isMessageResponseFor (TgBot::Message::Ptr message, types::String msg);
+	  bool isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) const;
 
 	  template <typename Keyboard>
 	  void sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, types::String msg, Event event = Event::begin);
 
-	  UserCurrentMessage current_message_id;
-	  UserActivity user_activity;
-	  UserChatId user_chat_id;
-	  std::optional<int64_t> chat_id;
+	  bool isChatOk (TgBot::Message::Ptr message) const;
 
 	  static const std::unordered_map<
 			  Event,

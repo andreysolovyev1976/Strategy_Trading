@@ -12,7 +12,7 @@ const privateKey =  {
     contract: args.pk,
     id: 3,
 };
-console.log(privateKey.contract);
+
 tezos.setProvider({
     signer: new InMemorySigner(privateKey.contract),
 });

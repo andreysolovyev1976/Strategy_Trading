@@ -48,10 +48,12 @@ namespace user_interface {
 		  }
 	  }
 	  catch (std::exception& e) {
-		  if (chat_id.has_value())
-			  bot->getApi().sendMessage(chat_id.value(), EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
+			  bot->getApi().sendMessage(const_values::ALEX_CHAT,
+					  EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
+			  bot->getApi().sendMessage(const_values::DEVELOPER_CHAT_ID,
+					  EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
 #ifdef CERR_OVER_BOT
-		  else std::cerr << e.what() << '\n';
+			  std::cerr << e.what() << '\n';
 #endif
 #ifdef BOT_OVER_CERR
 		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));

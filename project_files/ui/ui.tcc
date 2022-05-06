@@ -852,7 +852,6 @@ namespace user_interface {
 		}
 	  });
   }
-
   template <typename C>
   TgBot::InlineKeyboardButton::Ptr UI<C>::makeInlineCheckButton (const types::String& name) const {
 	  InlineKeyboardButton::Ptr checkButton(new InlineKeyboardButton);

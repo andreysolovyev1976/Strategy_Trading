@@ -30,24 +30,24 @@ namespace user_interface {
 	  for (Event curr = Event::begin, last = Event::end; curr != last; curr = nextEvent(curr)){
 		  initCommand(curr);
 	  }
-	  is_ui_initialized = true;
+	  is_ui_ok = true;
   }//!ctor
 
   template <typename C>
   void UI<C>::run() {
-	  if (not is_ui_initialized) {
+	  if (not is_ui_ok) {
 		  throw LogicError(EXCEPTION_MSG("TG Bot is not initialized "));
 	  }
+	  while (is_ui_ok) {
+		  try {
+			  bot->getApi().deleteWebhook();
 
-	  try {
-		  bot->getApi().deleteWebhook();
-
-		  TgLongPoll longPoll(*bot);
-		  while (true) {
-			  longPoll.start();
+			  TgLongPoll longPoll(*bot);
+			  while (is_ui_ok) {
+				  longPoll.start();
+			  }
 		  }
-	  }
-	  catch (std::exception& e) {
+		  catch (std::exception& e) {
 			  bot->getApi().sendMessage(const_values::ALEX_CHAT,
 					  EXCEPTION_MSG("TG Bot caught exception: "s+e.what()+" "));
 			  bot->getApi().sendMessage(const_values::DEVELOPER_CHAT_ID,
@@ -56,11 +56,11 @@ namespace user_interface {
 			  std::cerr << e.what() << '\n';
 #endif
 #ifdef BOT_OVER_CERR
-		  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
+			  throw RuntimeError(EXCEPTION_MSG("TG Bot caught exception: "s + e.what() + " "));
 #endif
+		  }
 	  }
   }//!func
-
   template <typename C>
   const std::unordered_map<
 		  Event,
@@ -98,6 +98,7 @@ namespace user_interface {
 		  {Event::stopOperations, &UI::initStopOperations},
 		  {Event::startUI, &UI::initStartUI},
 		  {Event::stopUI, &UI::initStopUI},
+
 		  {Event::setup, &UI::initMainMenu},
   };
   template <typename C>
@@ -109,7 +110,6 @@ namespace user_interface {
   template <typename C>
   void UI<C>::initHelp(){
 	  bot->getEvents().onCommand("help", [this](Message::Ptr message) {
-		chat_id = message->chat->id;
 		if (not isChatOk(message)) {
 			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use this bot. Please leave.");
 			return;
@@ -804,20 +804,20 @@ namespace user_interface {
 	  });
   }
   template <typename C>
-  void UI<C>::initStartOperations(){
+  void UI<C>::initStartOperations(){ //todo: use it later to start all the strategies kept in DB
 //	  bot->getApi().sendMessage(chat_id, controller_ptr->processEvent(Event::startOperations));
   }
   template <typename C>
-  void UI<C>::initStopOperations(){
+  void UI<C>::initStopOperations(){//todo: use it later to stop all the strategies kept in DB
 //	  bot->getApi().sendMessage(chat_id, controller_ptr->processEvent(Event::stopOperations));
   }
   template <typename C>
   void UI<C>::initStartUI(){
 	  bot->getEvents().onCommand("start", [this](Message::Ptr message) {
 		if (message->chat->id != const_values::DEVELOPER_CHAT_ID || message->chat->id != const_values::DEVELOPER_CHAT_ID) {
-			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use it");
+			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use it. PLease leave");
 		}
-		c_ptr->processEvent(Event::startOperations);
+		c_ptr->processEvent(Event::startUI);
 		types::String greetings = "Hi ";
 		greetings += message->chat->firstName;
 		greetings += "!";
@@ -826,6 +826,31 @@ namespace user_interface {
   }
   template <typename C>
   void UI<C>::initStopUI() {
+	  bot->getEvents().onCommand("stop_ui", [this](Message::Ptr message) {
+		if (message->chat->id != const_values::DEVELOPER_CHAT_ID || message->chat->id != const_values::DEVELOPER_CHAT_ID) {
+			bot->getApi().sendMessage(message->chat->id, "You are not authorized to use it. PLease leave");
+		}
+		ForceReply::Ptr keyboard_reply(new ForceReply);
+		sendRequestForInput (message->chat, keyboard_reply, "Type yes to stop the bot", Event::stopUI_Farewell);
+	  });
+
+	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
+		if (isMessageEventHandler(message, Event::stopUI_Farewell)) {
+			auto response = utils::stringToLower(message->text);
+			if (response == "yes") {
+				types::String msg = "Buy ";
+				msg += message->chat->firstName;
+				msg += "!\nStopping the bot. You'll have to start it from Linux machine desktop again";
+				c_ptr->processEvent(Event::stopUI);
+				is_ui_ok = false;
+				bot->getApi().sendMessage(message->chat->id, msg);
+			}
+			else {
+				types::String msg = "Didn't get your response";
+				bot->getApi().sendMessage(message->chat->id, msg);
+			}
+		}
+	  });
   }
 
   template <typename C>
@@ -914,12 +939,13 @@ namespace user_interface {
   }
   template <typename C>
   template <typename Keyboard>
-  void UI<C>::sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, types::String msg, Event event) {
+  void UI<C>::sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, const types::String& msg, Event event) {
 	  auto _ = bot->getApi().sendMessage(chat->id, msg, false, 0, keyboard);
 	  current_message_id[chat->username] = _->messageId;
-	  if (event != Event::begin) {
+	  if (event != Event::begin && event != Event::end) {
 		  user_activity[chat->username] = event;
 	  }
+	  user_chat_id[chat->username] = chat->id;
   }
   template <typename C>
   bool UI<C>::isChatOk (TgBot::Message::Ptr message) const {
@@ -927,19 +953,31 @@ namespace user_interface {
   }
   template <typename C>
   bool UI<C>::isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const {
-	  return
-			  query->message->messageId == current_message_id.at(query->message->chat->username) &&
-					  user_activity.at(query->message->chat->username) == event;
+	  const auto& username = query->message->chat->username;
+	  if (auto user_msg_id = current_message_id.find(username); user_msg_id != current_message_id.end()) {
+		  if (auto user_event = user_activity.find(username); user_event != user_activity.end()) {
+			  return
+					  query->message->messageId == user_msg_id->second &&
+							  event == user_event->second;
+		  }
+	  }
+	  return false;
   }
   template <typename C>
   bool UI<C>::isMessageEventHandler (TgBot::Message::Ptr message, Event event) const {
-	  return
-			  message->replyToMessage &&
-					  message->replyToMessage->messageId == current_message_id.at(message->chat->username) &&
-					  user_activity.at(message->chat->username) == event;
+	  const auto& username = message->chat->username;
+	  if (auto user_msg_id = current_message_id.find(username); user_msg_id!=current_message_id.end()) {
+		  if (auto user_event = user_activity.find(username); user_event!=user_activity.end()) {
+			  return
+					  message->replyToMessage &&
+							  message->replyToMessage->messageId == user_msg_id->second &&
+							  event == user_event->second;
+		  }
+	  }
+	  return false;
   }
   template <typename C>
-  bool UI<C>::isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) const {
+  bool UI<C>::isMessageResponseFor (TgBot::Message::Ptr message, const types::String& msg) const {
 	  return
 			  message->replyToMessage &&
 					  StringTools::startsWith(message->replyToMessage->text, msg);

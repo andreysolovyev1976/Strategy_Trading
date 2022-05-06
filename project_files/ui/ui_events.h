@@ -67,6 +67,7 @@ namespace user_interface {
 	  stopOperations,
 	  startUI,
 	  stopUI,
+	  stopUI_Farewell,
 
 	  end,
   };

@@ -28,7 +28,6 @@ namespace user_interface {
   using UserActivity = std::map<Username, Event>;
   using CurrentMessageId = int64_t;
   using UserCurrentMessage = std::map<Username, CurrentMessageId>;
-  using ChatId = std::optional<int64_t>;
   using UserChatId = std::map<Username, CurrentMessageId>;
 
   template <typename C>
@@ -39,7 +38,7 @@ namespace user_interface {
   private:
 	  std::shared_ptr<C> c_ptr;
 	  std::shared_ptr<TgBot::Bot> bot;
-	  bool is_ui_initialized = false;
+	  bool is_ui_ok = false;
 	  algo::config::RobotConfig& robot_config;
 	  algo::Engine& engine;
 	  ObjectsCtorsData& ctors;
@@ -47,7 +46,6 @@ namespace user_interface {
 	  UserCurrentMessage current_message_id;
 	  UserActivity user_activity;
 	  UserChatId user_chat_id;
-	  std::optional<int64_t> chat_id;
 
 	  TgBot::InlineKeyboardButton::Ptr makeInlineCheckButton (const types::String& name) const;
 
@@ -64,10 +62,12 @@ namespace user_interface {
 
 	  bool isQueryEventHandler (TgBot::CallbackQuery::Ptr query, Event event) const;
 	  bool isMessageEventHandler (TgBot::Message::Ptr message, Event event) const;
-	  bool isMessageResponseFor (TgBot::Message::Ptr message, types::String msg) const;
+	  bool isMessageResponseFor (TgBot::Message::Ptr message, const types::String& msg) const;
+	  bool isMessageWithEventEmitted (TgBot::Message::Ptr message, Event event) const;
 
 	  template <typename Keyboard>
-	  void sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, types::String msg, Event event = Event::begin);
+	  void sendRequestForInput (TgBot::Chat::Ptr chat, Keyboard keyboard, const types::String& msg, Event event = Event::begin);
+	  void sendMessageWithEvent (TgBot::Chat::Ptr chat, types::String msg, Event event);
 
 	  bool isChatOk (TgBot::Message::Ptr message) const;
 

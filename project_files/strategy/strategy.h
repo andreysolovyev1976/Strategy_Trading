@@ -34,7 +34,7 @@ namespace algo {
 	  );
 
 	  void addRule (const types::String& label);
-	  void initializeTradingContracts(DataProcessorPtr data_processor_ptr) const;
+	  void initializeTradingContracts(DataProcessorPtr data_processor_ptr);
 	  bool isInitialized() const;
 	  const types::String& getLabel () const;
 	  int64_t getUserID() const;

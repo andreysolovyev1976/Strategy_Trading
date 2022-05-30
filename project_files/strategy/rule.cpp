@@ -99,6 +99,8 @@ namespace algo {
   trading_contract_base::QiupuswapTradeSide Rule::getTradeSide() const {
   	return trading_contract_.quipuswap_trade_side;
   }
+  const TradingContract& Rule::getTradingContract () const {return trading_contract_;}
+  TradingContract& Rule::getTradingContract () {return trading_contract_;}
 
   void Rules::addRule (Rule rule) {
 	  const auto label = rule.getLabel();

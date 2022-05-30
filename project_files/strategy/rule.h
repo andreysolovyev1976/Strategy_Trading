@@ -76,11 +76,13 @@ namespace algo {
 	  const std::set<types::String>& getIndicatorsLabels() const;
 	  const Ticker& getTicker() const;
 	  trading_contract_base::QiupuswapTradeSide getTradeSide() const;
+	  [[nodiscard]] const TradingContract& getTradingContract () const;
+	  [[nodiscard]] TradingContract& getTradingContract ();
 
   private:
 	  ///rule
 	  types::String label_;
-	  const TradingContract trading_contract_;
+	  TradingContract trading_contract_;
 	  rule_base::RuleType rule_type_;
 	  ///signal
 	  types::String signal_label_;

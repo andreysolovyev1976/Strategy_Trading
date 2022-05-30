@@ -41,8 +41,8 @@ namespace algo {
 	  using QuipuswapTradeSideBase =
 	  std::variant<
 			  std::monostate,
-			  quipuswap::SellXTZBuyToken,
-			  quipuswap::BuyXTZSellToken
+			  SellXTZBuyToken,
+			  BuyXTZSellToken
 	  >;
 
 	  struct FA1_2{};
@@ -50,8 +50,8 @@ namespace algo {
 	  using FactoryBase =
 	  std::variant<
 			  std::monostate,
-			  quipuswap::FA1_2,
-			  quipuswap::FA2
+			  FA1_2,
+			  FA2
 	  >;
 
 	}//!namespace

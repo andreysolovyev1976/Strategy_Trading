@@ -35,6 +35,7 @@ namespace algo {
 				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with undefined trade side - either from Tez or to Tez; "));
 			}
 
+			std::cerr << t_contract.ticker << ' ' << t_contract.trading_ticker << '\n';
 			command += " --factoryType=";
 			if (t_contract.factory.TryAs<trading_contract_base::quipuswap::FA1_2>()) {
 				command += "FA1_2";

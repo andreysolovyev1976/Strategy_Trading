@@ -3,6 +3,7 @@
 //
 
 #include "trading_contract.h"
+#include "tzkt_io.h"
 #include <algorithm>
 
 namespace algo {

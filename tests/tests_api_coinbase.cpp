@@ -37,7 +37,7 @@ TEST(CoinBaseAPI, JsonResponseOk) {
 
 	for (const auto& field : fields) {
 		auto found = trade.find(field);
-		ASSERT_TRUE(found!=trade.end() && found->second.IsString()) << "Field not found in the response: " << field;
+		ASSERT_TRUE(found!=trade.end()) << "Field not found in the response: " << field;
 	}
 }
 

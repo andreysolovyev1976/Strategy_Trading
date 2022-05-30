@@ -45,6 +45,7 @@ namespace algo {
 	  [[nodiscard]] const types::String& getLabel () const;
 	  [[nodiscard]] Ticker getTicker () const;
 	  [[nodiscard]] const TradingContract& getTradingContract () const;
+	  [[nodiscard]] TradingContract& getTradingContract ();
 
 	  [[nodiscard]] bool Empty () const;
 	  [[nodiscard]] size_t Size() const;

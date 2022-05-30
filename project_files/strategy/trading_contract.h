@@ -44,20 +44,36 @@ namespace algo {
 			  quipuswap::SellXTZBuyToken,
 			  quipuswap::BuyXTZSellToken
 	  >;
+
+	  struct FA1_2{};
+	  struct FA2 {};
+	  using FactoryBase =
+	  std::variant<
+			  std::monostate,
+			  quipuswap::FA1_2,
+			  quipuswap::FA2
+	  >;
+
 	}//!namespace
 
 	struct QiupuswapTradeSide final : public types::ObjectType<quipuswap::QuipuswapTradeSideBase> {};
+	struct QiupuswapFactory final : public types::ObjectType<quipuswap::FactoryBase> {};
+
 
 	types::String QiupuswapTradeSideToString (const QiupuswapTradeSide &type);
 	QiupuswapTradeSide StringToQiupuswapTradeSide (const types::String& type);
 
-  }//namespace
+  }//!namespace
 
-
+	//todo: THIS SHOULD BE UPDATE TO THE NORMAL QUALITY, NOW IT IS NOT
   struct TradingContract final {
 	  const Ticker ticker;
 	  const trading_contract_base::Dex dex;
 	  trading_contract_base::QiupuswapTradeSide quipuswap_trade_side;
+
+	  trading_contract_base::QiupuswapFactory factory;
+	  bool is_factory_set;
+	  Ticker trading_ticker;
 
 	  explicit TradingContract (Ticker t);
 	  explicit TradingContract (Ticker t, types::String trade_side);

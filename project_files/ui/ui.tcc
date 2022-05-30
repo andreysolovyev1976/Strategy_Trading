@@ -5,9 +5,6 @@
 #include "const_values.h"
 #include "timestamp.h"
 
-#include <vector>
-#include <sstream>
-
 //#define BOT_OVER_CERR
 #define CERR_OVER_BOT
 
@@ -692,7 +689,7 @@ namespace user_interface {
 			ctors.init_rule.is_signal_value_initialized = true;
 
 			ForceReply::Ptr keyboard_reply(new ForceReply);
-			sendRequestForInput(query->message->chat, keyboard_reply, "Enter single trade volume", Event::addRule_OrderQuantity);
+			sendRequestForInput(query->message->chat, keyboard_reply, "Enter single trade volume (in mutez, no fractions)", Event::addRule_OrderQuantity);
 		}
 	  });
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {

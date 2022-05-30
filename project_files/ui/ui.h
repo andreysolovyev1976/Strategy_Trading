@@ -102,30 +102,6 @@ namespace user_interface {
 	  void initStartUI();
 	  void initStopUI();
 
-	  /*
-	  static const std::unordered_map<
-			  types::String,
-			  void (UI::*)()
-	  > INDICATOR_MENU;
-	  template <typename Obj>
-	  void Add ();
-	  template <typename Obj>
-	  void List ();
-	  template <typename Obj>
-	  void Remove ();
-	  static const std::unordered_map<
-			  types::String,
-			  void (UI::*)()
-	  > SIGNAL_MENU;
-	  static const std::unordered_map<
-			  types::String,
-			  void (UI::*)()
-	  > RULE_MENU;
-	  static const std::unordered_map<
-			  types::String,
-			  void (UI::*)()
-	  > STRATEGY_MENU;
-*/
   };
 
 }//!namespace

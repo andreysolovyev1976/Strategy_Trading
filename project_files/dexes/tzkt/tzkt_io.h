@@ -34,6 +34,13 @@ namespace algo {
 		  Details initiator, sender, target;
 	  };
 
+
+	  Json::Node checkFactoryForToken (const Json::Document& doc, const types::String& ticker);
+
+		  Json::Node getContractData(
+	  		const types::String& ticker,
+			  curl_client::Response& response, curl_client::Request& request);
+
 	  Json::Document getContractData(
 			  curl_client::Response& response, curl_client::Request& request,
 			  bool debug_output, std::ostream& os);

@@ -2,6 +2,7 @@ import { parse } from 'ts-command-line-args';
 
 interface ICopyFilesArguments {
     someAsset: string;
+    factoryType: string,
     inputValue: number;
     slippageTolerance: number;
     pk: string;
@@ -11,6 +12,7 @@ interface ICopyFilesArguments {
 export const args = parse<ICopyFilesArguments>(
     {
         someAsset: String,
+        factoryType: String,
         inputValue: Number,
         slippageTolerance: Number,
         pk: String,

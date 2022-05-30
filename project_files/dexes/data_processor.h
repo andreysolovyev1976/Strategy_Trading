@@ -8,6 +8,7 @@
 #include "curl_client/utils.h"
 #include "types_declarations.h"
 #include "maps.h"
+#include "safe_ptr.h"
 
 #include "quipuswap.h"
 #include "coinbase.h"
@@ -16,7 +17,6 @@
 #include "trading_contract.h"
 
 #include <vector>
-#include <mutex>
 #include <memory>
 #include <optional>
 
@@ -139,7 +139,7 @@ namespace algo {
 	  }//!func
   };
 
-  using DataProcessorPtr = std::shared_ptr<DataProcessor>;
+  using DataProcessorPtr = safe_ptr<DataProcessor>;
 
 }//!namespace
 

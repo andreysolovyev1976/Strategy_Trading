@@ -8,7 +8,7 @@ namespace algo {
   namespace data {
 	namespace coinbase {
 
-#define DEBUG_OUTPUT(msg, print_headers) \
+#define DEBUG_OUTPUT_DEFINITION(msg, print_headers) \
     if (debug_output) { \
     os << msg; \
     Print(response, os, print_headers); \
@@ -58,7 +58,7 @@ namespace algo {
 								  pathSetNew(std::move(path_new))->
 								  Implement(curl_client::Method::Get);
 
-		DEBUG_OUTPUT("currencies: ", true)
+		DEBUG_OUTPUT_DEFINITION("currencies: ", true)
 		return processAPIResponse(std::move(response));
 	}
 
@@ -74,7 +74,7 @@ namespace algo {
 								  pathSetNew(std::move(path_new))->
 								  Implement(curl_client::Method::Get);
 
-		DEBUG_OUTPUT("currency ID: ", true)
+		DEBUG_OUTPUT_DEFINITION("currency ID: ", true)
 		return processAPIResponse(std::move(response));
 	}
 
@@ -96,11 +96,11 @@ namespace algo {
 								  Implement(curl_client::Method::Get);
 		/// 0.359 ms is a round trip
 
-		DEBUG_OUTPUT("ticker product: ", true)
+		DEBUG_OUTPUT_DEFINITION("ticker product: ", true)
 		return processAPIResponse(std::move(response));
 	}
 
-#undef DEBUG_OUTPUT
+#undef DEBUG_OUTPUT_DEFINITION
 
   }//!namespace
 }//!namespace

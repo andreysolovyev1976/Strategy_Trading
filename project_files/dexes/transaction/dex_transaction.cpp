@@ -35,8 +35,20 @@ namespace algo {
 				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with undefined trade side - either from Tez or to Tez; "));
 			}
 
+			command += " --factoryType=";
+			if (t_contract.factory.TryAs<trading_contract_base::quipuswap::FA1_2>()) {
+				command += "FA1_2";
+			}
+			else if (t_contract.factory.TryAs<trading_contract_base::quipuswap::FA2>()) {
+				command += "FA2";
+			}
+			else {
+				throw InvalidArgumentError(EXCEPTION_MSG("Trying to trade with undefined Factory type; "));
+			}
+
+
 			command += " --someAsset=";
-			command += t_contract.ticker;
+			command += t_contract.trading_ticker;
 			command += " --inputValue=";
 			command += trade.getQuantity().ToString();
 			command += " --slippageTolerance=";

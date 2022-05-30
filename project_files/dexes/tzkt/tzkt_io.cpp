@@ -4,7 +4,9 @@
 
 #include "tzkt_io.h"
 #include "const_values.h"
+#include "utils.h"
 
+#include <optional>
 
 namespace algo {
   namespace tezos {
@@ -98,6 +100,55 @@ namespace algo {
     Print(response, os, print_headers); \
     os << '\n'; \
   }
+
+	  Json::Node checkFactoryForToken (const Json::Document& doc, const types::String& ticker) {
+		  if (not doc.GetRoot().IsArray()) {
+			  throw RuntimeError(EXCEPTION_MSG("Response is not presented as Array"));
+		  }
+		  const auto& tokens = doc.GetRoot().AsArray();
+		  for (const auto& token : tokens) {
+			  if (not token.IsDict()) {
+				  throw RuntimeError(EXCEPTION_MSG("Token is not presented as Map"));
+			  }
+			  const auto& m = token.AsDict();
+			  const auto& value = m.find("value");
+			  if (value->second == ticker) {
+				  return m.find("key")->second;
+			  }
+		  }
+		  return Json::Node{};
+	  }
+
+	  Json::Node getContractData(
+			  const types::String& ticker,
+			  curl_client::Response& response, curl_client::Request& request) {
+
+		  Json::Node result;
+
+		  for (const auto& factory : const_values::QUIPUSWAP_FACTORIES_ADDRESSES) {
+			  auto handle = getBigMapKeysQuery(factory, "token_to_exchange");
+			  response = request.
+										pathSetNew(std::move(handle))->
+										Implement(curl_client::Method::Get);
+
+			  std::visit(utils::overloaded{
+					  []([[maybe_unused]] std::monostate arg){
+						throw RuntimeError(EXCEPTION_MSG("No response from a factory"));
+					  },
+					  [&ticker, &result]([[maybe_unused]] const std::string& arg) {
+						std::stringstream ss(arg);
+						auto doc = Json::Load(ss);
+						result = checkFactoryForToken(doc, ticker);
+					  },
+					  [&ticker, &result](Json::Document& arg) {
+						result = checkFactoryForToken(arg, ticker);
+					  }
+			  }, response->body);
+
+			  if (not result.IsNull()) break;
+		  }//!for
+		  return result;
+	  }//!fucn
 
 
 	  Json::Document getContractData(

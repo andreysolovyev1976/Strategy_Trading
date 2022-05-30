@@ -16,15 +16,16 @@ namespace algo {
 
   Engine::Engine (TgBot::Bot* b)
 		  : bot (std::shared_ptr<TgBot::Bot>(b, [](auto*){ /* empty deleter */ }))
-		  , data_processor_ptr(std::make_shared<DataProcessor>())
+		  , data_processor_ptr(safe_ptr<DataProcessor>())
   {}
 
   void Engine::activateStrategy(const ActiveStrategy& strategy) {
-  	const auto& [label, _] = strategy;
+	  const auto& [label, _] = strategy;
 	  if (strategies.objectExists(label)) {
+		  strategies.getSafePtr(label)->initializeTradingContracts(data_processor_ptr);
 		  active_strategies.insert(strategy);
-		  threads::Thread _ (&Engine::runStrategy, this, strategy);
-		  threads_engine.addThread(label, std::move(_)); //todo: should also be switched to pair <Label, Key>
+		  threads::Thread t (&Engine::runStrategy, this, strategy);
+		  threads_engine.addThread(label, std::move(t)); //todo: should also be switched to pair <Label, Key>
 	  }
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));

@@ -51,6 +51,7 @@ namespace algo {
   const types::String& Indicator::getLabel () const {return label_;}
   Ticker Indicator::getTicker () const {return trading_contract_.ticker;}
   const TradingContract& Indicator::getTradingContract () const {return trading_contract_;}
+  TradingContract& Indicator::getTradingContract () {return trading_contract_;}
 
   bool Indicator::Empty () const {
 	  if (not modifier) return input_value_->empty();

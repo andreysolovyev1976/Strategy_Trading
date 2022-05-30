@@ -34,8 +34,39 @@ namespace algo {
 	  else{
 		  throw RuntimeError(EXCEPTION_MSG("Rule Label is not found in the Rules; "));
 	  }
-
   }
+
+  void Strategy::initializeTradingContracts(DataProcessorPtr data_processor_ptr) const {
+	  using namespace algo::tezos::tzkt_io;
+	  using namespace trading_contract_base::quipuswap;
+
+	  for (const auto& indicator_label: indicator_labels_) {
+	  	auto i = indicators_->getSafePtr(indicator_label);
+	  	auto& t_contract = i->getTradingContract();
+	  	if (not t_contract.is_factory_set) {
+			auto token = getContractData(t_contract.ticker, data_processor_ptr->response, data_processor_ptr->request);
+			if (token.IsString()) {
+				t_contract.is_factory_set = true;
+				t_contract.factory.emplace<FA1_2>();
+				t_contract.trading_ticker = token.AsString();
+			}
+			else if (token.IsDict()) {
+				const auto& m = token.AsDict();
+				const auto& address = m.find("address");
+				if (address == m.end()) {
+					throw RuntimeError(EXCEPTION_MSG("; address not found for FA2 token"));
+				}
+				t_contract.is_factory_set = true;
+				t_contract.factory.emplace<FA2>();
+				t_contract.trading_ticker = address->second.AsString();
+			}
+			else {
+				throw RuntimeError(EXCEPTION_MSG("Unexpected token"));
+			}
+	  	}//!if
+	  }//!for
+  }//!func
+
   bool Strategy::isInitialized() const {
 	  return (not rule_labels_.empty());
   }

@@ -125,7 +125,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 	  }
   }
 
-
   void CurlHandler::setUrl (const std::string &url){
 	  if(curl_handle) {
 		  curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
@@ -146,7 +145,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 	  }
 	  else THROW_CURL
   }
-
   void CurlHandler::setVerbose(bool verbose) {
 	  if(curl_handle) {
 		  /* get verbose debug output please */
@@ -154,7 +152,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 	  }
 	  else THROW_CURL
   }
-
   void CurlHandler::performRequest () {
 	  clearBuffers(); //must be BEFORE
 	  if(curl_handle) {
@@ -164,7 +161,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 	  }
 	  else THROW_CURL
   }
-
   CURL* CurlHandler::getCurlHandler() const {
 	  return curl_handle;
   }
@@ -198,6 +194,9 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
   void CurlHandler::Init() {
 	  curl_handle = curl_easy_init();
 	  if (curl_handle) {
+
+	  	//ADDED HTTP/2 support
+//		  curl_easy_setopt(curl_handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
 
 		  //error buffer
 		  curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, &buf_error);
@@ -255,14 +254,12 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 	  headers->emplace_back(std::string(buffer, nitems * size));
 	  return nitems * size;
   }
-
   void CurlHandler::clearBuffers(){
 	  buf_response.clear();
 	  buf_error.clear();
 	  buf_headers.clear();
 	  response_mime_type = ResponseType::None;
   }
-
   void CurlHandler::clearQuery() {
 	  if (buf_query){
 		  buf_query.reset();
@@ -270,7 +267,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
 		  else THROW_CURL
 	  }
   }
-
   bool CurlHandler::isSetMethod(Method new_method) const
   {
 	  /*
@@ -351,9 +347,6 @@ since you can only set one list of headers with CURLOPT_HTTPHEADER. */
   size_t CurlHandler::getCopiedCount (QueryData *p_q) {
 	  return p_q->curr_chunk_size;
   }
-
-
-
 
   void CurlHandler::setResponseType() {
 

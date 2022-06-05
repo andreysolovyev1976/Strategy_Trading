@@ -40,11 +40,12 @@ namespace algo {
   void Strategy::initializeTradingContracts(DataProcessorPtr data_processor_ptr) {
 	  using namespace algo::tezos::tzkt_io;
 	  using namespace trading_contract_base::quipuswap;
+	  using namespace trading_contract_base::dex_source;
 
 	  for (const auto& indicator_label: indicator_labels_) {
 	  	auto i = indicators_->getSafePtr(indicator_label);
 	  	auto& t_contract = i->getTradingContract();
-	  	if (not t_contract.is_factory_set) {
+	  	if (not t_contract.is_factory_set && t_contract.dex.TryAs<Quipuswap>()) {
 			auto token = getContractData(t_contract.ticker, data_processor_ptr->response, data_processor_ptr->request);
 			if (token.IsString()) {
 				t_contract.is_factory_set = true;

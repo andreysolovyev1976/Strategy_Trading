@@ -17,7 +17,7 @@
 #include "strategy_engine.h"
 
 
-TEST(Strategy, TestRun) {
+TEST(Strategy, TestRun1) {
 	using namespace algo;
 	using namespace std::string_literals;
 
@@ -177,8 +177,67 @@ TEST(Strategy, TestRun) {
 	std::this_thread::sleep_for(90s);
 */
 
+//	engine.activateStrategy({"test"s, "edskRdSPX46vVYemLoUPZ7H7u19rECeB74aUTvcaDYy6qAoGYXNhsYA17TEBLCPXWATvR5Cdz3rZY5frpAezKW1mnEWeqhMpz6"s});
+//	std::this_thread::sleep_for(90s);
+}
+
+TEST(Strategy, TestRun2) {
+	using namespace algo;
+	using namespace std::string_literals;
+
+	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
+	Engine engine (&bot);
+
+	Modifier<types::Value> modifier ("multiplication");
+	modifier.setModifierValue(types::Value(1.05));
+
+	///filtered and referenced data
+	Indicator i1(
+			"coinbse_contract",		//label
+			"XTZ-BTC",				//ticker
+			"SellXTZBuyToken",		//Trade side
+			modifier.getModifierMethod("multiply"s)
+	);
+	Indicator i2 ("quipuswap_contract", "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1", "SellXTZBuyToken");
+
+	engine.addTradingObject(std::move(i1));
+	engine.addTradingObject(std::move(i2));
+
+	///relations of new market data and filtered/referenced data
+	Signal s1(
+			"basic_comparison", //label
+			"Comparison",		//type of a Signal
+			"LT",				//relation between the indicators
+			{"coinbse_contract", "quipuswap_contract"}, //indicators to compare
+			engine.getPtr<Indicators>()
+	);
+	engine.addTradingObject(std::move(s1));
+
+
+	//todo: check that this works - check relations
+	/// actions, based on relations
+	Rule r1 (
+			"enter_when_less",				//rule_label
+			"KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1"s,						//ticker to generate trades for
+			"SellXTZBuyToken",
+			"basic_comparison",				//signal label
+			"True",							//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
+			1000,							//in mutez
+			types::Value(0.005),
+			engine.getPtr<Signals>()
+	);
+	engine.addTradingObject(std::move(r1));
+
+	Strategy st (
+			"test"s,
+			engine.getPtr<Indicators>(),
+			engine.getPtr<Signals>(),
+			engine.getPtr<Rules>(),
+			442233888);
+	st.addRule("enter_when_less");
+	engine.addTradingObject(std::move(st));
+
 	engine.activateStrategy({"test"s, "edskRdSPX46vVYemLoUPZ7H7u19rECeB74aUTvcaDYy6qAoGYXNhsYA17TEBLCPXWATvR5Cdz3rZY5frpAezKW1mnEWeqhMpz6"s});
 	std::this_thread::sleep_for(90s);
 
 }
-

@@ -117,7 +117,7 @@ String Controller::addIndicator([[maybe_unused]] const types::String& input){
 		ctors.init_indicator.clear();
 	}
 	else {
-		//todo: type deduction must aligned with Indicator type - ammend it later
+		//todo: type deduction must aligned with Indicator type - amend it later
 		Modifier<types::Value> modifier (ctors.init_indicator.label);
 		modifier.setModifierValue(types::Value(ctors.init_indicator.modifier_value));
 

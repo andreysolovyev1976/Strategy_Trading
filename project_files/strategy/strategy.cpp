@@ -129,7 +129,7 @@ namespace algo {
 
 	  using namespace std::chrono_literals;
 	  using namespace time_;
-	  auto stop = std::chrono::system_clock::now() + 10s;
+	  auto stop = std::chrono::system_clock::now() + 30s; //todo: here we have 30 seconds - get rid of this
 	  auto time_left = std::chrono::duration_cast<time_::Seconds>(stop - std::chrono::system_clock::now()).count();
 
 	  //todo: this is very bad, MUST switch to OHLCV mechanism

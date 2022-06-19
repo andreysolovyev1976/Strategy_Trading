@@ -110,7 +110,6 @@ namespace algo {
 			  return MarketData<QuoteType, Duration>{trading_contract.ticker, std::move(quote)};
 			  }
 			  else return std::nullopt;
-
 		  }
 		  else if (trading_contract.dex.TryAs<trading_contract_base::dex_source::Quipuswap>()) {
 		  	if (trading_contract.quipuswap_trade_side.TryAs<trading_contract_base::quipuswap::SellXTZBuyToken>()) {

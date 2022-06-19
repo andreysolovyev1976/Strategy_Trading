@@ -220,7 +220,7 @@ String Controller::addStrategy([[maybe_unused]] const types::String& input){
 	return "Strategy successfully added"s;
 }
 String Controller::removeStrategy([[maybe_unused]] const types::String& input){
-	std::pair<const types::String&, const types::String&> active_strategy {input, robot_config.getKey()};
+	ActiveStrategy active_strategy (input, robot_config.getKey());
 	auto* strategies = engine.getPtr<Strategies>();
 	types::String output;
 	if (auto found = strategies->getByLabel()->find(input); found == strategies->getByLabel()->end()) {
@@ -251,7 +251,7 @@ String Controller::getStrategies([[maybe_unused]] const types::String& input){
 	return result;
 }
 String Controller::stopStrategy([[maybe_unused]] const types::String& input){
-	std::pair<const types::String&, const types::String&> active_strategy {input, robot_config.getKey()};
+	ActiveStrategy active_strategy (input, robot_config.getKey());
 	engine.deactivateStrategy(active_strategy);
 
 	String result = "Strategy with Label ";
@@ -260,7 +260,7 @@ String Controller::stopStrategy([[maybe_unused]] const types::String& input){
 	return result;
 }
 String Controller::startStrategy([[maybe_unused]] const types::String& input){
-	std::pair<const types::String&, const types::String&> active_strategy {input, robot_config.getKey()};
+	ActiveStrategy active_strategy (input, robot_config.getKey());
 	engine.activateStrategy(active_strategy);
 
 	String result = "Strategy with Label ";

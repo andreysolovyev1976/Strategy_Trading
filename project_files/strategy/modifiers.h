@@ -71,6 +71,7 @@ namespace algo {
 			  throw InvalidArgumentError(EXCEPTION_MSG("Modifier already exists with this Label; "));
 		  }
 		  auto new_modifier_ptr = Ptr<Modifier<QuoteType>>(std::move(modifier));
+//		  auto new_modifier_ptr = std::make_shared<Modifier<QuoteType>>(std::move(modifier));
 		  this->getByLabel()->insert({new_modifier_ptr->getLabel(), std::move(new_modifier_ptr)});
 	  }
   };

@@ -9,7 +9,6 @@ else()
 endif()
 
 target_sources(${PROJECT_NAME} PRIVATE
-        quote.cpp
         trading_contract.cpp
         indicator.cpp
         signals.cpp

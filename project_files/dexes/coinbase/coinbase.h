@@ -24,7 +24,7 @@ namespace algo {
 	  template<typename ...Fields>
 	  void Print(const std::vector<CurrencyData>& data_coinbase, std::ostream& os, Fields ...fields);
 
-	  Json::Document processAPIResponse (curl_client::Response&& response);
+	  Json::Document processAPIResponse (const curl_client::Response& response);
 
 	  Json::Document getListOfCurrencies(
 			  curl_client::Response& response, curl_client::Request& request,

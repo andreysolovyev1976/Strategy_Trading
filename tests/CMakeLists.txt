@@ -45,6 +45,7 @@ add_executable(${PROJECT_NAME_TEST}
         tests_indicator.cpp
         tests_indicator_modifier.cpp
         tests_strategy_run.cpp
+        tests_timestamp.cpp
         )
 add_subdirectory(../project_files/curl_client ${CMAKE_CURRENT_BINARY_DIR}_curl_client)
 add_subdirectory(../project_files/dexes ${CMAKE_CURRENT_BINARY_DIR}_dexes)

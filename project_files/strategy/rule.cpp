@@ -109,6 +109,7 @@ namespace algo {
 		  throw std::invalid_argument(EXCEPTION_MSG("Rule already exists; "));
 	  }
 	  auto new_rule = Ptr<Rule>(std::move(rule));
+//	  auto new_rule = std::make_shared<Rule>(std::move(rule));
 	  this->getByLabel()->insert({new_rule->getLabel(), std::move(new_rule)});
   }
 

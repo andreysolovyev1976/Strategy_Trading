@@ -4,25 +4,17 @@
 
 #include <gtest/gtest.h>
 
-#include "coinbase.h"
-#include "tzkt_io.h"
-#include "quipuswap.h"
 #include "strategy.h"
-#include "randomer.h"
-
-#include "ui.h"
-
-#include "bot_config.h"
 #include "dex_transaction.h"
 #include "strategy_engine.h"
 
+using namespace algo;
+using namespace std::string_literals;
+using namespace std::chrono_literals;
 
-TEST(Strategy, TestRun1) {
+void prepareEnvironment (algo::Engine& engine) {
 	using namespace algo;
 	using namespace std::string_literals;
-
-	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
-	Engine engine (&bot);
 
 	///filtered and referenced data
 	Indicator i1(
@@ -31,7 +23,7 @@ TEST(Strategy, TestRun1) {
 			"SellXTZBuyToken"
 	);
 
-	Indicator i2("other_contract", "ETH-USD", "BuyXTZSellToken");
+	Indicator i2("other_contract", "XTZ-BTC", "BuyXTZSellToken");
 	Indicator i3 ("quipuswap_contract", "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1", "SellXTZBuyToken");
 	engine.addTradingObject(std::move(i1));
 	engine.addTradingObject(std::move(i2));
@@ -83,7 +75,7 @@ TEST(Strategy, TestRun1) {
 			"SellXTZBuyToken",
 			"basic_comparison",				//signal label
 			"True",							//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			42,
+			1000,
 			types::Value(0.005),
 			engine.getPtr<Signals>()
 	);
@@ -129,8 +121,6 @@ TEST(Strategy, TestRun1) {
 	);
 	engine.addTradingObject(std::move(r4));
 
-
-/*
 	Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
 	st1.addRule("enter_when_less");
 	engine.addTradingObject(std::move(st1));
@@ -142,7 +132,6 @@ TEST(Strategy, TestRun1) {
 	Strategy st3 ("tez_to_token"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
 	st3.addRule("enter_tokens");
 	engine.addTradingObject(std::move(st3));
-*/
 
 	Strategy st4 (
 			"test"s,
@@ -152,92 +141,74 @@ TEST(Strategy, TestRun1) {
 			442233888);
 	st4.addRule("enter_tokens");
 	engine.addTradingObject(std::move(st4));
-/*
-	std::cout << "two strategies\n";
-	engine.activateStrategy("simple_demo 1"s);
-	engine.activateStrategy("simple_demo 2"s);
-	std::this_thread::sleep_for(30s);
-	std::cout << "one strategy\n";
-	engine.deactivateStrategy("simple_demo 1"s);
-	std::this_thread::sleep_for(30s);
-	engine.deactivateStrategy("simple_demo 2"s);
-	std::cout << "no strategy\n";
-	std::this_thread::sleep_for(30s);
-	std::cout << "ok\n";
-	std::cout << "one strategy\n";
-	engine.activateStrategy("simple_demo 1"s);
-	std::this_thread::sleep_for(30s);
-
-	engine.activateStrategy("simple_demo 1"s);
-	engine.activateStrategy("simple_demo 2"s);
-	std::cout << "test there and back\n";
-	engine.activateStrategy("tez_to_token"s);
-	std::this_thread::sleep_for(2s);
-	engine.activateStrategy("token_to_tez"s);
-	std::this_thread::sleep_for(90s);
-*/
-
-//	engine.activateStrategy({"test"s, "edskRdSPX46vVYemLoUPZ7H7u19rECeB74aUTvcaDYy6qAoGYXNhsYA17TEBLCPXWATvR5Cdz3rZY5frpAezKW1mnEWeqhMpz6"s});
-//	std::this_thread::sleep_for(90s);
 }
 
-TEST(Strategy, TestRun2) {
-	using namespace algo;
-	using namespace std::string_literals;
+TEST(Strategy, SingleStrategy) {
 
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
 	Engine engine (&bot);
+	prepareEnvironment(engine);
 
-	Modifier<types::Value> modifier ("multiplication");
-	modifier.setModifierValue(types::Value(1.05));
-
-	///filtered and referenced data
-	Indicator i1(
-			"coinbse_contract",		//label
-			"XTZ-BTC",				//ticker
-			"SellXTZBuyToken",		//Trade side
-			modifier.getModifierMethod("multiply"s)
+	ASSERT_NO_THROW(
+			{
+				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(90s);
+			}
 	);
-	Indicator i2 ("quipuswap_contract", "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1", "SellXTZBuyToken");
+}
 
-	engine.addTradingObject(std::move(i1));
-	engine.addTradingObject(std::move(i2));
+TEST(Strategy, TwoStrategies) {
+	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
+	Engine engine (&bot);
+	prepareEnvironment(engine);
 
-	///relations of new market data and filtered/referenced data
-	Signal s1(
-			"basic_comparison", //label
-			"Comparison",		//type of a Signal
-			"LT",				//relation between the indicators
-			{"coinbse_contract", "quipuswap_contract"}, //indicators to compare
-			engine.getPtr<Indicators>()
+	ASSERT_NO_THROW(
+			{
+				std::cout << "two strategies\n";
+				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(120s);
+			}
 	);
-	engine.addTradingObject(std::move(s1));
-
-
-	//todo: check that this works - check relations
-	/// actions, based on relations
-	Rule r1 (
-			"enter_when_less",				//rule_label
-			"KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1"s,						//ticker to generate trades for
-			"SellXTZBuyToken",
-			"basic_comparison",				//signal label
-			"True",							//value of a signal -1, 0, 1 //todo: convert to TRUE/FALSE
-			1000,							//in mutez
-			types::Value(0.005),
-			engine.getPtr<Signals>()
-	);
-	engine.addTradingObject(std::move(r1));
-
-	Strategy st (
-			"test"s,
-			engine.getPtr<Indicators>(),
-			engine.getPtr<Signals>(),
-			engine.getPtr<Rules>(),
-			442233888);
-	st.addRule("enter_when_less");
-	engine.addTradingObject(std::move(st));
-
-	engine.activateStrategy({"test"s, "edskRdSPX46vVYemLoUPZ7H7u19rECeB74aUTvcaDYy6qAoGYXNhsYA17TEBLCPXWATvR5Cdz3rZY5frpAezKW1mnEWeqhMpz6"s});
-	std::this_thread::sleep_for(90s);
 
 }
+
+TEST(Strategy, AllTogether) {
+	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
+	Engine engine (&bot);
+	prepareEnvironment(engine);
+
+	ASSERT_NO_THROW(
+			{
+				std::cout << "two strategies\n";
+				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(30s);
+				std::cout << "one strategy\n";
+				engine.deactivateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(30s);
+				engine.deactivateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::cout << "no strategy\n";
+				std::this_thread::sleep_for(30s);
+				std::cout << "ok\n";
+				std::cout << "one strategy\n";
+
+				std::cout << "repetitive activation\n";
+				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(2s);
+				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+
+				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::cout << "test there and back\n";
+				engine.activateStrategy({"tez_to_token"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(2s);
+				engine.deactivateStrategy({"tez_to_token"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(90s);
+
+				engine.activateStrategy({"test"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+				std::this_thread::sleep_for(90s);
+			}
+	);
+}
+
+

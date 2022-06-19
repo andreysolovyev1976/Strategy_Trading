@@ -17,18 +17,25 @@
 #include "data_processor.h"
 
 #include <memory>
+#include <mutex>
 
 #ifndef STRATEGY_TRADING_STRATEGY_ENGINE_H
 #define STRATEGY_TRADING_STRATEGY_ENGINE_H
 
 namespace algo {
 
-  class Engine final {
-  	using StrategyLabel = types::String;
-  	using TezosPrivateKey = types::String;
-  	using ActiveStrategy = std::pair<StrategyLabel, TezosPrivateKey>;
-  	using ActiveStrategies = std::set<ActiveStrategy>;
+  struct ActiveStrategy {
+	  using StrategyLabel = types::String;
+	  using TezosPrivateKey = types::String;
+	  StrategyLabel label;
+	  TezosPrivateKey tpk;
+	  DataProcessorPtr data_processor_ptr;
+	  ActiveStrategy (StrategyLabel label, TezosPrivateKey tpk);
+  };
+  using ActiveStrategies = std::set<ActiveStrategy>;
+  [[maybe_unused]] bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs);
 
+  class Engine final {
   public:
 	  explicit Engine (TgBot::Bot* b);
 	  bool isStrategyActive(const ActiveStrategy& strategy) const;
@@ -43,8 +50,8 @@ namespace algo {
 	  Ptr* getPtr ();
 
   private:
+  	std::mutex mtx;
 	  std::shared_ptr<TgBot::Bot> bot;
-	  DataProcessorPtr data_processor_ptr;
 	  Indicators indicators;
 	  Modifiers<types::Value> modifiers; //todo make it available for other QuoteTypes
 	  Signals signals;
@@ -56,7 +63,7 @@ namespace algo {
 	  ActiveStrategies active_strategies;
 	  void runStrategy (const ActiveStrategy& strategy);
   public:
-	  types::String implementTransaction (Trade trade, const TezosPrivateKey& key) const;
+	  types::String implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) const;
   };
 
   template <typename Object>

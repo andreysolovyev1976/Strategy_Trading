@@ -97,6 +97,7 @@ namespace algo {
   void Indicators::addIndicator (Indicator indicator) {
 	  auto label = indicator.getLabel();
 	  auto new_indicator = Ptr<Indicator>(std::move(indicator));
+//	  auto new_indicator = std::make_shared<Indicator>(std::move(indicator));
 	  this->getByLabel()->insert({new_indicator->getLabel(), std::move(new_indicator)});
   }
 

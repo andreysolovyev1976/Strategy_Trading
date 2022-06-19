@@ -139,6 +139,7 @@ namespace algo {
 		  throw std::invalid_argument(EXCEPTION_MSG("Signal already exists; "));
 	  }
 	  auto new_signal = Ptr<Signal>(std::move(signal));
+//	  auto new_signal = std::make_shared<Signal>(std::move(signal));
 	  this->getByLabel()->insert({new_signal->getLabel(), std::move(new_signal)});
 }
 

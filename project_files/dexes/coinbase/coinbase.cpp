@@ -34,7 +34,7 @@ namespace algo {
 		  return os;
 	  }
 
-	  Json::Document processAPIResponse (curl_client::Response&& response) {
+	  Json::Document processAPIResponse (const curl_client::Response& response) {
 		  //todo: add to logging errors received
 		  if (std::holds_alternative<Json::Document>(response.get()->body)) {
 			  return std::move(std::get<Json::Document>(response.get()->body));

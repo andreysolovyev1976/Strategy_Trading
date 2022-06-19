@@ -4,9 +4,9 @@ int main() {
 	Controller app;
 	app.init();
 	app.run();
-
 	return 0;
 }
+//todo: make Indicators, Signals, Rules, Strategies thread safe
 //todo: make ui a separate thread
 //todo check SIGNALS 104 - DOESN'T WORK!!!
 // Add user id to Controller  - but the problem is that INI file is the one for all

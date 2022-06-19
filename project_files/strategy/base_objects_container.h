@@ -13,6 +13,7 @@
 
 template<typename T>
 using Ptr = safe_ptr<T>;
+//using Ptr = std::shared_ptr<T>;
 
 template <typename T>
 class Objects {
@@ -85,6 +86,7 @@ Ptr<T> Objects<T>::getSafePtr (const types::String &label) {
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}
 	else return found->second;
+//	else return std::shared_ptr<T>(found->second.get(), [](auto *){/* do nothing */}) ;
 }
 
 #endif //STRATEGY_TRADING_BASE_OBJECTS_CONTAINER_H

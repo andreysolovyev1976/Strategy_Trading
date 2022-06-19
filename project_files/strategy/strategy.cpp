@@ -21,6 +21,7 @@ namespace algo {
 		  , rules_(rules)
 		  , user_id_(user_id)
 		  , account_(account)
+
   {}//!ctor
 
   void Strategy::addRule (const types::String& label) {
@@ -124,22 +125,46 @@ namespace algo {
 
   void Strategy::getMarketData(DataProcessorPtr data_processor_ptr){
 	  //todo: make it multithreading
-	  //todo: it may be different types of Data and Duration for the some strategies
+	  //todo: it may be different types of Data and Duration for the some strategies - implement template
 
-	  for (const auto& i : indicator_labels_) {
-		  if (auto p = indicators_->getByLabel()->find(i); p != indicators_->getByLabel()->end()) {
-			  const auto& trading_contract = p->second->getTradingContract();
-			  auto market_data = data_processor_ptr->getNewMarketData<
-					  types::Value,
-					  time_::Seconds>(trading_contract);
-			  if (market_data.has_value()) {
-				  std::cout << "new data for ticker: " << market_data->first << "; " << market_data->second << '\n';
-				  indicators_->updateIndicator<types::Value, time_::Seconds>(p->second, market_data.value());
-			  }
-		  }
-	  }
-	  std::cout << "==========\n";
-  }
+	  using namespace std::chrono_literals;
+	  using namespace time_;
+	  auto stop = std::chrono::system_clock::now() + 10s;
+	  auto time_left = std::chrono::duration_cast<time_::Seconds>(stop - std::chrono::system_clock::now()).count();
+
+	  //todo: this is very bad, MUST switch to OHLCV mechanism
+	  std::map<types::String, MarketData<types::Value, time_::Seconds>> mdata;
+
+	  while (time_left > 0) {
+		  for (const auto& i : indicator_labels_) {
+			  if (auto p = indicators_->getByLabel()->find(i); p != indicators_->getByLabel()->end()) {
+				  const auto& trading_contract = p->second->getTradingContract();
+				  auto market_data = data_processor_ptr->getNewMarketData<
+						  types::Value,
+						  time_::Seconds>(trading_contract);
+				  if (market_data.has_value()) {
+					  mdata.insert(std::make_pair(p->first, market_data.value()));
+				  }
+			  }//!if
+		  }//!for
+		  time_left = std::chrono::duration_cast<time_::Seconds>(stop - std::chrono::system_clock::now()).count();
+	  }//!while
+
+	  Timestamp<Seconds> now;
+	  for (const auto& label : indicator_labels_) {
+		  if (auto iter = indicators_->getByLabel()->find(label); iter != indicators_->getByLabel()->end()) {
+		  	const auto& [_, ptr_indicator] = *iter;
+			  if (auto ptr_data = mdata.find(label); ptr_data != mdata.end()) {
+				  auto& [_, market_data] = *ptr_data;
+				  auto& [ticker, quote] = market_data;
+				  quote.timestamp = now;
+				  indicators_->updateIndicator<types::Value, time_::Seconds>(ptr_indicator, market_data);
+				  std::cout << "new data for ticker: " << ticker << "; " << quote << '\n';
+				  std::cout << "==========\n";
+			  }//!if
+		  }//!if
+	  }//!for
+  }//!func
 
 
   void Strategies::addStrategy (Strategy strategy) {
@@ -150,6 +175,7 @@ namespace algo {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy already exists; "));
 	  }
 	  auto new_strategy = Ptr<Strategy>(std::move(strategy));
+//	  auto new_strategy = std::make_shared<Strategy>(std::move(strategy));
 	  this->getByLabel()->insert({new_strategy->getLabel(), std::move(new_strategy)});
   }
 

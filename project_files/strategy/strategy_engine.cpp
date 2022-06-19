@@ -11,16 +11,26 @@
 
 namespace algo {
 
+  ActiveStrategy::ActiveStrategy (StrategyLabel l, ActiveStrategy::TezosPrivateKey t)
+  : label(l)
+  , tpk(std::move(t))
+  , data_processor_ptr(Ptr<DataProcessor>())
+  {}
+
+  bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs) {
+  	return lhs.label < rhs.label;
+  }
+
+
   using namespace std::chrono_literals;
   using namespace algo::tezos::quipuswap::transaction;
 
   Engine::Engine (TgBot::Bot* b)
 		  : bot (std::shared_ptr<TgBot::Bot>(b, [](auto*){ /* empty deleter */ }))
-		  , data_processor_ptr(safe_ptr<DataProcessor>())
   {}
 
   void Engine::activateStrategy(const ActiveStrategy& strategy) {
-	  const auto& [label, _] = strategy;
+	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  strategies.getSafePtr(label)->initializeTradingContracts(data_processor_ptr);
 		  active_strategies.insert(strategy);
@@ -32,7 +42,7 @@ namespace algo {
 	  }
   }
   void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
-	  const auto& [label, _] = strategy;
+	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  active_strategies.erase(strategy);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
@@ -44,7 +54,7 @@ namespace algo {
 
   void Engine::getStrategies() const {}
 
-  types::String Engine::implementTransaction (Trade trade, const TezosPrivateKey& key) const {
+  types::String Engine::implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) const {
 	  types::String result;
 	  os::invokeCommandAndCaptureResult(
 			  makeCommand(std::move(trade), key).c_str(),
@@ -57,7 +67,8 @@ namespace algo {
   }
 
   void Engine::runStrategy (const ActiveStrategy& strategy) {
-	  const auto& [label, key] = strategy;
+  	std::lock_guard<std::mutex> lg(mtx);
+	  const auto& [label, key, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  auto ptr_strategy = strategies.getSafePtr(label);
 		  types::String result;
@@ -69,16 +80,13 @@ namespace algo {
 					  result = implementTransaction(std::move(trade), key);
 					  if (not result.empty()){
 						  bot->getApi().sendMessage(ptr_strategy->getUserID(), result);
-						  std::cerr << "Strategy Label - " << label << "\n " << result << '\n';
+						  std::cout << "Strategy Label - " << label << "\n " << result << '\n';
 					  }
 				  }
 			  }
 			  else {
-				  std::cerr << "Strategy Label - " << label << ", no trades generated\n";
+				  std::cout << "Strategy Label - " << label << ", no trades generated\n";
 			  }
-			  //todo: need to rationalize 10
-			  // don't want to use boost here
-			  std::this_thread::sleep_for(20s);
 		  }
 	  }
 	  else {

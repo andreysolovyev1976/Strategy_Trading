@@ -234,7 +234,7 @@ namespace user_interface {
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
 		if (isMessageResponseFor(message, "Label new Indicator")) {
 			auto* indicators = engine.getPtr<Indicators>();
-			auto* modifiers = engine.getPtr<Modifiers>();
+			auto* modifiers = engine.getPtr<Modifiers<types::Value>>();
 
 			if (
 					(indicators && indicators->objectExists(message->text)) ||

@@ -234,7 +234,12 @@ namespace user_interface {
 	  bot->getEvents().onNonCommandMessage([this](Message::Ptr message) {
 		if (isMessageResponseFor(message, "Label new Indicator")) {
 			auto* indicators = engine.getPtr<Indicators>();
-			if (indicators->objectExists(message->text)) {
+			auto* modifiers = engine.getPtr<Modifiers>();
+
+			if (
+					(indicators && indicators->objectExists(message->text)) ||
+					(modifiers && modifiers->objectExists(message->text))
+					) {
 				bot->getApi().sendMessage(message->chat->id, "This Label already exists");
 			}
 			else {

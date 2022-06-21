@@ -9,11 +9,6 @@
 using namespace algo::time_;
 using namespace std::chrono_literals;
 
-template <typename Duration1, typename Duration2, typename ResultDuration>
-Timestamp<ResultDuration> operation ([[maybe_unused]] Timestamp<Duration1> lhs, [[maybe_unused]] Timestamp<Duration2> rhs) {
-	return Timestamp<ResultDuration>{};
-}
-
 TEST(Timestamp, Timer) {
 
 	auto stop = std::chrono::system_clock::now() + 7s;
@@ -25,7 +20,6 @@ TEST(Timestamp, Timer) {
 		std::cerr << time_left << '\n';
 	}
 }
-
 
 TEST(Timestamp, ComparisonOk) {
 }

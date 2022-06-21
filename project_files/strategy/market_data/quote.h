@@ -89,6 +89,8 @@ namespace algo {
 
   using namespace quote_base::quote_type;
 
+  //todo: finalize OHLCV, add TimeSeries as aggregating mechanism
+
   template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
   struct Quote final {
 	  Quote() = default;

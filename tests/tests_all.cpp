@@ -8,7 +8,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
 	testing::InitGoogleTest(&argc, argv);
 	testing::GTEST_FLAG(color) = "yes";
 //	::testing::GTEST_FLAG(filter) = "Utf8JsonWriter*";
-	::testing::GTEST_FLAG(filter) = "Strategy*";
+	::testing::GTEST_FLAG(filter) = "Timestamp*";
 
 	return RUN_ALL_TESTS();
 }

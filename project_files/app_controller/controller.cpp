@@ -136,10 +136,16 @@ String Controller::addIndicator([[maybe_unused]] const types::String& input){
 }
 String Controller::removeIndicator([[maybe_unused]] const types::String& input){
 	auto* indicators = engine.getPtr<Indicators>();
+	auto* modifiers = engine.getPtr<Modifiers<types::Value>>();
+
 	if (auto found = indicators->getByLabel()->find(input); found==indicators->getByLabel()->end()) {
 		return "No such Indicator"s;
 	}else {
 		indicators->getByLabel()->erase(found);
+		if (auto found_mod = modifiers->getByLabel()->find(input); found_mod==modifiers->getByLabel()->end()) {
+			modifiers->getByLabel()->erase(found_mod);
+		}
+
 	}
 	return "Indicator removed"s;
 }

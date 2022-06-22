@@ -16,7 +16,7 @@ namespace algo {
 	template <typename Duration>
 	struct SingleQuote {
 		time_::Timestamp<Duration> timestamp;
-		types::Value value{0};, volume{0};
+		types::Value value{0}, volume{0};
 		SingleQuote() = default;
 	};
   }//!namespace

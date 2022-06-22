@@ -35,7 +35,7 @@ namespace algo {
 		std::vector<SingleQuote<Duration>> data; //todo: arbitrary data selected
 
 		bool checkDuration () const;
-		void updateExtrems (const SingleQuote<Duration> &single_quote) noexcept;
+		void updateExtremes (const SingleQuote<Duration> &single_quote) noexcept;
 	};
 
 	template <typename Duration>
@@ -93,7 +93,7 @@ namespace algo {
 	bool OHLCV<Duration>::checkDuration () const {}
 
 	template <typename Duration>
-	void OHLCV<Duration>::updateExtrems (const SingleQuote<Duration> &single_quote) noexcept {
+	void OHLCV<Duration>::updateExtremes (const SingleQuote<Duration> &single_quote) noexcept {
 		if (data.empty()) return;
 	
 		if (single_quote.value > data[high_idx]) {

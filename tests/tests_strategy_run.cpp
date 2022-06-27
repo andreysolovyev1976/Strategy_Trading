@@ -121,7 +121,20 @@ void prepareEnvironment (algo::Engine& engine) {
 	);
 	engine.addTradingObject(std::move(r4));
 
-	Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
+    Rule r5 (
+            "do_nothing",			//rule_label
+            "KT1DksKXvCBJN7Mw6frGj6y6F3CbABWZVpj1"s,						//ticker to generate trades for
+            "SellXTZBuyToken",
+            "equality_test",						//signal label
+            "False",
+            types::Value(1000),
+            types::Value(0.005),
+            engine.getPtr<Signals>()
+    );
+    engine.addTradingObject(std::move(r5));
+
+
+    Strategy st1 ("simple_demo 1"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
 	st1.addRule("enter_when_less");
 	engine.addTradingObject(std::move(st1));
 
@@ -141,8 +154,28 @@ void prepareEnvironment (algo::Engine& engine) {
 			442233888);
 	st4.addRule("enter_tokens");
 	engine.addTradingObject(std::move(st4));
+
+    Strategy st5 ("do_nothing"s, engine.getPtr<Indicators>(), engine.getPtr<Signals>(), engine.getPtr<Rules>(), 442233888);
+    st5.addRule("do_nothing");
+    engine.addTradingObject(std::move(st5));
+
 }
 
+TEST(Strategy, LookingForGoOfflineBug) {
+
+    TgBot::Bot bot (const_values::TG_BOT_TOKEN);
+    Engine engine (&bot);
+    prepareEnvironment(engine);
+
+    ASSERT_NO_THROW(
+            {
+                engine.activateStrategy({"do_nothing"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
+                std::this_thread::sleep_for(36000s);
+            }
+    );
+}
+
+/*
 TEST(Strategy, SingleStrategy) {
 
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
@@ -210,5 +243,4 @@ TEST(Strategy, AllTogether) {
 			}
 	);
 }
-
-
+*/

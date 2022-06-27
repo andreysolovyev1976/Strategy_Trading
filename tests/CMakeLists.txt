@@ -70,6 +70,8 @@ target_link_libraries(${PROJECT_NAME_TEST}
 else()
     message(STATUS "Loading DEBIAN REMOTE COMPUTER Configuration...")
     target_link_libraries(${PROJECT_NAME_TEST}
+            ${GTEST_LIBRARIES} pthread
+
             libTgBot.a
             OpenSSL::SSL
             OpenSSL::Crypto

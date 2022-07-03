@@ -32,13 +32,13 @@ namespace algo {
 	  DataProcessorPtr data_processor_ptr;
 	  ActiveStrategy (StrategyLabel label, TezosPrivateKey tpk);
   };
-  using ActiveStrategies = std::set<ActiveStrategy>;
+  using ActiveStrategies = safe_ptr<std::set<ActiveStrategy>>;
   [[maybe_unused]] bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs);
 
   class Engine final {
   public:
 	  explicit Engine (TgBot::Bot* b);
-	  bool isStrategyActive(const ActiveStrategy& strategy) const;
+	  bool isStrategyActive(const ActiveStrategy& strategy);
 	  void activateStrategy(const ActiveStrategy& strategy);
 	  void deactivateStrategy(const ActiveStrategy& strategy);
 	  void getStrategies() const;
@@ -50,7 +50,7 @@ namespace algo {
 	  Ptr* getPtr ();
 
   private:
-  	std::mutex mtx;
+  	std::mutex mtx1, mtx2, mtx3, mtx4, mtx5;
 	  std::shared_ptr<TgBot::Bot> bot;
 	  Indicators indicators;
 	  Modifiers<types::Value> modifiers; //todo make it available for other QuoteTypes
@@ -63,7 +63,7 @@ namespace algo {
 	  ActiveStrategies active_strategies;
 	  void runStrategy (const ActiveStrategy& strategy);
   public:
-	  types::String implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) const;
+	  types::String implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key);
   };
 
   template <typename Object>

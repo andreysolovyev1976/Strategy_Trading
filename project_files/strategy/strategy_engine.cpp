@@ -30,10 +30,12 @@ namespace algo {
   {}
 
   void Engine::activateStrategy(const ActiveStrategy& strategy) {
+	  std::lock_guard<std::mutex> lg(mtx1);
+
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  strategies.getSafePtr(label)->initializeTradingContracts(data_processor_ptr);
-		  active_strategies.insert(strategy);
+		  active_strategies->insert(strategy);
 		  threads::Thread t (&Engine::runStrategy, this, strategy);
 		  threads_engine.addThread(label, std::move(t)); //todo: should also be switched to pair <Label, Key>
 	  }
@@ -42,9 +44,11 @@ namespace algo {
 	  }
   }
   void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
+	  std::lock_guard<std::mutex> lg(mtx2);
+
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
-		  active_strategies.erase(strategy);
+		  active_strategies->erase(strategy);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
 	  }
 	  else {
@@ -54,7 +58,9 @@ namespace algo {
 
   void Engine::getStrategies() const {}
 
-  types::String Engine::implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) const {
+  types::String Engine::implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) {
+	  std::lock_guard<std::mutex> lg(mtx3);
+
 	  types::String result;
 	  os::invokeCommandAndCaptureResult(
 			  makeCommand(std::move(trade), key).c_str(),
@@ -62,12 +68,14 @@ namespace algo {
 	  return result;
   }
 
-  bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
-	  return active_strategies.find(strategy) != active_strategies.end();
+  bool Engine::isStrategyActive(const ActiveStrategy& strategy) {
+	  std::lock_guard<std::mutex> lg(mtx4);
+
+	  return active_strategies->find(strategy) != active_strategies->end();
   }
 
   void Engine::runStrategy (const ActiveStrategy& strategy) {
-  	std::lock_guard<std::mutex> lg(mtx);
+  	std::lock_guard<std::mutex> lg(mtx5);
       const auto& [label, key, data_processor_ptr] = strategy;
       std::cout << label << ' ' << std::this_thread::get_id() << '\n';
 	  if (strategies.objectExists(label)) {
@@ -88,6 +96,7 @@ namespace algo {
 			  else {
 				  std::cout << "Strategy Label - " << label << ", no trades generated\n";
 			  }
+			  std::this_thread::yield();
 		  }
 	  }
 	  else {

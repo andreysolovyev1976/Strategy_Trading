@@ -1,9 +1,16 @@
 #include "controller.h"
+#include <stdexcept>
+#include <iostream>
 
 int main() {
-	Controller app;
-	app.init();
-	app.run();
+    try {
+        Controller app;
+        app.init();
+        app.run();
+    }
+    catch (std::exception& e) {
+        std::cout << e.what() << '\n';
+    }
 	return 0;
 }
 //todo: make Indicators, Signals, Rules, Strategies thread safe

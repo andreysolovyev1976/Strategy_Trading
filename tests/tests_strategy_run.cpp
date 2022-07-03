@@ -160,22 +160,20 @@ void prepareEnvironment (algo::Engine& engine) {
     engine.addTradingObject(std::move(st5));
 
 }
-
+/*
 TEST(Strategy, LookingForGoOfflineBug) {
 
     TgBot::Bot bot (const_values::TG_BOT_TOKEN);
     Engine engine (&bot);
     prepareEnvironment(engine);
+    engine.activateStrategy({"do_nothing"s,
+                             "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 
-    ASSERT_NO_THROW(
-            {
-                engine.activateStrategy({"do_nothing"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-                std::this_thread::sleep_for(36000s);
-            }
-    );
+    std::this_thread::sleep_for(36000s);
+    [[maybe_unused]] int i = 42;
 }
 
-/*
+
 TEST(Strategy, SingleStrategy) {
 
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
@@ -205,7 +203,7 @@ TEST(Strategy, TwoStrategies) {
 	);
 
 }
-
+*/
 TEST(Strategy, AllTogether) {
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
 	Engine engine (&bot);
@@ -216,31 +214,30 @@ TEST(Strategy, AllTogether) {
 				std::cout << "two strategies\n";
 				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(30s);
+				std::this_thread::sleep_for(121s);
 				std::cout << "one strategy\n";
 				engine.deactivateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(30s);
+				std::this_thread::sleep_for(121s);
 				engine.deactivateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 				std::cout << "no strategy\n";
-				std::this_thread::sleep_for(30s);
+				std::this_thread::sleep_for(121s);
 				std::cout << "ok\n";
 				std::cout << "one strategy\n";
 
 				std::cout << "repetitive activation\n";
 				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(2s);
+				std::this_thread::sleep_for(31s);
 				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 
 				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 				std::cout << "test there and back\n";
 				engine.activateStrategy({"tez_to_token"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(2s);
+				std::this_thread::sleep_for(31s);
 				engine.deactivateStrategy({"tez_to_token"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(90s);
+				std::this_thread::sleep_for(121s);
 
 				engine.activateStrategy({"test"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(90s);
+				std::this_thread::sleep_for(121s);
 			}
 	);
 }
-*/

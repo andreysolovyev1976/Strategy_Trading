@@ -68,7 +68,8 @@ namespace algo {
 
   void Engine::runStrategy (const ActiveStrategy& strategy) {
   	std::lock_guard<std::mutex> lg(mtx);
-	  const auto& [label, key, data_processor_ptr] = strategy;
+      const auto& [label, key, data_processor_ptr] = strategy;
+      std::cout << label << ' ' << std::this_thread::get_id() << '\n';
 	  if (strategies.objectExists(label)) {
 		  auto ptr_strategy = strategies.getSafePtr(label);
 		  types::String result;

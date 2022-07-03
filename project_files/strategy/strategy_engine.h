@@ -32,7 +32,7 @@ namespace algo {
 	  DataProcessorPtr data_processor_ptr;
 	  ActiveStrategy (StrategyLabel label, TezosPrivateKey tpk);
   };
-  using ActiveStrategies = safe_ptr<std::set<ActiveStrategy>>;
+  using ActiveStrategies = std::set<ActiveStrategy>;
   [[maybe_unused]] bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs);
 
   class Engine final {

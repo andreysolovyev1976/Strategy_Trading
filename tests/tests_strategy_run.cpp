@@ -160,7 +160,7 @@ void prepareEnvironment (algo::Engine& engine) {
     engine.addTradingObject(std::move(st5));
 
 }
-/*
+
 TEST(Strategy, LookingForGoOfflineBug) {
 
     TgBot::Bot bot (const_values::TG_BOT_TOKEN);
@@ -198,12 +198,13 @@ TEST(Strategy, TwoStrategies) {
 				std::cout << "two strategies\n";
 				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(120s);
+				std::this_thread::sleep_for(121s);
 			}
 	);
 
 }
-*/
+
+
 TEST(Strategy, AllTogether) {
 	TgBot::Bot bot (const_values::TG_BOT_TOKEN);
 	Engine engine (&bot);

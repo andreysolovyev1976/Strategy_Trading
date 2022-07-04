@@ -32,7 +32,7 @@ namespace algo {
 	  DataProcessorPtr data_processor_ptr;
 	  ActiveStrategy (StrategyLabel label, TezosPrivateKey tpk);
   };
-  using ActiveStrategies = std::set<ActiveStrategy>;
+  using ActiveStrategies = safe_ptr<std::set<ActiveStrategy>>;
   [[maybe_unused]] bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs);
 
   class Engine final {
@@ -50,7 +50,6 @@ namespace algo {
 	  Ptr* getPtr ();
 
   private:
-  	std::mutex mtx1, mtx2, mtx3, mtx4, mtx5;
 	  std::shared_ptr<TgBot::Bot> bot;
 	  Indicators indicators;
 	  Modifiers<types::Value> modifiers; //todo make it available for other QuoteTypes

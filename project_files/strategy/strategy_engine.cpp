@@ -68,9 +68,8 @@ namespace algo {
 
   void Engine::runStrategy (const ActiveStrategy& strategy) {
       const auto& [label, key, data_processor_ptr] = strategy;
-      std::cout << label << ' ' << std::this_thread::get_id() << '\n';
 	  if (strategies.objectExists(label)) {
-		  auto ptr_strategy = strategies.getSafePtr(label);
+		  auto& ptr_strategy = strategies.getSafePtr(label);
 		  types::String result;
 		  while (isStrategyActive(strategy)) {
 			  auto generated_trades = ptr_strategy->processRules(data_processor_ptr);

@@ -72,7 +72,7 @@ namespace algo {
 	  trading_contract_base::QiupuswapTradeSide quipuswap_trade_side;
 
 	  trading_contract_base::QiupuswapFactory factory;
-	  bool is_factory_set;
+	  bool is_factory_set = false;
 	  Ticker trading_ticker;
 
 	  explicit TradingContract (Ticker t);

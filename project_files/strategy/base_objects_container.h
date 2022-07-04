@@ -33,7 +33,7 @@ public:
 	T& getObject (const types::String &label);
 */
 	bool objectExists (const types::String &label) const;
-	Ptr<T> getSafePtr (const types::String &label);
+	Ptr<T>& getSafePtr (const types::String &label);
 
 	//todo: should I go with this design?
 //	virtual void addObject (T object) = 0;
@@ -81,7 +81,7 @@ bool Objects<T>::objectExists (const types::String &label) const {
 
 
 template <typename T>
-Ptr<T> Objects<T>::getSafePtr (const types::String &label) {
+Ptr<T>& Objects<T>::getSafePtr (const types::String &label) {
 	if (auto found = by_label_->find(label); found == by_label_->end()){
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}

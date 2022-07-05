@@ -39,7 +39,7 @@ namespace algo {
   public:
 	  explicit Engine (TgBot::Bot* b);
 	  bool isStrategyActive(const ActiveStrategy& strategy);
-	  void activateStrategy(const ActiveStrategy& strategy);
+	  void activateStrategy(ActiveStrategy&& strategy);
 	  void deactivateStrategy(const ActiveStrategy& strategy);
 	  void getStrategies() const;
 

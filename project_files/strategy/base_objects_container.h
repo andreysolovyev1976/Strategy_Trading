@@ -28,12 +28,11 @@ public:
 	const ByLabel& getByLabel () const;
 	ByLabel& getByLabel ();
 
-/*
 	const T& getObject (const types::String &label) const;
 	T& getObject (const types::String &label);
-*/
+
 	bool objectExists (const types::String &label) const;
-	Ptr<T>& getSafePtr (const types::String &label);
+	Ptr<T> getSafePtr (const types::String &label);
 
 	//todo: should I go with this design?
 //	virtual void addObject (T object) = 0;
@@ -55,13 +54,13 @@ const typename Objects<T>::ByLabel& Objects<T>::getByLabel () const {return by_l
 template <typename T>
 typename Objects<T>::ByLabel& Objects<T>::getByLabel () {return by_label_;}
 
-/*
+
 template <typename T>
 const T& Objects<T>::getObject (const types::String &label) const {
 	if (auto found = by_label_->find(label); found == by_label_->end()){
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}
-	else return (found->second);
+	else return found->second->operator->();
 }
 
 template <typename T>
@@ -69,9 +68,9 @@ T& Objects<T>::getObject (const types::String &label) {
 	if (auto found = by_label_->find(label); found == by_label_->end()){
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}
-	else return (found->second);
+	else return found->second->operator->();
 }
-*/
+
 
 template <typename T>
 bool Objects<T>::objectExists (const types::String &label) const {
@@ -81,7 +80,7 @@ bool Objects<T>::objectExists (const types::String &label) const {
 
 
 template <typename T>
-Ptr<T>& Objects<T>::getSafePtr (const types::String &label) {
+Ptr<T> Objects<T>::getSafePtr (const types::String &label) {
 	if (auto found = by_label_->find(label); found == by_label_->end()){
 		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
 	}

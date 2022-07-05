@@ -29,13 +29,14 @@ namespace algo {
 		  : bot (std::shared_ptr<TgBot::Bot>(b, [](auto*){ /* empty deleter */ }))
   {}
 
-  void Engine::activateStrategy(const ActiveStrategy& strategy) {
-	  const auto& [label, _, data_processor_ptr] = strategy;
-	  if (strategies.objectExists(label)) {
-		  strategies.getSafePtr(label)->initializeTradingContracts(data_processor_ptr);
-		  active_strategies->insert(strategy);
-		  threads::Thread t (&Engine::runStrategy, this, std::cref(strategy));
-		  threads_engine.addThread(label, std::move(t)); //todo: should also be switched to pair <Label, Key>
+  void Engine::activateStrategy(ActiveStrategy&& strategy) {
+  	auto label = strategy.label;
+	  if (strategies.objectExists(strategy.label)) {
+		  const auto& [it, ok] = active_strategies->insert(std::move(strategy));
+		  if (not ok) throw RuntimeError(EXCEPTION_MSG("unable to insert Active strategy to the according Set; "));
+		  strategies.getSafePtr(it->label)->initializeTradingContracts(it->data_processor_ptr);
+		  threads::Thread t (&Engine::runStrategy, this, std::cref(*it));
+		  threads_engine.addThread(it->label, std::move(t)); //todo: should also be switched to pair <Label, Key>
 	  }
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));
@@ -67,9 +68,9 @@ namespace algo {
   }
 
   void Engine::runStrategy (const ActiveStrategy& strategy) {
-      const auto& [label, key, data_processor_ptr] = strategy;
+      auto& [label, key, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
-		  auto& ptr_strategy = strategies.getSafePtr(label);
+		  auto ptr_strategy = strategies.getSafePtr(label);
 		  types::String result;
 		  while (isStrategyActive(strategy)) {
 			  auto generated_trades = ptr_strategy->processRules(data_processor_ptr);

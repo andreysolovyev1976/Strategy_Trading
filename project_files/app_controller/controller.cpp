@@ -267,7 +267,7 @@ String Controller::stopStrategy([[maybe_unused]] const types::String& input){
 }
 String Controller::startStrategy([[maybe_unused]] const types::String& input){
 	ActiveStrategy active_strategy (input, robot_config.getKey());
-	engine.activateStrategy(active_strategy);
+	engine.activateStrategy(std::move(active_strategy));
 
 	String result = "Strategy with Label ";
 	result += input;

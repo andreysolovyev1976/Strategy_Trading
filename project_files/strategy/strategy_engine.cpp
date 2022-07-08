@@ -32,7 +32,7 @@ namespace algo {
   void Engine::activateStrategy(ActiveStrategy&& strategy) {
   	auto label = strategy.label;
 	  if (strategies.objectExists(strategy.label)) {
-		  const auto& [it, ok] = active_strategies->insert(std::move(strategy));
+		  const auto& [it, ok] = active_strategies.insert(std::move(strategy));
 		  if (not ok) throw RuntimeError(EXCEPTION_MSG("unable to insert Active strategy to the according Set; "));
 		  strategies.getSafePtr(it->label)->initializeTradingContracts(it->data_processor_ptr);
 		  threads::Thread t (&ActiveStrategy::runStrategy, *it, std::cref(*this));
@@ -45,7 +45,7 @@ namespace algo {
   void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
-		  active_strategies->erase(strategy);
+		  active_strategies.erase(strategy);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
 	  }
 	  else {
@@ -57,7 +57,7 @@ namespace algo {
 
 
   bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
-	  return active_strategies->find(strategy) != active_strategies->end();
+	  return active_strategies.find(strategy) != active_strategies.end();
   }
 
 

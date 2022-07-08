@@ -41,7 +41,7 @@ namespace algo {
 	  if (isStrategyActive(strategy)) return;
 	  auto label = strategy.label;
 	  if (strategies.objectExists(strategy.label)) {
-		  const auto& [it, ok] = active_strategies->insert(std::move(strategy));
+		  const auto& [it, ok] = active_strategies.insert(std::move(strategy));
 		  if (not ok) throw RuntimeError(EXCEPTION_MSG("unable to insert Active strategy to the according Set; "));
 		  strategies.getSafePtr(it->label)->initializeTradingContracts(it->data_processor_ptr);
 		  threads::Thread t (&ActiveStrategy::runStrategy, *it, std::cref(*this));
@@ -56,8 +56,8 @@ namespace algo {
 	  if (not isStrategyActive(strategy)) return;
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
-		  active_strategies->erase(strategy);
 		  threads_engine.interruptThread(label); //todo: turn it on when change boost::thread to jthread
+		  active_strategies.erase(strategy);
 	  }
 	  else {
 		  throw InvalidArgumentError(EXCEPTION_MSG("Strategy Label is not found: " + label + "; "));
@@ -69,7 +69,7 @@ namespace algo {
 
   bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
   	std::lock_guard<std::mutex> lg(mtx1);
-	  return active_strategies->find(strategy) != active_strategies->end();
+	  return active_strategies.find(strategy) != active_strategies.end();
   }
 
   types::String ActiveStrategy::implementTransaction (Trade trade) const {

@@ -12,13 +12,13 @@
 namespace algo {
 
   ActiveStrategy::ActiveStrategy (StrategyLabel l, ActiveStrategy::TezosPrivateKey t)
-  : label(l)
-  , tpk(std::move(t))
-  , data_processor_ptr(Ptr<DataProcessor>())
+		  : label(l)
+		  , tpk(std::move(t))
+		  , data_processor_ptr(Ptr<DataProcessor>())
   {}
 
   bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs) {
-  	return lhs.label < rhs.label;
+	  return lhs.label < rhs.label;
   }
 
 
@@ -29,8 +29,17 @@ namespace algo {
 		  : bot (std::shared_ptr<TgBot::Bot>(b, [](auto*){ /* empty deleter */ }))
   {}
 
+/*
+  Engine::~Engine () {
+	  for (auto curr = active_strategies->begin(), end = active_strategies->end(); curr != end; ++curr)
+	  deactivateStrategy(*curr);
+  }
+*/
+
   void Engine::activateStrategy(ActiveStrategy&& strategy) {
-  	auto label = strategy.label;
+	  std::lock_guard<std::mutex> lg(mtx3);
+	  if (isStrategyActive(strategy)) return;
+	  auto label = strategy.label;
 	  if (strategies.objectExists(strategy.label)) {
 		  const auto& [it, ok] = active_strategies->insert(std::move(strategy));
 		  if (not ok) throw RuntimeError(EXCEPTION_MSG("unable to insert Active strategy to the according Set; "));
@@ -43,6 +52,7 @@ namespace algo {
 	  }
   }
   void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
+	  std::lock_guard<std::mutex> lg(mtx2);
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  active_strategies->erase(strategy);
@@ -57,9 +67,9 @@ namespace algo {
 
 
   bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
+  	std::lock_guard<std::mutex> lg(mtx1);
 	  return active_strategies->find(strategy) != active_strategies->end();
   }
-
 
   types::String ActiveStrategy::implementTransaction (Trade trade) const {
 	  types::String result;

@@ -16,7 +16,7 @@ namespace types {
 
   //todo: move this const - 30 to const_declarations
   //todo: add custom comparator
-  template <typename K, typename V, size_t N = 30>
+  template <typename K, typename V, size_t N = 60>
   class MapLimitedSize {
   private:
 	  using Pair = std::pair<K, V>;

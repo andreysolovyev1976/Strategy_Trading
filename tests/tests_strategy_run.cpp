@@ -198,7 +198,7 @@ TEST(Strategy, TwoStrategies) {
 				std::cout << "two strategies\n";
 				engine.activateStrategy({"simple_demo 1"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
 				engine.activateStrategy({"simple_demo 2"s, "edskRqF9brudtoW87ZiRAxevLmXH1pJhQryfAwe1jjtpcSLXmcqFwcenbGFEXevXMvEYK458YocK2AyVYvBryG2CEWaY8ZNpSz"s});
-				std::this_thread::sleep_for(121s);
+				std::this_thread::sleep_for(3600s);
 			}
 	);
 

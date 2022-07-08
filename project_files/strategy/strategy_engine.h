@@ -44,6 +44,7 @@ namespace algo {
   public:
 	  friend struct ActiveStrategy;
 	  explicit Engine (TgBot::Bot* b);
+//	  ~Engine ();
 	  bool isStrategyActive(const ActiveStrategy& strategy) const;
 	  void activateStrategy(ActiveStrategy&& strategy);
 	  void deactivateStrategy(const ActiveStrategy& strategy);
@@ -56,6 +57,7 @@ namespace algo {
 	  Ptr* getPtr ();
 
   private:
+  	mutable std::mutex mtx1, mtx2, mtx3;
 	  std::shared_ptr<TgBot::Bot> bot;
 	  Indicators indicators;
 	  Modifiers<types::Value> modifiers; //todo make it available for other QuoteTypes

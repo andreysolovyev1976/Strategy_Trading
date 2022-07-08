@@ -36,6 +36,7 @@ namespace algo {
 	  template <typename QuoteType = types::Value, typename Duration = time_::Milliseconds>
 	  void updateIndicator (const MarketData<QuoteType, Duration> &market_data) {
 		  auto quote = market_data.second;
+		  if (auto t = input_value_->find(quote.timestamp); t != input_value_->end()) return;
 		  input_value_->insert({quote.timestamp, std::move(quote)});
 		  this->ProcessIndicator();
 	  }

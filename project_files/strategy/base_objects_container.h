@@ -33,6 +33,7 @@ public:
 
 	bool objectExists (const types::String &label) const;
 	Ptr<T> getSafePtr (const types::String &label);
+	const Ptr<T> getSafePtr (const types::String &label) const;
 
 	//todo: should I go with this design?
 //	virtual void addObject (T object) = 0;
@@ -87,5 +88,15 @@ Ptr<T> Objects<T>::getSafePtr (const types::String &label) {
 	else return found->second;
 //	else return std::shared_ptr<T>(found->second.get(), [](auto *){/* do nothing */}) ;
 }
+
+template <typename T>
+const Ptr<T> Objects<T>::getSafePtr (const types::String &label) const {
+	if (auto found = by_label_->find(label); found == by_label_->end()){
+		throw std::invalid_argument(EXCEPTION_MSG("Unknown Object label: " + label + "; "));
+	}
+	else return found->second;
+//	else return std::shared_ptr<T>(found->second.get(), [](auto *){/* do nothing */}) ;
+}
+
 
 #endif //STRATEGY_TRADING_BASE_OBJECTS_CONTAINER_H

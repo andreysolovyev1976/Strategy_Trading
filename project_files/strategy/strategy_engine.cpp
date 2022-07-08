@@ -35,7 +35,7 @@ namespace algo {
 		  const auto& [it, ok] = active_strategies->insert(std::move(strategy));
 		  if (not ok) throw RuntimeError(EXCEPTION_MSG("unable to insert Active strategy to the according Set; "));
 		  strategies.getSafePtr(it->label)->initializeTradingContracts(it->data_processor_ptr);
-		  threads::Thread t (&Engine::runStrategy, this, std::cref(*it));
+		  threads::Thread t (&ActiveStrategy::runStrategy, *it, std::cref(*this));
 		  threads_engine.addThread(it->label, std::move(t)); //todo: should also be switched to pair <Label, Key>
 	  }
 	  else {
@@ -55,31 +55,32 @@ namespace algo {
 
   void Engine::getStrategies() const {}
 
-  types::String Engine::implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key) {
+
+  bool Engine::isStrategyActive(const ActiveStrategy& strategy) const {
+	  return active_strategies->find(strategy) != active_strategies->end();
+  }
+
+
+  types::String ActiveStrategy::implementTransaction (Trade trade) const {
 	  types::String result;
 	  os::invokeCommandAndCaptureResult(
-			  makeCommand(std::move(trade), key).c_str(),
+			  makeCommand(std::move(trade), tpk).c_str(),
 			  result);
 	  return result;
   }
 
-  bool Engine::isStrategyActive(const ActiveStrategy& strategy) {
-	  return active_strategies->find(strategy) != active_strategies->end();
-  }
-
-  void Engine::runStrategy (const ActiveStrategy& strategy) {
-      auto& [label, key, data_processor_ptr] = strategy;
-	  if (strategies.objectExists(label)) {
-		  auto ptr_strategy = strategies.getSafePtr(label);
+  void ActiveStrategy::runStrategy (const Engine& engine) const {
+	  if (engine.strategies.objectExists(label)) {
+		  auto ptr_strategy = engine.strategies.getSafePtr(label);
 		  types::String result;
-		  while (isStrategyActive(strategy)) {
+		  while (engine.isStrategyActive(*this)) {
 			  auto generated_trades = ptr_strategy->processRules(data_processor_ptr);
 			  result.clear();
 			  if (generated_trades.has_value()) {
 				  for (auto& trade : generated_trades.value()) {
-					  result = implementTransaction(std::move(trade), key);
+					  result = implementTransaction(std::move(trade));
 					  if (not result.empty()){
-						  bot->getApi().sendMessage(ptr_strategy->getUserID(), result);
+						  engine.bot->getApi().sendMessage(ptr_strategy->getUserID(), result);
 						  std::cout << "Strategy Label - " << label << "\n " << result << '\n';
 					  }
 				  }
@@ -87,7 +88,6 @@ namespace algo {
 			  else {
 				  std::cout << "Strategy Label - " << label << ", no trades generated\n";
 			  }
-//			  std::this_thread::yield();
 		  }
 	  }
 	  else {

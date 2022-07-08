@@ -24,6 +24,8 @@
 
 namespace algo {
 
+  class Engine;
+
   struct ActiveStrategy {
 	  using StrategyLabel = types::String;
 	  using TezosPrivateKey = types::String;
@@ -31,14 +33,18 @@ namespace algo {
 	  TezosPrivateKey tpk;
 	  DataProcessorPtr data_processor_ptr;
 	  ActiveStrategy (StrategyLabel label, TezosPrivateKey tpk);
+
+	  void runStrategy (const Engine& engine) const;
+	  types::String implementTransaction (Trade trade) const;
   };
   using ActiveStrategies = safe_ptr<std::set<ActiveStrategy>>;
   [[maybe_unused]] bool operator < (const ActiveStrategy& lhs, const ActiveStrategy& rhs);
 
   class Engine final {
   public:
+	  friend struct ActiveStrategy;
 	  explicit Engine (TgBot::Bot* b);
-	  bool isStrategyActive(const ActiveStrategy& strategy);
+	  bool isStrategyActive(const ActiveStrategy& strategy) const;
 	  void activateStrategy(ActiveStrategy&& strategy);
 	  void deactivateStrategy(const ActiveStrategy& strategy);
 	  void getStrategies() const;
@@ -56,13 +62,8 @@ namespace algo {
 	  Signals signals;
 	  Rules rules;
 	  Strategies strategies;
-
 	  threads::Engine<types::String> threads_engine;
-
 	  ActiveStrategies active_strategies;
-	  void runStrategy (const ActiveStrategy& strategy);
-  public:
-	  types::String implementTransaction (Trade trade, const ActiveStrategy::TezosPrivateKey& key);
   };
 
   template <typename Object>
@@ -85,7 +86,6 @@ namespace algo {
 	  else if constexpr(std::is_same_v<Ptr, Strategies>) return &strategies;
 	  else return nullptr;
   }
-
 
 }//!namespace
 

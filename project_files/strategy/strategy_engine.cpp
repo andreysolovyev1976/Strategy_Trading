@@ -53,6 +53,7 @@ namespace algo {
   }
   void Engine::deactivateStrategy(const ActiveStrategy& strategy) {
 	  std::lock_guard<std::mutex> lg(mtx2);
+	  if (not isStrategyActive(strategy)) return;
 	  const auto& [label, _, data_processor_ptr] = strategy;
 	  if (strategies.objectExists(label)) {
 		  active_strategies->erase(strategy);

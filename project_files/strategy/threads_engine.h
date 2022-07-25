@@ -41,12 +41,12 @@ namespace threads {
 		  thread_map.insert(std::make_pair(id, std::move(thread)));
 		  label_to_id.insert(std::make_pair(label, id));
 		  id_to_label.insert(std::make_pair(id, std::move(label)));
-		  thread_map.at(id).detach();
+		  thread_map.at(id).join();
 	  }
 	  template<typename F, typename... Args>
 	  void createThread(Label label, F func, Args... args){
 		  boost::thread _(func, std::forward<Args>(args)...);
-		  this->addThread(std::move(_), std::move(label));
+		  this->addThread(std::move(label), std::move(_));
 	  }
 
 	  //todo: need to introduce interruption point as a conditional_variable

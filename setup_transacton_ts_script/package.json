@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@quipuswap/sdk": "^3.0.0",
+    "@taquito/signer": "^12.1.1",
+    "@taquito/taquito": "^12.1.1",
+    "ts-command-line-args": "^2.3.1",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.4"
+  }
+}
